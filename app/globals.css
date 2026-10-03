@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f2ede2;
+  --ink: #22301f;
+  --line: #d8cdb4;
+  --brass: #a67c3d;
+  --pine: #2f4a3c;
+  --accept: #2f6b52;
+  --accept-bg: #dfeee3;
+  --decline: #9c4a3d;
+  --decline-bg: #f3e2dd;
+  --pending: #9c7a2e;
+  --pending-bg: #f4ecd6;
+  --invalid: #6b6559;
+  --invalid-bg: #e8e3d5;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-line: var(--line);
+  --color-brass: var(--brass);
+  --color-pine: var(--pine);
+  --color-accept: var(--accept);
+  --color-accept-bg: var(--accept-bg);
+  --color-decline: var(--decline);
+  --color-decline-bg: var(--decline-bg);
+  --color-pending: var(--pending);
+  --color-pending-bg: var(--pending-bg);
+  --color-invalid: var(--invalid);
+  --color-invalid-bg: var(--invalid-bg);
+  --font-serif: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --font-sans: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
