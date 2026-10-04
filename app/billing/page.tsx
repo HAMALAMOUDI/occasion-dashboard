@@ -10,7 +10,10 @@ export default function BillingOverviewPage() {
   const [rows, setRows] = useState<Row[]>([]);
 
   useEffect(() => {
-    fetch("/api/billing").then((r) => r.json()).then(setRows);
+    fetch("/api/billing")
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setRows)
+      .catch(() => setRows([]));
   }, []);
 
   const totalDue = rows.reduce((sum, r) => sum + r.conversationsUsed * r.ratePerConversation, 0);

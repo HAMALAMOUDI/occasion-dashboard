@@ -1,18 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { Event } from "@/lib/types";
+import { badRequest, readJson } from "@/lib/http";
+import { CardTemplate, Event } from "@/lib/types";
 import { randomUUID } from "crypto";
 
+const OCCASION_TYPES: CardTemplate["occasionType"][] = ["wedding", "graduation", "corporate", "birthday"];
+const RATE_PER_CONVERSATION = Number(process.env.RATE_PER_CONVERSATION_SAR) || 0.35;
+
 export async function GET() {
-  return NextResponse.json(db.getEvents());
+  return NextResponse.json(await db.getEvents());
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { name, occasionType, eventDate, venue, inviterName, templateId } = body;
+  const body = await readJson<Event>(req);
+  if (!body) return badRequest("Invalid JSON body");
 
-  if (!name || !occasionType || !eventDate || !inviterName) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  const name = body.name?.trim();
+  const inviterName = body.inviterName?.trim();
+  const { occasionType, eventDate, templateId } = body;
+
+  if (!name || !occasionType || !eventDate || !inviterName) return badRequest("Missing required fields");
+  if (!OCCASION_TYPES.includes(occasionType)) return badRequest(`occasionType must be one of: ${OCCASION_TYPES.join(", ")}`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate) || Number.isNaN(Date.parse(eventDate))) {
+    return badRequest("eventDate must be a valid YYYY-MM-DD date");
+  }
+  if (templateId) {
+    const template = await db.getTemplate(templateId);
+    if (!template || template.occasionType !== occasionType) return badRequest("templateId does not match the occasion type");
   }
 
   const event: Event = {
@@ -20,7 +34,7 @@ export async function POST(req: NextRequest) {
     name,
     occasionType,
     eventDate,
-    venue: venue || "",
+    venue: body.venue?.trim() || "",
     inviterName,
     templateId: templateId || null,
     reminderWeekSentAt: null,
@@ -28,12 +42,11 @@ export async function POST(req: NextRequest) {
     createdAt: new Date().toISOString(),
   };
 
-  db.createEvent(event);
-  db.upsertBilling({
+  await db.createEvent(event, {
     id: randomUUID(),
     eventId: event.id,
     conversationsUsed: 0,
-    ratePerConversation: 0.35,
+    ratePerConversation: RATE_PER_CONVERSATION,
     invoiceStatus: "draft",
     issuedAt: null,
   });

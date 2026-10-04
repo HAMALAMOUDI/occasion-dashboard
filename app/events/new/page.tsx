@@ -101,7 +101,7 @@ export default function NewEventPage() {
           </div>
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium mb-1">Inviter name</label>
-            <p className="text-xs text-ink/60 mb-1">Shown on the invite card as who's sending it.</p>
+            <p className="text-xs text-ink/60 mb-1">Shown on the invite card as who&apos;s sending it.</p>
             <input
               value={inviterName}
               onChange={(e) => setInviterName(e.target.value)}

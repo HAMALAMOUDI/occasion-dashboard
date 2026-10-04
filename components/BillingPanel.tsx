@@ -2,15 +2,19 @@
 
 import { BillingRecord } from "@/lib/types";
 import { useState } from "react";
+import { postJson } from "@/lib/client";
 
 export default function BillingPanel({ billing, onChange }: { billing: BillingRecord; onChange: () => void }) {
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const total = billing.conversationsUsed * billing.ratePerConversation;
 
   async function issueInvoice() {
     setBusy(true);
-    await fetch(`/api/events/${billing.eventId}/billing`, { method: "POST" });
+    setError(null);
+    const result = await postJson(`/api/events/${billing.eventId}/billing`);
     setBusy(false);
+    if (!result.ok) setError(result.error);
     onChange();
   }
 
@@ -47,6 +51,7 @@ export default function BillingPanel({ billing, onChange }: { billing: BillingRe
           </button>
         )}
       </div>
+      {error && <p className="text-xs text-decline mt-2">{error}</p>}
       <p className="text-xs text-ink/50 mt-3">
         Issuing here stands in for pushing a ZATCA-compliant (Fatoora) e-invoice — wire that up before going live with real organizers.
       </p>

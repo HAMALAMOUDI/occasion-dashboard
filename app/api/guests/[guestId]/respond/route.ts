@@ -1,35 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import QRCode from "qrcode";
-import { db } from "@/lib/db";
-import { sendBarcode } from "@/lib/whatsapp";
+import { badRequest, conflict, notFound, readJson } from "@/lib/http";
+import { recordResponse } from "@/lib/rsvp";
+import { RsvpDecision } from "@/lib/whatsapp";
 
-// In production this route's logic lives inside your WhatsApp webhook handler,
-// triggered by Meta posting the guest's button-tap payload — not called
-// directly from the dashboard. It's exposed here so the demo dashboard can
-// simulate a guest response without a live WhatsApp number.
+// Lets the demo dashboard simulate a guest's button tap. Real taps arrive via
+// /api/webhooks/whatsapp, which calls the same recordResponse().
 export async function POST(req: NextRequest, { params }: { params: Promise<{ guestId: string }> }) {
   const { guestId } = await params;
-  const { decision } = await req.json(); // "accept" | "decline"
+  const body = await readJson<{ decision: RsvpDecision }>(req);
+  const decision = body?.decision;
 
   if (decision !== "accept" && decision !== "decline") {
-    return NextResponse.json({ error: "decision must be accept or decline" }, { status: 400 });
+    return badRequest("decision must be accept or decline");
   }
 
-  if (decision === "decline") {
-    const updated = db.updateGuest(guestId, { status: "declined", respondedAt: new Date().toISOString() });
-    return NextResponse.json(updated);
+  const result = await recordResponse(guestId, decision);
+  if (!result.ok) {
+    if (result.error === "guest_not_invitable") return conflict("Guest has an invalid number and was never invited");
+    return notFound("Guest not found");
   }
-
-  const barcodeValue = `INV-${guestId.slice(0, 8).toUpperCase()}`;
-  const dataUrl = await QRCode.toDataURL(barcodeValue, { margin: 1, width: 240 });
-
-  const updated = db.updateGuest(guestId, {
-    status: "accepted",
-    respondedAt: new Date().toISOString(),
-    barcodeValue,
-  });
-
-  if (updated) await sendBarcode(updated, dataUrl);
-
-  return NextResponse.json({ ...updated, barcodeDataUrl: dataUrl });
+  return NextResponse.json({ ...result.guest, barcodeDataUrl: result.barcodeDataUrl });
 }

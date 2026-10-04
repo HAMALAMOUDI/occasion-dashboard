@@ -8,6 +8,8 @@ import GuestTable from "@/components/GuestTable";
 import CsvUploader from "@/components/CsvUploader";
 import ReminderPanel from "@/components/ReminderPanel";
 import BillingPanel from "@/components/BillingPanel";
+import Link from "next/link";
+import { formatEventDate, postJson } from "@/lib/client";
 
 interface EventDetail {
   event: Event;
@@ -20,27 +22,60 @@ export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [detail, setDetail] = useState<EventDetail | null>(null);
   const [templates, setTemplates] = useState<CardTemplate[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
 
   const refresh = useCallback(() => {
-    fetch(`/api/events/${id}`).then((r) => r.json()).then(setDetail);
+    fetch(`/api/events/${id}`)
+      .then(async (r) => {
+        if (r.status === 404) throw new Error("This event doesn't exist or was removed.");
+        if (!r.ok) throw new Error(`Could not load event (${r.status}).`);
+        return r.json();
+      })
+      .then((d: EventDetail) => {
+        setDetail(d);
+        setLoadError(null);
+      })
+      .catch((e: Error) => setLoadError(e.message));
   }, [id]);
 
   useEffect(() => {
     refresh();
-    fetch("/api/templates").then((r) => r.json()).then(setTemplates);
+    fetch("/api/templates")
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setTemplates)
+      .catch(() => setTemplates([]));
   }, [refresh]);
 
+  if (loadError && !detail) {
+    return (
+      <p className="text-sm text-decline">
+        {loadError}{" "}
+        <Link href="/" className="underline text-ink">
+          Back to events
+        </Link>
+      </p>
+    );
+  }
   if (!detail) return <p className="text-sm text-ink/60">Loading…</p>;
   const { event, guests, stats, billing } = detail;
   const template = templates.find((t) => t.id === event.templateId);
   const sampleGuest = guests[0];
+  const unsentCount = guests.filter((g) => g.status === "pending").length;
+
+  async function retryInvites() {
+    setRetrying(true);
+    await postJson(`/api/events/${event.id}/invites/retry`);
+    setRetrying(false);
+    refresh();
+  }
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="font-serif text-2xl">{event.name}</h1>
         <p className="text-sm text-ink/60 mt-1">
-          {new Date(event.eventDate).toLocaleDateString()} {event.venue && `· ${event.venue}`} · {stats.total} invited
+          {formatEventDate(event.eventDate)} {event.venue && `· ${event.venue}`} · {stats.total} invited
         </p>
       </div>
 
@@ -81,7 +116,18 @@ export default function EventDetailPage() {
       </section>
 
       <section>
-        <h2 className="text-sm font-medium mb-3">Guests ({guests.length})</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-medium">Guests ({guests.length})</h2>
+          {unsentCount > 0 && (
+            <button
+              onClick={retryInvites}
+              disabled={retrying}
+              className="text-xs px-2.5 py-1 rounded-md border border-line hover:bg-line/30 disabled:opacity-50"
+            >
+              {retrying ? "Retrying…" : `Retry ${unsentCount} unsent invite${unsentCount === 1 ? "" : "s"}`}
+            </button>
+          )}
+        </div>
         <GuestTable guests={guests} onChange={refresh} />
       </section>
 

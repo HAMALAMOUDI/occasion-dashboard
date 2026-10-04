@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { formatEventDate } from "@/lib/client";
 
 export const dynamic = "force-dynamic";
 
-export default function DashboardPage() {
-  const events = db.getEvents();
+export default async function DashboardPage() {
+  const events = await db.getEvents();
 
   return (
     <div>
@@ -29,7 +30,7 @@ export default function DashboardPage() {
             >
               <p className="font-serif text-lg">{e.name}</p>
               <p className="text-sm text-ink/60 mt-1">
-                {new Date(e.eventDate).toLocaleDateString()} {e.venue && `· ${e.venue}`}
+                {formatEventDate(e.eventDate)} {e.venue && `· ${e.venue}`}
               </p>
               <p className="text-xs text-ink/50 mt-2 capitalize">{e.occasionType}</p>
             </Link>

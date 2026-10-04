@@ -1,30 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { Stats } from "@/lib/types";
+import { badRequest, notFound, readJson } from "@/lib/http";
+import { computeStats } from "@/lib/rsvp";
+import { Event } from "@/lib/types";
+
+// Fields an organizer may edit. Ids, timestamps, and reminder state are
+// managed by the server.
+const EDITABLE_FIELDS = ["name", "eventDate", "venue", "inviterName", "templateId"] as const;
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const event = db.getEvent(id);
-  if (!event) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const event = await db.getEvent(id);
+  if (!event) return notFound();
 
-  const guests = db.getGuests(id);
-  const stats: Stats = {
-    total: guests.length,
-    accepted: guests.filter((g) => g.status === "accepted").length,
-    declined: guests.filter((g) => g.status === "declined").length,
-    pending: guests.filter((g) => g.status === "pending" || g.status === "no_response").length,
-    invalid: guests.filter((g) => g.status === "invalid").length,
-  };
+  const guests = await db.getGuests(id);
+  const billing = await db.getBillingForEvent(id) ?? null;
 
-  const billing = db.getBillingForEvent(id);
-
-  return NextResponse.json({ event, guests, stats, billing });
+  return NextResponse.json({ event, guests, stats: computeStats(guests), billing });
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const patch = await req.json();
-  const updated = db.updateEvent(id, patch);
-  if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const body = await readJson<Event>(req);
+  if (!body) return badRequest("Invalid JSON body");
+
+  const patch: Partial<Event> = {};
+  for (const key of EDITABLE_FIELDS) {
+    if (key in body) Object.assign(patch, { [key]: body[key] });
+  }
+  if (patch.eventDate !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(patch.eventDate)) {
+    return badRequest("eventDate must be a valid YYYY-MM-DD date");
+  }
+
+  const updated = await db.updateEvent(id, patch);
+  if (!updated) return notFound();
   return NextResponse.json(updated);
 }
