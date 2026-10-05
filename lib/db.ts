@@ -44,14 +44,28 @@ export interface Store {
   issueInvoice(eventId: string): Promise<BillingRecord | undefined>;
 }
 
-const DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+// Finds the pooled Postgres connection string. Vercel's Storage integration
+// names it DATABASE_URL / POSTGRES_URL, or <PREFIX>_DATABASE_URL /
+// <PREFIX>_POSTGRES_URL when a custom prefix was chosen while connecting.
+function findDatabaseUrl(): string | undefined {
+  const direct = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+  if (direct) return direct;
+  const key = Object.keys(process.env)
+    .filter((k) => /_(DATABASE|POSTGRES)_URL$/.test(k) && process.env[k])
+    .sort((a, b) => Number(b.endsWith("_DATABASE_URL")) - Number(a.endsWith("_DATABASE_URL")))[0];
+  return key && process.env[key];
+}
 
 function selectStore(): Store {
-  if (DATABASE_URL) return postgresStore(DATABASE_URL);
+  const url = findDatabaseUrl();
+  if (url) return postgresStore(url);
   if (process.env.VERCEL) {
+    // Names only (never values), to show what the deployment can actually see.
+    const seen = Object.keys(process.env).filter((k) => /DATABASE|POSTGRES|^PG|NEON/.test(k));
     throw new Error(
-      "No database configured. Vercel's filesystem is read-only — add a Postgres database " +
-        "(Vercel → Storage → Neon) so DATABASE_URL is set, then redeploy."
+      `No database configured for the "${process.env.VERCEL_ENV}" environment. Vercel's filesystem is read-only — ` +
+        "connect a Postgres database (Vercel → Storage → Neon) to this environment so DATABASE_URL is set, then redeploy. " +
+        `Database-related variables visible: ${seen.length ? seen.join(", ") : "none"}.`
     );
   }
   return jsonStore;
