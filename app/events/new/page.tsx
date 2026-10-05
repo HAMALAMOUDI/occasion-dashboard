@@ -2,21 +2,39 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CardTemplate } from "@/lib/types";
+import { ArrowRight } from "lucide-react";
+import { CardTemplate, Event } from "@/lib/types";
 import TemplatePicker from "@/components/TemplatePicker";
+import InvitePreview from "@/components/InvitePreview";
+import { postJson } from "@/lib/client";
 
-const OCCASION_TYPES = [
-  { value: "wedding", label: "Wedding" },
-  { value: "graduation", label: "Graduation" },
-  { value: "corporate", label: "Corporate event" },
-  { value: "birthday", label: "Birthday" },
+const OCCASION_TYPES: { value: Event["occasionType"]; label: string; emoji: string }[] = [
+  { value: "wedding", label: "Wedding", emoji: "💍" },
+  { value: "graduation", label: "Graduation", emoji: "🎓" },
+  { value: "corporate", label: "Corporate", emoji: "💼" },
+  { value: "birthday", label: "Birthday", emoji: "🎂" },
 ];
+
+function Step({ n, title, hint, children }: { n: number; title: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <section className="card p-5 sm:p-6">
+      <div className="flex items-start gap-3 mb-5">
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-pine text-xs font-semibold text-white">{n}</span>
+        <div>
+          <h2 className="font-medium">{title}</h2>
+          {hint && <p className="text-sm text-muted mt-0.5">{hint}</p>}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
 
 export default function NewEventPage() {
   const router = useRouter();
   const [templates, setTemplates] = useState<CardTemplate[]>([]);
   const [name, setName] = useState("");
-  const [occasionType, setOccasionType] = useState("wedding");
+  const [occasionType, setOccasionType] = useState<Event["occasionType"]>("wedding");
   const [eventDate, setEventDate] = useState("");
   const [venue, setVenue] = useState("");
   const [inviterName, setInviterName] = useState("");
@@ -25,112 +43,126 @@ export default function NewEventPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    fetch("/api/templates").then((r) => r.json()).then(setTemplates);
+    fetch("/api/templates")
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setTemplates)
+      .catch(() => setTemplates([]));
   }, []);
+
+  // Default to the first design for the chosen occasion so the preview is never blank.
+  const selectedTemplate =
+    templates.find((t) => t.id === templateId) ?? templates.find((t) => t.occasionType === occasionType);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!name || !eventDate || !inviterName) {
-      setError("Please fill in event name, date, and inviter name.");
+    if (!name.trim() || !eventDate || !inviterName.trim()) {
+      setError("Almost there — please add the event name, date, and who the invitation is from.");
       return;
     }
     setBusy(true);
-    const res = await fetch("/api/events", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, occasionType, eventDate, venue, inviterName, templateId }),
+    const res = await postJson<Event>("/api/events", {
+      name,
+      occasionType,
+      eventDate,
+      venue,
+      inviterName,
+      templateId: selectedTemplate?.id ?? null,
     });
-    const data = await res.json();
-    setBusy(false);
     if (!res.ok) {
-      setError(data.error || "Could not create event");
+      setBusy(false);
+      setError(res.error);
       return;
     }
-    router.push(`/events/${data.id}`);
+    router.push(`/events/${res.data.id}`);
   }
 
+  const today = new Date().toISOString().slice(0, 10);
+
   return (
-    <div className="max-w-2xl">
-      <h1 className="font-serif text-2xl mb-6">New event</h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Event name</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Sara &amp; Ahmed Wedding"
-              className="w-full border border-line rounded-md px-3 py-2 text-sm bg-paper"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Occasion type</label>
-            <select
-              value={occasionType}
-              onChange={(e) => {
-                setOccasionType(e.target.value);
-                setTemplateId(null);
-              }}
-              className="w-full border border-line rounded-md px-3 py-2 text-sm bg-paper"
-            >
+    <div className="animate-fade-up">
+      <p className="text-muted">New event</p>
+      <h1 className="font-serif text-3xl sm:text-4xl mt-1 mb-8">What are we celebrating?</h1>
+
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <form onSubmit={handleSubmit} className="space-y-5 min-w-0" noValidate>
+          <Step n={1} title="The occasion">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup" aria-label="Occasion type">
               {OCCASION_TYPES.map((o) => (
-                <option key={o.value} value={o.value}>
+                <button
+                  key={o.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={occasionType === o.value}
+                  onClick={() => {
+                    setOccasionType(o.value);
+                    setTemplateId(null);
+                  }}
+                  className={`rounded-xl border px-3 py-3 text-sm font-medium transition ${
+                    occasionType === o.value ? "border-pine bg-pine-soft text-pine" : "border-line hover:border-ink/25"
+                  }`}
+                >
+                  <span className="block text-xl mb-1">{o.emoji}</span>
                   {o.label}
-                </option>
+                </button>
               ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Event date</label>
-            <input
-              type="date"
-              value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-              className="w-full border border-line rounded-md px-3 py-2 text-sm bg-paper"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Venue</label>
-            <input
-              value={venue}
-              onChange={(e) => setVenue(e.target.value)}
-              placeholder="Ritz-Carlton, Jeddah"
-              className="w-full border border-line rounded-md px-3 py-2 text-sm bg-paper"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-medium mb-1">Inviter name</label>
-            <p className="text-xs text-ink/60 mb-1">Shown on the invite card as who&apos;s sending it.</p>
-            <input
-              value={inviterName}
-              onChange={(e) => setInviterName(e.target.value)}
-              placeholder="Family of Ahmed Al-Otaibi"
-              className="w-full border border-line rounded-md px-3 py-2 text-sm bg-paper"
-            />
-          </div>
-        </div>
+            </div>
+          </Step>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">Occasion card template</label>
-          <TemplatePicker
-            templates={templates}
-            occasionType={occasionType}
-            selectedId={templateId}
-            onSelect={setTemplateId}
-          />
-        </div>
+          <Step n={2} title="The details" hint="These appear on every invitation.">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label htmlFor="name" className="label">
+                  Event name
+                </label>
+                <input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Sara & Ahmed's Wedding" className="input" />
+              </div>
+              <div>
+                <label htmlFor="date" className="label">
+                  Date
+                </label>
+                <input id="date" type="date" min={today} value={eventDate} onChange={(e) => setEventDate(e.target.value)} className="input" />
+              </div>
+              <div>
+                <label htmlFor="venue" className="label">
+                  Venue <span className="font-normal text-muted">(optional)</span>
+                </label>
+                <input id="venue" value={venue} onChange={(e) => setVenue(e.target.value)} placeholder="Ritz-Carlton, Jeddah" className="input" />
+              </div>
+              <div className="sm:col-span-2">
+                <label htmlFor="inviter" className="label">
+                  Who is the invitation from?
+                </label>
+                <input
+                  id="inviter"
+                  value={inviterName}
+                  onChange={(e) => setInviterName(e.target.value)}
+                  placeholder="The Al-Otaibi family"
+                  className="input"
+                />
+              </div>
+            </div>
+          </Step>
 
-        {error && <p className="text-sm text-decline">{error}</p>}
+          <Step n={3} title="Pick a card design" hint="You can see how it looks on the right.">
+            <TemplatePicker templates={templates} occasionType={occasionType} selectedId={selectedTemplate?.id ?? null} onSelect={setTemplateId} />
+          </Step>
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="px-4 py-2 rounded-md bg-pine text-paper text-sm hover:opacity-90 disabled:opacity-50"
-        >
-          {busy ? "Creating…" : "Create event"}
-        </button>
-      </form>
+          {error && <p className="rounded-xl bg-decline-bg px-4 py-3 text-sm text-decline">{error}</p>}
+
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs text-muted hidden sm:block">Next, you&apos;ll upload your guest list.</p>
+            <button type="submit" disabled={busy} className="btn-primary px-6 py-2.5 text-sm">
+              {busy ? "Creating…" : "Create event"} <ArrowRight size={16} />
+            </button>
+          </div>
+        </form>
+
+        <aside className="lg:sticky lg:top-10 self-start">
+          <p className="eyebrow mb-3">Live preview</p>
+          <InvitePreview event={{ name, occasionType, inviterName, eventDate, venue }} template={selectedTemplate} />
+        </aside>
+      </div>
     </div>
   );
 }

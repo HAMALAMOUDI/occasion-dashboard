@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import Link from "next/link";
+import Nav from "@/components/Nav";
+
+const display = Fraunces({ subsets: ["latin"], variable: "--font-display", display: "swap" });
+const body = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-body", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Occasion — organizer dashboard",
@@ -9,26 +13,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body className="bg-paper text-ink">
-        <div className="flex min-h-screen">
-          <aside className="w-56 shrink-0 border-r border-line px-5 py-6 hidden md:block">
-            <Link href="/" className="block mb-8">
-              <span className="font-serif text-xl">Occasion</span>
-            </Link>
-            <nav className="flex flex-col gap-1 text-sm">
-              <Link href="/" className="px-3 py-2 rounded-md hover:bg-line/40">
-                Events
-              </Link>
-              <Link href="/events/new" className="px-3 py-2 rounded-md hover:bg-line/40">
-                New event
-              </Link>
-              <Link href="/billing" className="px-3 py-2 rounded-md hover:bg-line/40">
-                Billing
-              </Link>
-            </nav>
-          </aside>
-          <main className="flex-1 px-6 py-8 md:px-10 md:py-10 max-w-5xl">{children}</main>
+        <div className="md:flex min-h-screen">
+          <Nav />
+          <main className="flex-1 min-w-0 px-4 pt-6 pb-28 sm:px-8 md:px-12 md:py-12">
+            <div className="mx-auto max-w-5xl">{children}</div>
+          </main>
         </div>
       </body>
     </html>

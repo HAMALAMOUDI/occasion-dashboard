@@ -1,27 +1,37 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #f2ede2;
-  --ink: #22301f;
-  --line: #d8cdb4;
-  --brass: #a67c3d;
-  --pine: #2f4a3c;
-  --accept: #2f6b52;
-  --accept-bg: #dfeee3;
-  --decline: #9c4a3d;
-  --decline-bg: #f3e2dd;
-  --pending: #9c7a2e;
-  --pending-bg: #f4ecd6;
-  --invalid: #6b6559;
-  --invalid-bg: #e8e3d5;
+  --paper: #f7f4ee;
+  --surface: #ffffff;
+  --ink: #1d2a23;
+  --muted: #69736c;
+  --line: #e9e3d7;
+  --brass: #b8894a;
+  --brass-soft: #f6ecdc;
+  --pine: #1f5a45;
+  --pine-soft: #e5efe9;
+  --accept: #1f7a55;
+  --accept-bg: #e3f3ea;
+  --decline: #b0473a;
+  --decline-bg: #fbe8e4;
+  --pending: #9a6f12;
+  --pending-bg: #fbf0d6;
+  --invalid: #66625a;
+  --invalid-bg: #efece6;
+  --whatsapp: #d9fdd3;
+  --chat-bg: #efeae2;
 }
 
 @theme inline {
   --color-paper: var(--paper);
+  --color-surface: var(--surface);
   --color-ink: var(--ink);
+  --color-muted: var(--muted);
   --color-line: var(--line);
   --color-brass: var(--brass);
+  --color-brass-soft: var(--brass-soft);
   --color-pine: var(--pine);
+  --color-pine-soft: var(--pine-soft);
   --color-accept: var(--accept);
   --color-accept-bg: var(--accept-bg);
   --color-decline: var(--decline);
@@ -30,14 +40,70 @@
   --color-pending-bg: var(--pending-bg);
   --color-invalid: var(--invalid);
   --color-invalid-bg: var(--invalid-bg);
-  --font-serif: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
-  --font-sans: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --color-whatsapp: var(--whatsapp);
+  --color-chat-bg: var(--chat-bg);
+  --font-serif: var(--font-display), Georgia, serif;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 .font-serif {
   font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+}
+
+@utility card {
+  @apply rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgba(29,42,35,0.04)];
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full font-medium transition
+    focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-pine text-white hover:bg-pine/90 active:scale-[0.98];
+}
+@utility btn-secondary {
+  @apply btn border border-line bg-surface text-ink hover:border-ink/25 hover:bg-paper;
+}
+/* Sizes are separate from colors so they never fight over padding. */
+@utility btn-md {
+  @apply px-4 py-2 text-sm;
+}
+@utility btn-sm {
+  @apply px-3 py-1.5 text-xs;
+}
+@utility label {
+  @apply mb-1.5 block text-sm font-medium text-ink;
+}
+@utility input {
+  @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/60 transition
+    focus:border-pine focus:outline-none focus:ring-4 focus:ring-pine/10;
+}
+@utility eyebrow {
+  @apply text-xs font-semibold uppercase tracking-[0.08em] text-muted;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.35s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up {
+    animation: none;
+  }
 }

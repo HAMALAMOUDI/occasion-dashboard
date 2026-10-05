@@ -2,12 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ChevronRight, MessageCircle, ReceiptText, Wallet } from "lucide-react";
 import { BillingRecord } from "@/lib/types";
+import { formatSar } from "@/lib/client";
 
 type Row = BillingRecord & { eventName: string };
 
+const STATUS_STYLE: Record<BillingRecord["invoiceStatus"], string> = {
+  draft: "bg-paper text-muted",
+  issued: "bg-brass-soft text-[#8a6326]",
+  paid: "bg-accept-bg text-accept",
+};
+
 export default function BillingOverviewPage() {
-  const [rows, setRows] = useState<Row[]>([]);
+  const [rows, setRows] = useState<Row[] | null>(null);
 
   useEffect(() => {
     fetch("/api/billing")
@@ -16,49 +24,61 @@ export default function BillingOverviewPage() {
       .catch(() => setRows([]));
   }, []);
 
-  const totalDue = rows.reduce((sum, r) => sum + r.conversationsUsed * r.ratePerConversation, 0);
+  const list = rows ?? [];
+  const cost = (r: Row) => r.conversationsUsed * r.ratePerConversation;
+  const totalDue = list.reduce((sum, r) => sum + cost(r), 0);
+  const conversations = list.reduce((sum, r) => sum + r.conversationsUsed, 0);
+  const unbilled = list.filter((r) => r.invoiceStatus === "draft").reduce((sum, r) => sum + cost(r), 0);
 
   return (
-    <div>
-      <h1 className="font-serif text-2xl mb-1">Billing</h1>
-      <p className="text-sm text-ink/60 mb-6">
-        WhatsApp conversation costs and invoice status across every event.
+    <div className="animate-fade-up">
+      <p className="text-muted">Billing</p>
+      <h1 className="font-serif text-3xl sm:text-4xl mt-1">What your invitations cost</h1>
+      <p className="text-muted mt-2 mb-8 max-w-xl">
+        You only pay for the WhatsApp conversations your events actually use — invites, reminders, and entry passes.
       </p>
 
-      <div className="border border-line rounded-lg p-4 mb-6">
-        <p className="text-xs text-ink/60 mb-1">Total across all events</p>
-        <p className="font-serif text-2xl">{totalDue.toFixed(2)} SAR</p>
+      <div className="grid gap-3 sm:grid-cols-3 mb-10">
+        {[
+          { label: "Total across all events", value: formatSar(totalDue), icon: Wallet },
+          { label: "Not yet invoiced", value: formatSar(unbilled), icon: ReceiptText },
+          { label: "WhatsApp conversations", value: conversations.toLocaleString(), icon: MessageCircle },
+        ].map(({ label, value, icon: Icon }) => (
+          <div key={label} className="card p-5">
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-brass-soft text-brass">
+              <Icon size={16} />
+            </span>
+            <p className="font-serif text-2xl mt-3">{rows ? value : "—"}</p>
+            <p className="text-sm text-muted">{label}</p>
+          </div>
+        ))}
       </div>
 
-      {rows.length === 0 ? (
-        <p className="text-sm text-ink/60">No billing records yet.</p>
+      <h2 className="eyebrow mb-3">By event</h2>
+      {rows === null ? (
+        <div className="h-40 animate-pulse rounded-2xl bg-line/60" />
+      ) : list.length === 0 ? (
+        <div className="card px-6 py-10 text-center text-muted">Nothing to bill yet — costs appear here once invitations go out.</div>
       ) : (
-        <div className="border border-line rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-line/30 text-left">
-              <tr>
-                <th className="px-4 py-2 font-medium">Event</th>
-                <th className="px-4 py-2 font-medium">Conversations</th>
-                <th className="px-4 py-2 font-medium">Total</th>
-                <th className="px-4 py-2 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.id} className="border-t border-line">
-                  <td className="px-4 py-2.5">
-                    <Link href={`/events/${r.eventId}`} className="underline">
-                      {r.eventName}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2.5">{r.conversationsUsed}</td>
-                  <td className="px-4 py-2.5">{(r.conversationsUsed * r.ratePerConversation).toFixed(2)} SAR</td>
-                  <td className="px-4 py-2.5 capitalize">{r.invoiceStatus}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ul className="card divide-y divide-line overflow-hidden">
+          {list.map((r) => (
+            <li key={r.id}>
+              <Link href={`/events/${r.eventId}`} className="flex items-center gap-4 px-5 py-4 transition hover:bg-paper">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium truncate">{r.eventName}</p>
+                  <p className="text-xs text-muted mt-0.5">
+                    {r.conversationsUsed} conversation{r.conversationsUsed === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <span className={`hidden sm:inline rounded-full px-2.5 py-1 text-xs font-medium capitalize ${STATUS_STYLE[r.invoiceStatus]}`}>
+                  {r.invoiceStatus}
+                </span>
+                <span className="font-medium tabular-nums">{formatSar(cost(r))}</span>
+                <ChevronRight size={16} className="text-ink/30" />
+              </Link>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

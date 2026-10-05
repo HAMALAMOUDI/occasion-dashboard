@@ -2,7 +2,14 @@
 
 import { BillingRecord } from "@/lib/types";
 import { useState } from "react";
-import { postJson } from "@/lib/client";
+import { ReceiptText } from "lucide-react";
+import { formatSar, postJson } from "@/lib/client";
+
+const STATUS_STYLE: Record<BillingRecord["invoiceStatus"], string> = {
+  draft: "bg-paper text-muted",
+  issued: "bg-brass-soft text-[#8a6326]",
+  paid: "bg-accept-bg text-accept",
+};
 
 export default function BillingPanel({ billing, onChange }: { billing: BillingRecord; onChange: () => void }) {
   const [busy, setBusy] = useState(false);
@@ -19,42 +26,32 @@ export default function BillingPanel({ billing, onChange }: { billing: BillingRe
   }
 
   return (
-    <div className="border border-line rounded-lg p-4">
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        <div>
-          <p className="text-xs text-ink/60 mb-1">Conversations used</p>
-          <p className="font-serif text-xl">{billing.conversationsUsed}</p>
+    <div className="card p-5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ReceiptText size={17} className="text-brass" />
+          <h3 className="font-medium">Cost so far</h3>
         </div>
-        <div>
-          <p className="text-xs text-ink/60 mb-1">Rate per conversation</p>
-          <p className="font-serif text-xl">{billing.ratePerConversation.toFixed(2)} SAR</p>
-        </div>
-        <div>
-          <p className="text-xs text-ink/60 mb-1">Estimated total</p>
-          <p className="font-serif text-xl">{total.toFixed(2)} SAR</p>
-        </div>
+        <span className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize ${STATUS_STYLE[billing.invoiceStatus]}`}>
+          {billing.invoiceStatus}
+        </span>
       </div>
-      <div className="flex items-center justify-between border-t border-line pt-3">
-        <p className="text-sm">
-          Invoice status: <span className="font-medium capitalize">{billing.invoiceStatus}</span>
-          {billing.issuedAt && (
-            <span className="text-ink/60"> — issued {new Date(billing.issuedAt).toLocaleDateString()}</span>
-          )}
-        </p>
-        {billing.invoiceStatus === "draft" && (
-          <button
-            onClick={issueInvoice}
-            disabled={busy}
-            className="text-sm px-3 py-1.5 rounded-md border border-line hover:bg-line/30 disabled:opacity-50"
-          >
-            {busy ? "Issuing…" : "Issue invoice"}
-          </button>
-        )}
-      </div>
-      {error && <p className="text-xs text-decline mt-2">{error}</p>}
-      <p className="text-xs text-ink/50 mt-3">
-        Issuing here stands in for pushing a ZATCA-compliant (Fatoora) e-invoice — wire that up before going live with real organizers.
+
+      <p className="font-serif text-3xl mt-4">{formatSar(total)}</p>
+      <p className="text-xs text-muted mt-1">
+        {billing.conversationsUsed} WhatsApp conversation{billing.conversationsUsed === 1 ? "" : "s"} × {formatSar(billing.ratePerConversation)}
       </p>
+
+      {billing.invoiceStatus === "draft" ? (
+        <button onClick={issueInvoice} disabled={busy} className="btn-secondary btn-md mt-4 w-full">
+          {busy ? "Issuing…" : "Issue invoice"}
+        </button>
+      ) : (
+        billing.issuedAt && (
+          <p className="text-xs text-muted mt-4">Invoice issued {new Date(billing.issuedAt).toLocaleDateString(undefined, { dateStyle: "medium" })}</p>
+        )
+      )}
+      {error && <p className="text-xs text-decline mt-2">{error}</p>}
     </div>
   );
 }

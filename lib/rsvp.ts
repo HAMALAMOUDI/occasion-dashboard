@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from "crypto";
 import QRCode from "qrcode";
 import { db, GuestPatch } from "./db";
 import { normalizePhone } from "./phone";
+import { daysUntil, DEFAULT_TIMEZONE } from "./dates";
 import { Event, Guest, GuestStatus, Stats } from "./types";
 import { RsvpDecision, sendBarcode, sendInvite, sendReminder } from "./whatsapp";
 
@@ -9,7 +10,7 @@ import { RsvpDecision, sendBarcode, sendInvite, sendReminder } from "./whatsapp"
 // and the scheduled reminder job — so all three behave identically.
 
 const SEND_CONCURRENCY = 5;
-const EVENT_TIMEZONE = process.env.EVENT_TIMEZONE || "Asia/Riyadh";
+const EVENT_TIMEZONE = process.env.EVENT_TIMEZONE || DEFAULT_TIMEZONE;
 
 export function computeStats(guests: Guest[]): Stats {
   return {
@@ -191,9 +192,7 @@ export async function sendReminders(event: Event, kind: ReminderKind, opts: { fo
 
 // Whole days from "today" (in the organizer's timezone) until the event date.
 export function daysUntilEvent(event: Event, now = new Date()): number {
-  const today = new Intl.DateTimeFormat("en-CA", { timeZone: EVENT_TIMEZONE }).format(now); // YYYY-MM-DD
-  const toUtcMidnight = (ymd: string) => Date.parse(`${ymd.slice(0, 10)}T00:00:00Z`);
-  return Math.round((toUtcMidnight(event.eventDate) - toUtcMidnight(today)) / 86_400_000);
+  return daysUntil(event.eventDate, EVENT_TIMEZONE, now);
 }
 
 // Which reminder (if any) the scheduler should send for this event right now.

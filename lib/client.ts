@@ -23,3 +23,37 @@ export async function postJson<T = Record<string, unknown>>(
 export function formatEventDate(eventDate: string) {
   return new Date(eventDate).toLocaleDateString(undefined, { dateStyle: "medium", timeZone: "UTC" });
 }
+
+export function formatEventDateLong(eventDate: string) {
+  return new Date(eventDate).toLocaleDateString(undefined, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+export function initials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase() || "?";
+}
+
+const AVATAR_TONES = [
+  "bg-pine-soft text-pine",
+  "bg-brass-soft text-[#8a6326]",
+  "bg-[#e8eef8] text-[#3a5a8c]",
+  "bg-[#f6e6ee] text-[#9a4a6c]",
+  "bg-[#ece8f6] text-[#5d4b8c]",
+];
+
+// Stable soft color per guest, so avatars don't reshuffle between renders.
+export function avatarTone(seed: string) {
+  let h = 0;
+  for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return AVATAR_TONES[h % AVATAR_TONES.length];
+}
+
+export function formatSar(amount: number) {
+  return `${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} SAR`;
+}
