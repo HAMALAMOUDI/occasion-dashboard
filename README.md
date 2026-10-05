@@ -11,7 +11,8 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. Create an event, upload `sample-data/guests.csv`
+Open http://localhost:3000. Create an event, upload `proxy.ts                       Sends signed-out visitors to /login
+sample-data/guests.csv`
 (or your own CSV with `name,phone` columns), then use the "Simulate accept /
 decline" buttons on the guest table to see stats and billing update live.
 
@@ -57,6 +58,26 @@ Meta Cloud API. The call sites are the same in both modes.
   can only be issued once.
 - Entry QR codes contain 64 random bits, so they can't be guessed.
 
+## Organizer sign-in
+
+Organizers sign in with their **mobile number**. A 6-digit code is sent to that
+number on WhatsApp, and each organizer only ever sees, edits and is billed
+for the events they created. Someone else's event is reported as "not found".
+
+- **Codes** expire after 10 minutes, can be used once, and lock after 5 wrong
+  tries. A new code can be requested once a minute. Only hashes are stored.
+- **Sessions** last 30 days in an HttpOnly cookie and live in the database, so
+  signing out really ends them.
+- **WhatsApp template:** create an **Authentication** template named
+  `occasion_login_code` (or set `WHATSAPP_LOGIN_TEMPLATE`) with a "Copy code"
+  button.
+- **Demo mode:** until WhatsApp is connected there's no way to deliver codes,
+  so the code is shown on the sign-in screen and a banner warns that anyone
+  can sign in with any number. Connect WhatsApp, or set `AUTH_DEMO_CODES=false`
+  to switch this off.
+- **Admins:** numbers in `ADMIN_PHONES` see every event. Events created before
+  sign-in existed have no owner and are only visible to admins.
+
 ## Database
 
 The app stores data in **Postgres** whenever `DATABASE_URL` (or
@@ -86,10 +107,12 @@ The app stores data in **Postgres** whenever `DATABASE_URL` (or
 
 ```
 app/
-  page.tsx                     Dashboard home (event list)
-  events/new/page.tsx          Event creation + template picker
-  events/[id]/page.tsx         Event detail: stats, guests, reminders, billing
-  billing/page.tsx             Billing overview across all events
+  login/page.tsx               Sign in with mobile number + WhatsApp code
+  (portal)/                    Signed-in pages (layout checks the session)
+    page.tsx                   Dashboard home (your events)
+    events/new/page.tsx        Event creation + template picker
+    events/[id]/page.tsx       Event detail: stats, guests, reminders, billing
+    billing/page.tsx           Billing overview across your events
   api/                         All backend routes (see above)
 components/                    UI components
 lib/
@@ -97,6 +120,7 @@ lib/
   db.ts                        Storage interface; picks Postgres or the JSON file
   db-postgres.ts               Postgres implementation (Neon on Vercel)
   db-json.ts                   JSON-file implementation (local development)
+  auth.ts                      Sign-in codes, sessions, and per-event access checks
   whatsapp.ts                  WhatsApp Cloud API client (console stub without credentials)
   rsvp.ts                      Invite / response / reminder workflow shared by routes, webhook, cron
   phone.ts                     Phone number normalization (E.164)

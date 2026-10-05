@@ -14,6 +14,8 @@ import { Guest, Event } from "./types";
 //       buttons: two quick replies, "Accept" and "Decline"
 //   - WHATSAPP_REMINDER_TEMPLATE (default "occasion_reminder")
 //       body: {{1}} guest name, {{2}} event name, {{3}} date, {{4}} venue
+//   - WHATSAPP_LOGIN_TEMPLATE    (default "occasion_login_code")
+//       category: Authentication, with a "Copy code" button
 //
 // Quick-reply payloads carry the guest id ("ACCEPT:<guestId>") so the webhook
 // can resolve the exact invite even if one phone number is invited to several
@@ -26,6 +28,7 @@ const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
 const TEMPLATE_LANG = process.env.WHATSAPP_TEMPLATE_LANG || "en";
 const INVITE_TEMPLATE = process.env.WHATSAPP_INVITE_TEMPLATE || "occasion_invite";
 const REMINDER_TEMPLATE = process.env.WHATSAPP_REMINDER_TEMPLATE || "occasion_reminder";
+const LOGIN_TEMPLATE = process.env.WHATSAPP_LOGIN_TEMPLATE || "occasion_login_code";
 
 export type SendResult = { ok: true; messageId?: string } | { ok: false; error: string };
 export type RsvpDecision = "accept" | "decline";
@@ -163,6 +166,28 @@ export async function sendBarcode(guest: Guest, event: Event, barcodePng: Buffer
     image: {
       id: upload.json.id as string,
       caption: `Your entry pass for ${event.name} — please show this QR code at the door. Code: ${guest.barcodeValue}`,
+    },
+  });
+}
+
+// Organizer sign-in code. Uses an Authentication-category template, which
+// Meta requires for one-time passcodes; the code fills both the body and the
+// "Copy code" button.
+export async function sendLoginCode(phone: string, code: string): Promise<SendResult> {
+  if (!isLiveMode) {
+    console.log(`[stub] sign-in code for ${phone}: ${code}`);
+    return { ok: true };
+  }
+
+  return sendMessage(phone, {
+    type: "template",
+    template: {
+      name: LOGIN_TEMPLATE,
+      language: { code: TEMPLATE_LANG },
+      components: [
+        { type: "body", parameters: [{ type: "text", text: code }] },
+        { type: "button", sub_type: "url", index: "0", parameters: [{ type: "text", text: code }] },
+      ],
     },
   });
 }

@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { Event, Guest, BillingRecord, CardTemplate } from "./types";
+import { Event, Guest, BillingRecord, CardTemplate, LoginCode, Session } from "./types";
 import type { GuestGuard, GuestPatch, Store } from "./db";
 import { DEFAULT_TEMPLATES } from "./templates";
 
@@ -16,6 +16,8 @@ interface DbShape {
   guests: Guest[];
   billing: BillingRecord[];
   templates: CardTemplate[];
+  loginCodes?: LoginCode[];
+  sessions?: Session[];
 }
 
 function readDb(): DbShape {
@@ -27,6 +29,10 @@ function readDb(): DbShape {
   }
   const parsed = JSON.parse(fs.readFileSync(DB_FILE, "utf-8")) as DbShape;
   if (!parsed.templates || parsed.templates.length === 0) parsed.templates = DEFAULT_TEMPLATES;
+  parsed.loginCodes ??= [];
+  parsed.sessions ??= [];
+  // Events created before sign-in existed have no owner.
+  for (const e of parsed.events) e.ownerPhone ??= null;
   return parsed;
 }
 
@@ -58,6 +64,9 @@ function applyGuestPatches(data: DbShape, patches: (GuestPatch & { id: string })
 export const jsonStore: Store = {
   async getEvents() {
     return readDb().events.sort((a, b) => a.eventDate.localeCompare(b.eventDate));
+  },
+  async getEventsByOwner(phone) {
+    return (await jsonStore.getEvents()).filter((e) => e.ownerPhone === phone);
   },
   async getEvent(id) {
     return readDb().events.find((e) => e.id === id);
@@ -147,5 +156,47 @@ export const jsonStore: Store = {
     record.issuedAt = new Date().toISOString();
     writeDb(data);
     return record;
+  },
+
+  async saveLoginCode(code) {
+    const data = readDb();
+    data.loginCodes = [...data.loginCodes!.filter((c) => c.phone !== code.phone), code];
+    writeDb(data);
+  },
+  async getLoginCode(phone) {
+    return readDb().loginCodes!.find((c) => c.phone === phone);
+  },
+  async countLoginAttempt(phone, maxAttempts) {
+    const data = readDb();
+    const code = data.loginCodes!.find((c) => c.phone === phone);
+    if (!code || Date.parse(code.expiresAt) <= Date.now() || code.attempts >= maxAttempts) return undefined;
+    code.attempts += 1;
+    writeDb(data);
+    return code;
+  },
+  async consumeLoginCode(phone, codeHash) {
+    const data = readDb();
+    const before = data.loginCodes!.length;
+    data.loginCodes = data.loginCodes!.filter((c) => !(c.phone === phone && c.codeHash === codeHash));
+    if (data.loginCodes.length === before) return false;
+    writeDb(data);
+    return true;
+  },
+
+  async createSession(session) {
+    const data = readDb();
+    const now = Date.now();
+    // Drop expired sessions while we're here.
+    data.sessions = [...data.sessions!.filter((s) => Date.parse(s.expiresAt) > now), session];
+    writeDb(data);
+  },
+  async getSession(tokenHash) {
+    const session = readDb().sessions!.find((s) => s.tokenHash === tokenHash);
+    return session && Date.parse(session.expiresAt) > Date.now() ? session : undefined;
+  },
+  async deleteSession(tokenHash) {
+    const data = readDb();
+    data.sessions = data.sessions!.filter((s) => s.tokenHash !== tokenHash);
+    writeDb(data);
   },
 };

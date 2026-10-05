@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireEvent } from "@/lib/auth";
 import { conflict, notFound } from "@/lib/http";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const access = await requireEvent(id);
+  if (access instanceof NextResponse) return access;
   const record = await db.getBillingForEvent(id);
   if (!record) return notFound();
   return NextResponse.json(record);
@@ -14,6 +17,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 // the ZATCA e-invoicing portal before marking issuedAt.
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const access = await requireEvent(id);
+  if (access instanceof NextResponse) return access;
   const issued = await db.issueInvoice(id);
   if (issued) return NextResponse.json(issued);
 

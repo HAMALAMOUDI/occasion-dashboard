@@ -28,6 +28,9 @@ export interface Event {
   venue: string;
   inviterName: string;
   templateId: string | null;
+  // E.164 mobile number of the organizer who created the event. Null only for
+  // events created before sign-in existed (visible to admins).
+  ownerPhone: string | null;
   reminderWeekSentAt: string | null;
   reminderDaySentAt: string | null;
   createdAt: string;
@@ -48,4 +51,21 @@ export interface Stats {
   declined: number;
   pending: number;
   invalid: number;
+}
+
+// One-time sign-in code sent to an organizer's WhatsApp. Only a hash is stored.
+export interface LoginCode {
+  phone: string;
+  codeHash: string;
+  attempts: number;
+  expiresAt: string;
+  createdAt: string;
+}
+
+// Signed-in organizer session. The cookie holds a random token; only its hash is stored.
+export interface Session {
+  tokenHash: string;
+  phone: string;
+  expiresAt: string;
+  createdAt: string;
 }

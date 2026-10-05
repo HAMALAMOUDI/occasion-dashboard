@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { eventsFor, requireUser } from "@/lib/auth";
 import { badRequest, readJson } from "@/lib/http";
 import { CardTemplate, Event } from "@/lib/types";
 import { randomUUID } from "crypto";
@@ -8,10 +9,15 @@ const OCCASION_TYPES: CardTemplate["occasionType"][] = ["wedding", "graduation",
 const RATE_PER_CONVERSATION = Number(process.env.RATE_PER_CONVERSATION_SAR) || 0.35;
 
 export async function GET() {
-  return NextResponse.json(await db.getEvents());
+  const user = await requireUser();
+  if (user instanceof NextResponse) return user;
+  return NextResponse.json(await eventsFor(user));
 }
 
 export async function POST(req: NextRequest) {
+  const user = await requireUser();
+  if (user instanceof NextResponse) return user;
+
   const body = await readJson<Event>(req);
   if (!body) return badRequest("Invalid JSON body");
 
@@ -37,6 +43,7 @@ export async function POST(req: NextRequest) {
     venue: body.venue?.trim() || "",
     inviterName,
     templateId: templateId || null,
+    ownerPhone: user.phone,
     reminderWeekSentAt: null,
     reminderDaySentAt: null,
     createdAt: new Date().toISOString(),

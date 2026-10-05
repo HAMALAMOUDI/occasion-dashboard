@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import Papa from "papaparse";
 import { db } from "@/lib/db";
-import { badRequest, notFound, readJson } from "@/lib/http";
+import { requireEvent } from "@/lib/auth";
+import { badRequest, readJson } from "@/lib/http";
 import { inviteGuests } from "@/lib/rsvp";
 
 const MAX_ROWS = 5000;
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const access = await requireEvent(id);
+  if (access instanceof NextResponse) return access;
   return NextResponse.json(await db.getGuests(id));
 }
 
@@ -16,8 +19,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 // so re-uploading the same file never double-invites (or double-bills).
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const event = await db.getEvent(id);
-  if (!event) return notFound("Event not found");
+  const access = await requireEvent(id);
+  if (access instanceof NextResponse) return access;
+  const { event } = access;
 
   const body = await readJson<{ csv: string }>(req);
   const csvText = body?.csv;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { badRequest, conflict, notFound, readJson } from "@/lib/http";
+import { requireEvent } from "@/lib/auth";
+import { badRequest, conflict, readJson } from "@/lib/http";
 import { ReminderKind, sendReminders } from "@/lib/rsvp";
 
 // Reminders normally go out automatically via /api/cron/reminders. This
@@ -9,8 +9,9 @@ import { ReminderKind, sendReminders } from "@/lib/rsvp";
 // message (and bill) every guest twice.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const event = await db.getEvent(id);
-  if (!event) return notFound("Event not found");
+  const access = await requireEvent(id);
+  if (access instanceof NextResponse) return access;
+  const { event } = access;
 
   const body = await readJson<{ kind: ReminderKind; force: boolean }>(req);
   const kind = body?.kind;

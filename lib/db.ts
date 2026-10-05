@@ -1,4 +1,4 @@
-import { BillingRecord, CardTemplate, Event, Guest, GuestStatus } from "./types";
+import { BillingRecord, CardTemplate, Event, Guest, GuestStatus, LoginCode, Session } from "./types";
 import { jsonStore } from "./db-json";
 import { postgresStore } from "./db-postgres";
 
@@ -20,7 +20,9 @@ export type GuestPatch = Partial<Pick<Guest, "status" | "inviteSentAt" | "respon
 export type GuestGuard = { ifStatusIn?: GuestStatus[] };
 
 export interface Store {
+  // All events — for system jobs (reminder cron) and admins only.
   getEvents(): Promise<Event[]>;
+  getEventsByOwner(phone: string): Promise<Event[]>;
   getEvent(id: string): Promise<Event | undefined>;
   createEvent(event: Event, billing: BillingRecord): Promise<Event>;
   updateEvent(id: string, patch: EventPatch): Promise<Event | undefined>;
@@ -42,6 +44,19 @@ export interface Store {
   addConversations(eventId: string, count: number): Promise<void>;
   // Moves a draft invoice to issued. Returns undefined if no draft invoice exists.
   issueInvoice(eventId: string): Promise<BillingRecord | undefined>;
+
+  // Replaces any previous code for this phone.
+  saveLoginCode(code: LoginCode): Promise<void>;
+  getLoginCode(phone: string): Promise<LoginCode | undefined>;
+  // Atomically counts a verification attempt. Returns the code record only if
+  // it is unexpired and still under `maxAttempts`.
+  countLoginAttempt(phone: string, maxAttempts: number): Promise<LoginCode | undefined>;
+  // Deletes the code if it still matches — so each code can be used once.
+  consumeLoginCode(phone: string, codeHash: string): Promise<boolean>;
+
+  createSession(session: Session): Promise<void>;
+  getSession(tokenHash: string): Promise<Session | undefined>;
+  deleteSession(tokenHash: string): Promise<void>;
 }
 
 // Finds the pooled Postgres connection string. Vercel's Storage integration

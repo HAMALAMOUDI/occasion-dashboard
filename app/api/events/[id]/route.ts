@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireEvent } from "@/lib/auth";
 import { badRequest, notFound, readJson } from "@/lib/http";
 import { computeStats } from "@/lib/rsvp";
 import { Event } from "@/lib/types";
@@ -10,8 +11,9 @@ const EDITABLE_FIELDS = ["name", "eventDate", "venue", "inviterName", "templateI
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const event = await db.getEvent(id);
-  if (!event) return notFound();
+  const access = await requireEvent(id);
+  if (access instanceof NextResponse) return access;
+  const { event } = access;
 
   const guests = await db.getGuests(id);
   const billing = await db.getBillingForEvent(id) ?? null;
@@ -21,6 +23,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const access = await requireEvent(id);
+  if (access instanceof NextResponse) return access;
+
   const body = await readJson<Event>(req);
   if (!body) return badRequest("Invalid JSON body");
 

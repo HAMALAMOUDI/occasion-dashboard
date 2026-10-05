@@ -1,5 +1,5 @@
 import { Pool, PoolClient } from "pg";
-import { BillingRecord, CardTemplate, Event, Guest } from "./types";
+import { BillingRecord, CardTemplate, Event, Guest, LoginCode, Session } from "./types";
 import type { GuestGuard, GuestPatch, ReminderField, Store } from "./db";
 import { DEFAULT_TEMPLATES } from "./templates";
 
@@ -50,6 +50,25 @@ CREATE TABLE IF NOT EXISTS billing (
   invoice_status        text NOT NULL DEFAULT 'draft',
   issued_at             timestamptz
 );
+
+-- Added with organizer sign-in. Older databases get the column on next start.
+ALTER TABLE events ADD COLUMN IF NOT EXISTS owner_phone text;
+CREATE INDEX IF NOT EXISTS events_owner_phone_idx ON events (owner_phone);
+
+CREATE TABLE IF NOT EXISTS login_codes (
+  phone      text PRIMARY KEY,
+  code_hash  text NOT NULL,
+  attempts   integer NOT NULL DEFAULT 0,
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  token_hash text PRIMARY KEY,
+  phone      text NOT NULL,
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
 `;
 
 // ------------------------------------------------------------ row mapping
@@ -66,6 +85,7 @@ const toEvent = (r: Row): Event => ({
   venue: r.venue as string,
   inviterName: r.inviter_name as string,
   templateId: (r.template_id as string | null) ?? null,
+  ownerPhone: (r.owner_phone as string | null) ?? null,
   reminderWeekSentAt: iso(r.reminder_week_sent_at),
   reminderDaySentAt: iso(r.reminder_day_sent_at),
   createdAt: iso(r.created_at)!,
@@ -91,6 +111,21 @@ const toBilling = (r: Row): BillingRecord => ({
   ratePerConversation: Number(r.rate_per_conversation),
   invoiceStatus: r.invoice_status as BillingRecord["invoiceStatus"],
   issuedAt: iso(r.issued_at),
+});
+
+const toLoginCode = (r: Row): LoginCode => ({
+  phone: r.phone as string,
+  codeHash: r.code_hash as string,
+  attempts: Number(r.attempts),
+  expiresAt: iso(r.expires_at)!,
+  createdAt: iso(r.created_at)!,
+});
+
+const toSession = (r: Row): Session => ({
+  tokenHash: r.token_hash as string,
+  phone: r.phone as string,
+  expiresAt: iso(r.expires_at)!,
+  createdAt: iso(r.created_at)!,
 });
 
 const toTemplate = (r: Row): CardTemplate => ({
@@ -200,6 +235,9 @@ export function postgresStore(connectionString: string): Store {
     async getEvents() {
       return (await query("SELECT * FROM events ORDER BY event_date, created_at")).map(toEvent);
     },
+    async getEventsByOwner(phone) {
+      return (await query("SELECT * FROM events WHERE owner_phone = $1 ORDER BY event_date, created_at", [phone])).map(toEvent);
+    },
     async getEvent(id) {
       const [row] = await query("SELECT * FROM events WHERE id = $1", [id]);
       return row && toEvent(row);
@@ -210,9 +248,9 @@ export function postgresStore(connectionString: string): Store {
       try {
         await client.query("BEGIN");
         await client.query(
-          `INSERT INTO events (id, name, occasion_type, event_date, venue, inviter_name, template_id, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [event.id, event.name, event.occasionType, event.eventDate, event.venue, event.inviterName, event.templateId, event.createdAt]
+          `INSERT INTO events (id, name, occasion_type, event_date, venue, inviter_name, template_id, owner_phone, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          [event.id, event.name, event.occasionType, event.eventDate, event.venue, event.inviterName, event.templateId, event.ownerPhone, event.createdAt]
         );
         await client.query(
           `INSERT INTO billing (id, event_id, conversations_used, rate_per_conversation, invoice_status, issued_at)
@@ -308,6 +346,48 @@ export function postgresStore(connectionString: string): Store {
         [eventId]
       );
       return row && toBilling(row);
+    },
+
+    async saveLoginCode(code) {
+      await query(
+        `INSERT INTO login_codes (phone, code_hash, attempts, expires_at, created_at) VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (phone) DO UPDATE SET code_hash = $2, attempts = $3, expires_at = $4, created_at = $5`,
+        [code.phone, code.codeHash, code.attempts, code.expiresAt, code.createdAt]
+      );
+    },
+    async getLoginCode(phone) {
+      const [row] = await query("SELECT * FROM login_codes WHERE phone = $1", [phone]);
+      return row && toLoginCode(row);
+    },
+    async countLoginAttempt(phone, maxAttempts) {
+      const [row] = await query(
+        `UPDATE login_codes SET attempts = attempts + 1
+         WHERE phone = $1 AND expires_at > now() AND attempts < $2
+         RETURNING *`,
+        [phone, maxAttempts]
+      );
+      return row && toLoginCode(row);
+    },
+    async consumeLoginCode(phone, codeHash) {
+      const rows = await query("DELETE FROM login_codes WHERE phone = $1 AND code_hash = $2 RETURNING phone", [phone, codeHash]);
+      return rows.length > 0;
+    },
+
+    async createSession(session) {
+      await query("DELETE FROM sessions WHERE expires_at <= now()");
+      await query("INSERT INTO sessions (token_hash, phone, expires_at, created_at) VALUES ($1, $2, $3, $4)", [
+        session.tokenHash,
+        session.phone,
+        session.expiresAt,
+        session.createdAt,
+      ]);
+    },
+    async getSession(tokenHash) {
+      const [row] = await query("SELECT * FROM sessions WHERE token_hash = $1 AND expires_at > now()", [tokenHash]);
+      return row && toSession(row);
+    },
+    async deleteSession(tokenHash) {
+      await query("DELETE FROM sessions WHERE token_hash = $1", [tokenHash]);
     },
   };
 }

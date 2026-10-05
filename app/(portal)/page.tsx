@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays, MapPin, Plus, Sparkles, Users } from "lucide-react";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { currentUser, eventsFor } from "@/lib/auth";
 import { computeStats } from "@/lib/rsvp";
 import { formatEventDate } from "@/lib/client";
 import { countdownLabel, daysUntil, greeting } from "@/lib/dates";
@@ -12,7 +14,9 @@ export const dynamic = "force-dynamic";
 const TIMEZONE = process.env.EVENT_TIMEZONE;
 
 export default async function DashboardPage() {
-  const [events, templates] = await Promise.all([db.getEvents(), db.getTemplates()]);
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const [events, templates] = await Promise.all([eventsFor(user), db.getTemplates()]);
   const rows = await Promise.all(
     events.map(async (event) => {
       const stats = computeStats(await db.getGuests(event.id));
