@@ -55,6 +55,10 @@ CREATE TABLE IF NOT EXISTS billing (
 ALTER TABLE events ADD COLUMN IF NOT EXISTS owner_phone text;
 CREATE INDEX IF NOT EXISTS events_owner_phone_idx ON events (owner_phone);
 
+-- Added with Arabic/English support.
+ALTER TABLE events ADD COLUMN IF NOT EXISTS language text NOT NULL DEFAULT 'en';
+ALTER TABLE card_templates ADD COLUMN IF NOT EXISTS name_ar text NOT NULL DEFAULT '';
+
 CREATE TABLE IF NOT EXISTS login_codes (
   phone      text PRIMARY KEY,
   code_hash  text NOT NULL,
@@ -86,6 +90,7 @@ const toEvent = (r: Row): Event => ({
   inviterName: r.inviter_name as string,
   templateId: (r.template_id as string | null) ?? null,
   ownerPhone: (r.owner_phone as string | null) ?? null,
+  language: r.language === "ar" ? "ar" : "en",
   reminderWeekSentAt: iso(r.reminder_week_sent_at),
   reminderDaySentAt: iso(r.reminder_day_sent_at),
   createdAt: iso(r.created_at)!,
@@ -131,6 +136,7 @@ const toSession = (r: Row): Session => ({
 const toTemplate = (r: Row): CardTemplate => ({
   id: r.id as string,
   name: r.name as string,
+  nameAr: (r.name_ar as string) || (r.name as string),
   occasionType: r.occasion_type as CardTemplate["occasionType"],
   previewColor: r.preview_color as string,
 });
@@ -150,6 +156,7 @@ const EVENT_PATCH_SET = patchSet("e", [
   ["venue", "venue", "text"],
   ["inviterName", "inviter_name", "text"],
   ["templateId", "template_id", "text"],
+  ["language", "language", "text"],
 ]);
 
 const GUEST_PATCH_SET = patchSet("g", [
@@ -182,13 +189,17 @@ export function postgresStore(connectionString: string): Store {
       // Serialize concurrent cold starts so CREATE TABLE IF NOT EXISTS can't race.
       await client.query("SELECT pg_advisory_xact_lock(727274)");
       await client.query(SCHEMA);
+      // Card designs come from code; keep the table in sync on every start.
       await client.query(
-        `INSERT INTO card_templates (id, name, occasion_type, preview_color)
-         SELECT * FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
-         ON CONFLICT (id) DO NOTHING`,
+        `INSERT INTO card_templates (id, name, name_ar, occasion_type, preview_color)
+         SELECT * FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::text[])
+         ON CONFLICT (id) DO UPDATE SET
+           name = EXCLUDED.name, name_ar = EXCLUDED.name_ar,
+           occasion_type = EXCLUDED.occasion_type, preview_color = EXCLUDED.preview_color`,
         [
           DEFAULT_TEMPLATES.map((t) => t.id),
           DEFAULT_TEMPLATES.map((t) => t.name),
+          DEFAULT_TEMPLATES.map((t) => t.nameAr),
           DEFAULT_TEMPLATES.map((t) => t.occasionType),
           DEFAULT_TEMPLATES.map((t) => t.previewColor),
         ]
@@ -254,9 +265,12 @@ export function postgresStore(connectionString: string): Store {
       try {
         await client.query("BEGIN");
         await client.query(
-          `INSERT INTO events (id, name, occasion_type, event_date, venue, inviter_name, template_id, owner_phone, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-          [event.id, event.name, event.occasionType, event.eventDate, event.venue, event.inviterName, event.templateId, event.ownerPhone, event.createdAt]
+          `INSERT INTO events (id, name, occasion_type, event_date, venue, inviter_name, template_id, owner_phone, language, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+          [
+            event.id, event.name, event.occasionType, event.eventDate, event.venue, event.inviterName,
+            event.templateId, event.ownerPhone, event.language, event.createdAt,
+          ]
         );
         await client.query(
           `INSERT INTO billing (id, event_id, conversations_used, rate_per_conversation, invoice_status, issued_at)

@@ -42,8 +42,8 @@
   --color-invalid-bg: var(--invalid-bg);
   --color-whatsapp: var(--whatsapp);
   --color-chat-bg: var(--chat-bg);
-  --font-serif: var(--font-display), Georgia, serif;
-  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-display), var(--font-display-ar), Georgia, serif;
+  --font-sans: var(--font-body), var(--font-body-ar), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
@@ -54,6 +54,14 @@ body {
 .font-serif {
   font-family: var(--font-serif);
   letter-spacing: -0.01em;
+}
+
+/* Arabic script must never be letter-spaced or upper-cased — it breaks the joins. */
+:lang(ar) .font-serif {
+  letter-spacing: 0;
+}
+[dir="rtl"] .font-serif {
+  line-height: 1.35;
 }
 
 @utility card {
@@ -84,7 +92,7 @@ body {
     focus:border-pine focus:outline-none focus:ring-4 focus:ring-pine/10;
 }
 @utility eyebrow {
-  @apply text-xs font-semibold uppercase tracking-[0.08em] text-muted;
+  @apply text-xs font-semibold uppercase tracking-[0.08em] text-muted rtl:tracking-normal rtl:normal-case;
 }
 
 @keyframes fade-up {

@@ -28,11 +28,15 @@ function readDb(): DbShape {
     return initial;
   }
   const parsed = JSON.parse(fs.readFileSync(DB_FILE, "utf-8")) as DbShape;
-  if (!parsed.templates || parsed.templates.length === 0) parsed.templates = DEFAULT_TEMPLATES;
+  // Card designs aren't user-editable, so always serve the current set.
+  parsed.templates = DEFAULT_TEMPLATES;
   parsed.loginCodes ??= [];
   parsed.sessions ??= [];
   // Events created before sign-in existed have no owner.
-  for (const e of parsed.events) e.ownerPhone ??= null;
+  for (const e of parsed.events) {
+    e.ownerPhone ??= null;
+    e.language ??= "en";
+  }
   return parsed;
 }
 

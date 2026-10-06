@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getMessages } from "@/lib/i18n-server";
 import Papa from "papaparse";
 import { db } from "@/lib/db";
 import { requireEvent } from "@/lib/auth";
@@ -21,6 +22,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 // Phone numbers are normalized to E.164 and de-duplicated against the existing
 // guest list, so re-uploading the same file never double-invites (or double-bills).
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const err = (await getMessages()).errors;
   const { id } = await params;
   const access = await requireEvent(id);
   if (access instanceof NextResponse) return access;
@@ -38,11 +40,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const parsed = Papa.parse<string[]>(body.csv.replace(/^﻿/, ""), { skipEmptyLines: "greedy" });
     rows = extractGuestRows(parsed.data).rows;
   } else {
-    return badRequest("Please add at least one guest.");
+    return badRequest(err.addAtLeastOne);
   }
 
-  if (rows.length === 0) return badRequest("We couldn't find any guests. Each row needs a name and a mobile number.");
-  if (rows.length > MAX_ROWS) return badRequest(`Too many guests (${rows.length}). Add at most ${MAX_ROWS} at a time.`);
+  if (rows.length === 0) return badRequest(err.noGuestsFound);
+  if (rows.length > MAX_ROWS) return badRequest(err.tooMany(rows.length, MAX_ROWS));
 
   return NextResponse.json(await inviteGuests(event, rows));
 }

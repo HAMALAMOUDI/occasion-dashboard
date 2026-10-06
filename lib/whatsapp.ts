@@ -1,4 +1,6 @@
 import { Guest, Event } from "./types";
+import { formatDate } from "./i18n";
+import { occasion, type Lang } from "./occasions";
 
 // --------------------------------------------------------------------------
 // WhatsApp Cloud API client.
@@ -12,10 +14,16 @@ import { Guest, Event } from "./types";
 //   - WHATSAPP_INVITE_TEMPLATE   (default "occasion_invite")
 //       body: {{1}} guest name, {{2}} event name, {{3}} inviter, {{4}} date, {{5}} venue
 //       buttons: two quick replies, "Accept" and "Decline"
+//   - WHATSAPP_ANNOUNCE_TEMPLATE (default "occasion_announcement") — condolences
+//       body: same 5 parameters as the invite, no buttons (nobody is asked to reply)
 //   - WHATSAPP_REMINDER_TEMPLATE (default "occasion_reminder")
 //       body: {{1}} guest name, {{2}} event name, {{3}} date, {{4}} venue
 //   - WHATSAPP_LOGIN_TEMPLATE    (default "occasion_login_code")
 //       category: Authentication, with a "Copy code" button
+//
+// Create each template in both English and Arabic under the same name. Every
+// event sends in its own language (event.language); the codes used are
+// WHATSAPP_TEMPLATE_LANG (default "en") and WHATSAPP_TEMPLATE_LANG_AR ("ar").
 //
 // Quick-reply payloads carry the guest id ("ACCEPT:<guestId>") so the webhook
 // can resolve the exact invite even if one phone number is invited to several
@@ -25,8 +33,12 @@ import { Guest, Event } from "./types";
 const GRAPH_API_VERSION = process.env.WHATSAPP_GRAPH_API_VERSION || "v23.0";
 const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
-const TEMPLATE_LANG = process.env.WHATSAPP_TEMPLATE_LANG || "en";
+const TEMPLATE_LANG: Record<Lang, string> = {
+  en: process.env.WHATSAPP_TEMPLATE_LANG || "en",
+  ar: process.env.WHATSAPP_TEMPLATE_LANG_AR || "ar",
+};
 const INVITE_TEMPLATE = process.env.WHATSAPP_INVITE_TEMPLATE || "occasion_invite";
+const ANNOUNCE_TEMPLATE = process.env.WHATSAPP_ANNOUNCE_TEMPLATE || "occasion_announcement";
 const REMINDER_TEMPLATE = process.env.WHATSAPP_REMINDER_TEMPLATE || "occasion_reminder";
 const LOGIN_TEMPLATE = process.env.WHATSAPP_LOGIN_TEMPLATE || "occasion_login_code";
 
@@ -50,9 +62,6 @@ function toWaId(phone: string) {
   return phone.replace(/^\+/, "");
 }
 
-function formatEventDate(eventDate: string) {
-  return new Date(eventDate).toLocaleDateString("en-GB", { dateStyle: "long", timeZone: "UTC" });
-}
 
 function textParams(...values: string[]) {
   // Template parameters can't be empty strings.
@@ -113,19 +122,24 @@ export async function sendInvite(guest: Guest, event: Event, cardImageUrl?: stri
     return { ok: true };
   }
 
+  const asksForReply = occasion(event.occasionType).rsvp;
   const components: Record<string, unknown>[] = [
     {
       type: "body",
-      parameters: textParams(guest.name, event.name, event.inviterName, formatEventDate(event.eventDate), event.venue),
+      parameters: textParams(guest.name, event.name, event.inviterName, formatDate(event.eventDate, event.language, "long"), event.venue),
     },
-    { type: "button", sub_type: "quick_reply", index: "0", parameters: [{ type: "payload", payload: rsvpPayload("accept", guest.id) }] },
-    { type: "button", sub_type: "quick_reply", index: "1", parameters: [{ type: "payload", payload: rsvpPayload("decline", guest.id) }] },
   ];
+  if (asksForReply) {
+    components.push(
+      { type: "button", sub_type: "quick_reply", index: "0", parameters: [{ type: "payload", payload: rsvpPayload("accept", guest.id) }] },
+      { type: "button", sub_type: "quick_reply", index: "1", parameters: [{ type: "payload", payload: rsvpPayload("decline", guest.id) }] }
+    );
+  }
   if (cardImageUrl) components.unshift({ type: "header", parameters: [{ type: "image", image: { link: cardImageUrl } }] });
 
   return sendMessage(guest.phone, {
     type: "template",
-    template: { name: INVITE_TEMPLATE, language: { code: TEMPLATE_LANG }, components },
+    template: { name: asksForReply ? INVITE_TEMPLATE : ANNOUNCE_TEMPLATE, language: { code: TEMPLATE_LANG[event.language] }, components },
   });
 }
 
@@ -139,8 +153,8 @@ export async function sendReminder(guest: Guest, event: Event, kind: "week" | "d
     type: "template",
     template: {
       name: REMINDER_TEMPLATE,
-      language: { code: TEMPLATE_LANG },
-      components: [{ type: "body", parameters: textParams(guest.name, event.name, formatEventDate(event.eventDate), event.venue) }],
+      language: { code: TEMPLATE_LANG[event.language] },
+      components: [{ type: "body", parameters: textParams(guest.name, event.name, formatDate(event.eventDate, event.language, "long"), event.venue) }],
     },
   });
 }
@@ -165,7 +179,10 @@ export async function sendBarcode(guest: Guest, event: Event, barcodePng: Buffer
     type: "image",
     image: {
       id: upload.json.id as string,
-      caption: `Your entry pass for ${event.name} — please show this QR code at the door. Code: ${guest.barcodeValue}`,
+      caption:
+        event.language === "ar"
+          ? `بطاقة دخولك إلى ${event.name} — يرجى إبراز رمز QR عند الدخول. الرمز: ${guest.barcodeValue}`
+          : `Your entry pass for ${event.name} — please show this QR code at the door. Code: ${guest.barcodeValue}`,
     },
   });
 }
@@ -173,7 +190,7 @@ export async function sendBarcode(guest: Guest, event: Event, barcodePng: Buffer
 // Organizer sign-in code. Uses an Authentication-category template, which
 // Meta requires for one-time passcodes; the code fills both the body and the
 // "Copy code" button.
-export async function sendLoginCode(phone: string, code: string): Promise<SendResult> {
+export async function sendLoginCode(phone: string, code: string, lang: Lang): Promise<SendResult> {
   if (!isLiveMode) {
     console.log(`[stub] sign-in code for ${phone}: ${code}`);
     return { ok: true };
@@ -183,7 +200,7 @@ export async function sendLoginCode(phone: string, code: string): Promise<SendRe
     type: "template",
     template: {
       name: LOGIN_TEMPLATE,
-      language: { code: TEMPLATE_LANG },
+      language: { code: TEMPLATE_LANG[lang] },
       components: [
         { type: "body", parameters: [{ type: "text", text: code }] },
         { type: "button", sub_type: "url", index: "0", parameters: [{ type: "text", text: code }] },

@@ -3,6 +3,7 @@ import QRCode from "qrcode";
 import { db, DuplicatePhoneError, GuestPatch } from "./db";
 import { normalizePhone } from "./phone";
 import { daysUntil, DEFAULT_TIMEZONE } from "./dates";
+import { occasion } from "./occasions";
 import { Event, Guest, GuestStatus, Stats } from "./types";
 import { RsvpDecision, sendBarcode, sendInvite, sendReminder } from "./whatsapp";
 
@@ -18,6 +19,7 @@ export function computeStats(guests: Guest[]): Stats {
     accepted: guests.filter((g) => g.status === "accepted").length,
     declined: guests.filter((g) => g.status === "declined").length,
     pending: guests.filter((g) => g.status === "pending" || g.status === "no_response").length,
+    notSent: guests.filter((g) => g.status === "pending").length,
     invalid: guests.filter((g) => g.status === "invalid").length,
   };
 }
@@ -173,7 +175,7 @@ export async function editGuest(event: Event, guest: Guest, changes: { name?: st
 
 export type RespondResult =
   | { ok: true; guest: Guest; barcodeDataUrl?: string; changed: boolean }
-  | { ok: false; error: "guest_not_found" | "guest_not_invitable" | "event_not_found" };
+  | { ok: false; error: "guest_not_found" | "guest_not_invitable" | "event_not_found" | "no_rsvp" };
 
 function newBarcodeValue() {
   // 64 bits of randomness — unguessable, unlike a slice of the guest UUID.
@@ -186,6 +188,8 @@ export async function recordResponse(guestId: string, decision: RsvpDecision): P
   if (guest.status === "invalid") return { ok: false, error: "guest_not_invitable" };
   const event = await db.getEvent(guest.eventId);
   if (!event) return { ok: false, error: "event_not_found" };
+  // Announcements (condolences) don't collect replies.
+  if (!occasion(event.occasionType).rsvp) return { ok: false, error: "no_rsvp" };
 
   const target: GuestStatus = decision === "accept" ? "accepted" : "declined";
   // Only transition from a different, answerable status. This makes repeats
@@ -218,9 +222,10 @@ export type ReminderKind = "week" | "day";
 
 export type ReminderResult =
   | { ok: true; sent: number; failed: number }
-  | { ok: false; error: "already_sent" };
+  | { ok: false; error: "already_sent" | "no_reminders" };
 
 export async function sendReminders(event: Event, kind: ReminderKind, opts: { force?: boolean } = {}): Promise<ReminderResult> {
+  if (!occasion(event.occasionType).rsvp) return { ok: false, error: "no_reminders" };
   const field = kind === "week" ? "reminderWeekSentAt" : "reminderDaySentAt";
 
   // Claim the slot atomically before sending, so a double-click or
@@ -246,6 +251,7 @@ export function daysUntilEvent(event: Event, now = new Date()): number {
 
 // Which reminder (if any) the scheduler should send for this event right now.
 export function dueReminder(event: Event, now = new Date()): ReminderKind | null {
+  if (!occasion(event.occasionType).rsvp) return null;
   const days = daysUntilEvent(event, now);
   if (days === 0 && !event.reminderDaySentAt) return "day";
   if (days > 0 && days <= 7 && !event.reminderWeekSentAt) return "week";

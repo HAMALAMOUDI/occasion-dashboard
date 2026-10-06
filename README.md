@@ -17,6 +17,26 @@ one, or upload `public/guest-list-template.xlsx` (also downloadable from the
 event page). Use the "Coming / Not coming" buttons on the guest list to see
 stats and billing update live.
 
+## Occasions and languages
+
+- **Occasions:** wedding, engagement (ملكة), graduation, Eid, Ramadan iftar
+  or ghabga, newborn (عقيقة), birthday, corporate, condolences (عزاء), and
+  other. Each has its own wording, placeholders and card designs, defined in
+  `lib/occasions.ts` and `lib/templates.ts`.
+- **Condolences are announcements.** Guests are notified without
+  Accept/Decline buttons, there are no reply stats or reminders, and the
+  wording and colours are respectful.
+- **Portal language:** English or Arabic, switched with the toggle in the
+  menu (stored in the `lang` cookie; the browser language is the default).
+  Arabic renders right to left, with Arabic fonts. Dates appear in both
+  Gregorian and Hijri, and server error messages follow the chosen language.
+  All text lives in `lib/messages.ts`.
+- **Invitation language:** chosen per event, independently of the portal
+  language. It controls the card, the WhatsApp templates, the entry-pass
+  caption and the date format guests see.
+- **Excel templates:** `public/guest-list-template.xlsx` (English) and
+  `public/guest-list-template-ar.xlsx` (Arabic, right to left).
+
 ## Managing guests
 
 - **Excel upload:** `.xlsx` files with a Name and a Mobile number column.
@@ -37,10 +57,14 @@ is logged to the console (demo mode); with them, `lib/whatsapp.ts` calls the
 Meta Cloud API. The call sites are the same in both modes.
 
 1. **Credentials.** Set `WHATSAPP_ACCESS_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID`.
-2. **Templates.** In WhatsApp Manager, create and get approval for:
+2. **Templates.** In WhatsApp Manager, create these templates and get them
+   approved, each in **both English (`en`) and Arabic (`ar`)** under the same
+   name. Every event sends in its own invitation language:
    - `occasion_invite`: body variables `{{1}}` guest, `{{2}}` event,
      `{{3}}` inviter, `{{4}}` date, `{{5}}` venue, plus two quick-reply
-     buttons (Accept and Decline). An image header is optional.
+     buttons (Accept / سأحضر and Decline / أعتذر). An image header is optional.
+   - `occasion_announcement`: the same five variables and **no buttons**,
+     used for condolences, where guests aren't asked to reply.
    - `occasion_reminder`: body variables `{{1}}` guest, `{{2}}` event,
      `{{3}}` date, `{{4}}` venue.
 3. **Webhook.** Point Meta's webhook at `/api/webhooks/whatsapp`, use your

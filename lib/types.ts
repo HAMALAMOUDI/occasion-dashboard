@@ -13,17 +13,22 @@ export interface Guest {
   lastError: string | null;
 }
 
+import type { Lang, OccasionType } from "./occasions";
+
 export interface CardTemplate {
   id: string;
   name: string;
-  occasionType: "wedding" | "graduation" | "corporate" | "birthday";
+  nameAr: string;
+  occasionType: OccasionType;
   previewColor: string; // stand-in for a real background image asset
 }
 
 export interface Event {
   id: string;
   name: string;
-  occasionType: CardTemplate["occasionType"];
+  occasionType: OccasionType;
+  // Language of the card and WhatsApp messages guests receive.
+  language: Lang;
   eventDate: string;
   venue: string;
   inviterName: string;
@@ -50,6 +55,8 @@ export interface Stats {
   accepted: number;
   declined: number;
   pending: number;
+  // Of `pending`, guests whose invite hasn't gone out yet.
+  notSent: number;
   invalid: number;
 }
 

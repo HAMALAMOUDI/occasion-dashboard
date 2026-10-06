@@ -6,6 +6,7 @@ import { db } from "./db";
 import { normalizePhone } from "./phone";
 import { Event, Guest } from "./types";
 import { isLiveMode, sendLoginCode } from "./whatsapp";
+import { getLocale, getMessages } from "./i18n-server";
 
 // Organizer sign-in by mobile number. A 6-digit code is sent to the number on
 // WhatsApp, which proves the person holds that phone. Signing in creates a
@@ -71,7 +72,7 @@ export async function requestLoginCode(rawPhone: string): Promise<RequestCodeRes
     createdAt: now.toISOString(),
   });
 
-  const sent = await sendLoginCode(phone, code);
+  const sent = await sendLoginCode(phone, code, await getLocale());
   if (!sent.ok) return { ok: false, error: "send_failed" };
   return { ok: true, phone, demoCode: showDemoCodes ? code : undefined };
 }
@@ -133,29 +134,31 @@ export async function eventsFor(user: User): Promise<Event[]> {
   return user.isAdmin ? db.getEvents() : db.getEventsByOwner(user.phone);
 }
 
-const unauthorized = () => NextResponse.json({ error: "Please sign in again." }, { status: 401 });
+const unauthorized = async () => NextResponse.json({ error: (await getMessages()).errors.signInAgain }, { status: 401 });
 
 // For route handlers: the signed-in user, or a 401 response to return as-is.
 export async function requireUser(): Promise<User | NextResponse> {
-  return (await currentUser()) ?? unauthorized();
+  return (await currentUser()) ?? (await unauthorized());
 }
 
 // For route handlers: the event if the signed-in user owns it. Someone else's
 // event is reported as "not found" so its existence isn't revealed.
 export async function requireEvent(eventId: string): Promise<{ user: User; event: Event } | NextResponse> {
   const user = await currentUser();
-  if (!user) return unauthorized();
+  if (!user) return await unauthorized();
   const event = await db.getEvent(eventId);
-  if (!event || !canAccessEvent(user, event)) return NextResponse.json({ error: "Event not found" }, { status: 404 });
+  if (!event || !canAccessEvent(user, event)) return NextResponse.json({ error: (await getMessages()).errors.eventNotFound }, { status: 404 });
   return { user, event };
 }
 
 // For route handlers: a guest, if it belongs to one of the signed-in user's events.
 export async function requireGuest(guestId: string): Promise<{ user: User; event: Event; guest: Guest } | NextResponse> {
   const user = await currentUser();
-  if (!user) return unauthorized();
+  if (!user) return await unauthorized();
   const guest = await db.getGuest(guestId);
   const event = guest && (await db.getEvent(guest.eventId));
-  if (!guest || !event || !canAccessEvent(user, event)) return NextResponse.json({ error: "Guest not found" }, { status: 404 });
+  if (!guest || !event || !canAccessEvent(user, event)) {
+    return NextResponse.json({ error: (await getMessages()).errors.guestNotFound }, { status: 404 });
+  }
   return { user, event, guest };
 }

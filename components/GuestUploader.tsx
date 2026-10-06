@@ -5,26 +5,24 @@ import Papa from "papaparse";
 import { CircleCheck, Download, FileSpreadsheet, LoaderCircle } from "lucide-react";
 import { postJson } from "@/lib/client";
 import { extractGuestRows } from "@/lib/guest-import";
+import type { Messages } from "@/lib/messages";
 import type { InviteSummary } from "@/lib/rsvp";
+import { useLocale, useT } from "./I18nProvider";
 
-export function describeInviteSummary(s: InviteSummary, skippedRows = 0) {
+function describeInviteSummary(t: Messages["upload"], s: InviteSummary, skippedRows: number, festive: boolean) {
   const parts: string[] = [];
-  if (s.invalid) parts.push(`${s.invalid} number${s.invalid === 1 ? "" : "s"} need checking`);
-  if (s.failed) parts.push(`${s.failed} didn't send yet — use "Retry" below`);
-  if (s.duplicates) parts.push(`${s.duplicates} already on your list, skipped`);
-  if (skippedRows) parts.push(`${skippedRows} row${skippedRows === 1 ? "" : "s"} missing a name or number, skipped`);
+  if (s.invalid) parts.push(t.needChecking(s.invalid));
+  if (s.failed) parts.push(t.didntSend(s.failed));
+  if (s.duplicates) parts.push(t.duplicates(s.duplicates));
+  if (skippedRows) parts.push(t.missing(skippedRows));
   return {
-    headline: s.sent
-      ? `${s.sent} invitation${s.sent === 1 ? "" : "s"} on their way 🎉`
-      : s.added
-        ? `Added ${s.added} guest${s.added === 1 ? "" : "s"}`
-        : "No new guests added",
+    headline: s.sent ? t.sent(s.sent, festive) : s.added ? t.added(s.added) : t.noneAdded,
     details: parts.join(" · "),
   };
 }
 
 // Reads the spreadsheet in the browser, so the server only ever receives plain rows.
-async function readGuestFile(file: File) {
+async function readGuestFile(file: File, t: Messages["upload"]) {
   const lower = file.name.toLowerCase();
   if (lower.endsWith(".xlsx")) {
     const { readSheet } = await import("read-excel-file/browser");
@@ -34,14 +32,12 @@ async function readGuestFile(file: File) {
     const parsed = Papa.parse<string[]>((await file.text()).replace(/^﻿/, ""), { skipEmptyLines: "greedy" });
     return extractGuestRows(parsed.data);
   }
-  throw new Error(
-    lower.endsWith(".xls")
-      ? "That's an older Excel format (.xls). In Excel choose File → Save As → Excel Workbook (.xlsx), then upload again."
-      : "Please upload an Excel file (.xlsx). CSV files work too.",
-  );
+  throw new Error(lower.endsWith(".xls") ? t.xls : t.wrongType);
 }
 
-export default function GuestUploader({ eventId, onUploaded }: { eventId: string; onUploaded: () => void }) {
+export default function GuestUploader({ eventId, festive, onUploaded }: { eventId: string; festive: boolean; onUploaded: () => void }) {
+  const t = useT().upload;
+  const locale = useLocale();
   const [result, setResult] = useState<{ headline: string; details: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -53,15 +49,15 @@ export default function GuestUploader({ eventId, onUploaded }: { eventId: string
     setError(null);
     setResult(null);
     try {
-      const { rows, skipped } = await readGuestFile(file);
-      if (rows.length === 0) throw new Error("We couldn't find any guests in that file. Each row needs a name and a mobile number.");
+      const { rows, skipped } = await readGuestFile(file, t);
+      if (rows.length === 0) throw new Error(t.noGuests);
 
       const res = await postJson<InviteSummary>(`/api/events/${eventId}/guests`, { rows });
       if (!res.ok) throw new Error(res.error);
-      setResult(describeInviteSummary(res.data, skipped));
+      setResult(describeInviteSummary(t, res.data, skipped, festive));
       onUploaded();
     } catch (e) {
-      setError(e instanceof Error && e.message ? e.message : "We couldn't read that file. Try saving it again as .xlsx.");
+      setError(e instanceof Error && e.message ? e.message : t.unreadable);
     } finally {
       setBusy(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -89,11 +85,8 @@ export default function GuestUploader({ eventId, onUploaded }: { eventId: string
         <span className="grid h-11 w-11 place-items-center rounded-full bg-pine-soft text-pine">
           {busy ? <LoaderCircle size={20} className="animate-spin" /> : <FileSpreadsheet size={20} />}
         </span>
-        <p className="mt-3 font-medium">{busy ? "Sending invitations…" : "Drop your Excel guest list here, or click to choose"}</p>
-        <p className="mt-1 text-xs text-muted">
-          Two columns: <span className="font-medium">Name</span> and <span className="font-medium">Mobile number</span>. Local numbers like
-          05… are fine, and guests already on your list are skipped.
-        </p>
+        <p className="mt-3 font-medium">{busy ? t.sending : t.drop}</p>
+        <p className="mt-1 text-xs text-muted">{t.help}</p>
         <input
           ref={inputRef}
           type="file"
@@ -108,8 +101,12 @@ export default function GuestUploader({ eventId, onUploaded }: { eventId: string
       </label>
 
       <div className="mt-2 flex justify-end">
-        <a href="/guest-list-template.xlsx" download className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-pine">
-          <Download size={13} /> Download the Excel template
+        <a
+          href={locale === "ar" ? "/guest-list-template-ar.xlsx" : "/guest-list-template.xlsx"}
+          download
+          className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-pine"
+        >
+          <Download size={13} /> {t.template}
         </a>
       </div>
 

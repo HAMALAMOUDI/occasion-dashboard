@@ -1,5 +1,9 @@
+import { messages } from "./messages";
+
 // Small fetch wrapper for client components: never throws, always returns a
-// user-presentable error message on failure.
+// user-presentable error message on failure (in the page's language).
+const errorText = () => messages[document.documentElement.lang === "ar" ? "ar" : "en"].errors;
+
 type JsonResult<T> = { ok: true; status: number; data: T } | { ok: false; status: number; error: string };
 
 export function postJson<T = Record<string, unknown>>(url: string, body?: unknown): Promise<JsonResult<T>> {
@@ -18,31 +22,17 @@ export async function requestJson<T = Record<string, unknown>>(
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) return { ok: false, status: res.status, error: data.error || `Request failed (${res.status})` };
+    if (!res.ok) return { ok: false, status: res.status, error: data.error || errorText().requestFailed(res.status) };
     return { ok: true, status: res.status, data: data as T };
   } catch {
-    return { ok: false, status: 0, error: "Network error — check your connection and try again." };
+    return { ok: false, status: 0, error: errorText().network };
   }
-}
-
-// Event dates are stored as calendar dates (YYYY-MM-DD). Format them in UTC so
-// they don't shift by a day in timezones west of Greenwich.
-export function formatEventDate(eventDate: string) {
-  return new Date(eventDate).toLocaleDateString(undefined, { dateStyle: "medium", timeZone: "UTC" });
-}
-
-export function formatEventDateLong(eventDate: string) {
-  return new Date(eventDate).toLocaleDateString(undefined, {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
 }
 
 export function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
+  // Arabic letters change shape when joined, so Arabic names get a single initial.
+  if (/[\u0600-\u06FF]/.test(name)) return parts[0]?.[0] ?? "?";
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase() || "?";
 }
 
@@ -59,8 +49,4 @@ export function avatarTone(seed: string) {
   let h = 0;
   for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return AVATAR_TONES[h % AVATAR_TONES.length];
-}
-
-export function formatSar(amount: number) {
-  return `${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} SAR`;
 }

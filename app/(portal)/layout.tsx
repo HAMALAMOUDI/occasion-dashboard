@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Nav from "@/components/Nav";
 import { currentUser, showDemoCodes } from "@/lib/auth";
+import { getMessages } from "@/lib/i18n-server";
 
 // Everything inside (portal) requires a signed-in organizer. proxy.ts already
 // redirects visitors without a session cookie; this also catches expired or
@@ -8,6 +9,7 @@ import { currentUser, showDemoCodes } from "@/lib/auth";
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser();
   if (!user) redirect("/login");
+  const t = await getMessages();
 
   return (
     <div className="md:flex min-h-screen">
@@ -16,8 +18,7 @@ export default async function PortalLayout({ children }: { children: React.React
         <div className="mx-auto max-w-5xl">
           {showDemoCodes && (
             <p className="mb-6 rounded-xl bg-pending-bg px-4 py-2.5 text-xs text-pending">
-              <span className="font-semibold">Demo sign-in is on.</span> WhatsApp isn&apos;t connected yet, so sign-in codes are shown on
-              screen — anyone can sign in with any number until it is.
+              <span className="font-semibold">{t.demoBanner.strong}</span> {t.demoBanner.body}
             </p>
           )}
           {children}

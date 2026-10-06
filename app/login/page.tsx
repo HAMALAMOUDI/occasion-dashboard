@@ -4,6 +4,8 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, MessageCircle } from "lucide-react";
 import { postJson } from "@/lib/client";
+import { useT } from "@/components/I18nProvider";
+import LanguageToggle from "@/components/LanguageToggle";
 
 // Only allow redirects back into this site after signing in.
 function safeNext(next: string | null) {
@@ -11,6 +13,8 @@ function safeNext(next: string | null) {
 }
 
 function LoginForm() {
+  const t = useT().login;
+  const brand = useT().brand;
   const router = useRouter();
   const next = safeNext(useSearchParams().get("next"));
   const [step, setStep] = useState<"phone" | "code">("phone");
@@ -66,18 +70,21 @@ function LoginForm() {
 
   return (
     <div className="card w-full max-w-md p-6 sm:p-8 animate-fade-up">
-      <div className="flex items-center gap-2.5">
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-pine text-white font-serif text-xl">O</span>
-        <span className="font-serif text-2xl">Occasion</span>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-pine text-white font-serif text-xl">{brand.initial}</span>
+          <span className="font-serif text-2xl">{brand.name}</span>
+        </div>
+        <LanguageToggle />
       </div>
 
       {step === "phone" ? (
         <form onSubmit={sendCode} className="mt-8">
-          <h1 className="font-serif text-3xl">Welcome 👋</h1>
-          <p className="mt-2 text-muted">Sign in with your mobile number to see your events. We&apos;ll send you a code on WhatsApp.</p>
+          <h1 className="font-serif text-3xl">{t.welcome}</h1>
+          <p className="mt-2 text-muted">{t.intro}</p>
 
           <label htmlFor="phone" className="label mt-6">
-            Mobile number
+            {t.phone}
           </label>
           <input
             id="phone"
@@ -87,15 +94,16 @@ function LoginForm() {
             autoFocus
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            dir="ltr"
             placeholder="05X XXX XXXX"
-            className="input text-base tracking-wide"
+            className="input text-base tracking-wide rtl:text-end"
           />
-          <p className="mt-1.5 text-xs text-muted">Saudi numbers can start with 05. For other countries, include the + code.</p>
+          <p className="mt-1.5 text-xs text-muted">{t.phoneHelp}</p>
 
           {error && <p className="mt-4 rounded-xl bg-decline-bg px-4 py-3 text-sm text-decline">{error}</p>}
 
-          <button type="submit" disabled={busy || !phone.trim()} className="btn-primary btn-md mt-6 w-full py-3">
-            <MessageCircle size={16} /> {busy ? "Sending…" : "Send me a code"}
+          <button type="submit" disabled={busy || !phone.trim()} className="btn-primary mt-6 w-full px-4 py-3 text-sm">
+            <MessageCircle size={16} /> {busy ? t.sending : t.sendCode}
           </button>
         </form>
       ) : (
@@ -108,25 +116,29 @@ function LoginForm() {
             }}
             className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink"
           >
-            <ArrowLeft size={15} /> Change number
+            <ArrowLeft size={15} className="rtl:rotate-180" /> {t.changeNumber}
           </button>
-          <h1 className="font-serif text-3xl mt-3">Check your WhatsApp</h1>
+          <h1 className="font-serif text-3xl mt-3">{t.checkWhatsApp}</h1>
           <p className="mt-2 text-muted">
-            We sent a 6-digit code to <span className="font-medium text-ink tabular-nums">{normalized}</span>.
+            {t.sentTo}{" "}
+            <span className="font-medium text-ink tabular-nums" dir="ltr">
+              {normalized}
+            </span>
           </p>
 
           {demoCode && (
             <p className="mt-4 rounded-xl bg-pending-bg px-4 py-3 text-sm text-pending">
-              WhatsApp isn&apos;t connected yet, so here&apos;s your code: <span className="font-mono font-semibold tracking-widest">{demoCode}</span>
+              {t.demoCode} <span className="font-mono font-semibold tracking-widest">{demoCode}</span>
             </p>
           )}
 
           <label htmlFor="code" className="label mt-6">
-            Code
+            {t.code}
           </label>
           <input
             id="code"
             ref={codeRef}
+            dir="ltr"
             inputMode="numeric"
             autoComplete="one-time-code"
             maxLength={6}
@@ -138,8 +150,8 @@ function LoginForm() {
 
           {error && <p className="mt-4 rounded-xl bg-decline-bg px-4 py-3 text-sm text-decline">{error}</p>}
 
-          <button type="submit" disabled={busy || code.length !== 6} className="btn-primary btn-md mt-6 w-full py-3">
-            {busy ? "Checking…" : "Sign in"} <ArrowRight size={16} />
+          <button type="submit" disabled={busy || code.length !== 6} className="btn-primary mt-6 w-full px-4 py-3 text-sm">
+            {busy ? t.checking : t.signIn} <ArrowRight size={16} className="rtl:rotate-180" />
           </button>
           <button
             type="button"
@@ -147,7 +159,7 @@ function LoginForm() {
             disabled={busy || cooldown > 0}
             className="mt-3 w-full text-center text-sm text-muted hover:text-ink disabled:hover:text-muted"
           >
-            {cooldown > 0 ? `Send a new code in ${cooldown}s` : "Send a new code"}
+            {cooldown > 0 ? t.resendIn(cooldown) : t.resend}
           </button>
         </form>
       )}

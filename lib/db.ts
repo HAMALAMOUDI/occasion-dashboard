@@ -14,7 +14,7 @@ import { postgresStore } from "./db-postgres";
 // operations here rather than read-then-write in the callers.
 
 export type ReminderField = "reminderWeekSentAt" | "reminderDaySentAt";
-export type EventPatch = Partial<Pick<Event, "name" | "eventDate" | "venue" | "inviterName" | "templateId">>;
+export type EventPatch = Partial<Pick<Event, "name" | "eventDate" | "venue" | "inviterName" | "templateId" | "language">>;
 export type GuestPatch = Partial<Pick<Guest, "name" | "phone" | "status" | "inviteSentAt" | "respondedAt" | "barcodeValue" | "checkedInAt" | "lastError">>;
 // Apply the patch only if the guest's current status is one of these.
 export type GuestGuard = { ifStatusIn?: GuestStatus[] };
