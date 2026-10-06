@@ -1,12 +1,19 @@
 // Small fetch wrapper for client components: never throws, always returns a
 // user-presentable error message on failure.
-export async function postJson<T = Record<string, unknown>>(
+type JsonResult<T> = { ok: true; status: number; data: T } | { ok: false; status: number; error: string };
+
+export function postJson<T = Record<string, unknown>>(url: string, body?: unknown): Promise<JsonResult<T>> {
+  return requestJson<T>("POST", url, body);
+}
+
+export async function requestJson<T = Record<string, unknown>>(
+  method: "POST" | "PATCH" | "DELETE",
   url: string,
   body?: unknown
-): Promise<{ ok: true; status: number; data: T } | { ok: false; status: number; error: string }> {
+): Promise<JsonResult<T>> {
   try {
     const res = await fetch(url, {
-      method: "POST",
+      method,
       headers: body === undefined ? undefined : { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
     });

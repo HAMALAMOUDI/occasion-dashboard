@@ -11,10 +11,24 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. Create an event, upload `proxy.ts                       Sends signed-out visitors to /login
-sample-data/guests.csv`
-(or your own CSV with `name,phone` columns), then use the "Simulate accept /
-decline" buttons on the guest table to see stats and billing update live.
+Open http://localhost:3000, sign in with any mobile number (the code is shown
+on screen until WhatsApp is connected), and create an event. Add guests one by
+one, or upload `public/guest-list-template.xlsx` (also downloadable from the
+event page). Use the "Coming / Not coming" buttons on the guest list to see
+stats and billing update live.
+
+## Managing guests
+
+- **Excel upload:** `.xlsx` files with a Name and a Mobile number column.
+  Headings can be in English or Arabic (الاسم، رقم الجوال) or left out, in
+  which case column A is the name and column B the number. CSV files still
+  work. The file is read in the browser, and the server only receives rows.
+- **Add one guest:** a name and number in the form on the event page. The
+  invitation goes out straight away.
+- **Edit:** changing only a name just saves it. Changing the **number** resets
+  the guest (clearing any reply and entry pass) and sends a new invitation to
+  the new number. That's also how a guest marked "Number issue" gets fixed.
+- **Remove:** deletes the guest. Messages already sent stay on the bill.
 
 ## Going live with WhatsApp
 
@@ -121,8 +135,11 @@ lib/
   db-postgres.ts               Postgres implementation (Neon on Vercel)
   db-json.ts                   JSON-file implementation (local development)
   auth.ts                      Sign-in codes, sessions, and per-event access checks
+  guest-import.ts              Reads Excel/CSV rows (English or Arabic headings)
   whatsapp.ts                  WhatsApp Cloud API client (console stub without credentials)
   rsvp.ts                      Invite / response / reminder workflow shared by routes, webhook, cron
   phone.ts                     Phone number normalization (E.164)
+proxy.ts                       Sends signed-out visitors to /login
+public/guest-list-template.xlsx  Excel template organizers download
 sample-data/guests.csv         Example CSV for testing uploads
 ```

@@ -4,16 +4,24 @@ import { Guest, GuestStatus } from "@/lib/types";
 import StatusBadge from "./StatusBadge";
 import Avatar from "./Avatar";
 import { useMemo, useState } from "react";
-import { postJson } from "@/lib/client";
-import { Check, QrCode, Search, TriangleAlert, X } from "lucide-react";
+import { postJson, requestJson } from "@/lib/client";
+import { Check, Pencil, QrCode, Search, Trash2, TriangleAlert, X } from "lucide-react";
 
 type Filter = "all" | "accepted" | "declined" | "waiting" | "invalid";
 
-const FILTERS: { id: Filter; label: string; match: (s: GuestStatus) => boolean }[] = [
+const FILTERS: {
+  id: Filter;
+  label: string;
+  match: (s: GuestStatus) => boolean;
+}[] = [
   { id: "all", label: "Everyone", match: () => true },
   { id: "accepted", label: "Coming", match: (s) => s === "accepted" },
   { id: "declined", label: "Can't make it", match: (s) => s === "declined" },
-  { id: "waiting", label: "Waiting", match: (s) => s === "pending" || s === "no_response" },
+  {
+    id: "waiting",
+    label: "Waiting",
+    match: (s) => s === "pending" || s === "no_response",
+  },
   { id: "invalid", label: "Number issue", match: (s) => s === "invalid" },
 ];
 
@@ -33,6 +41,11 @@ export default function GuestTable({ guests, onChange }: { guests: Guest[]; onCh
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
+  const [editing, setEditing] = useState<{
+    id: string;
+    name: string;
+    phone: string;
+  } | null>(null);
 
   const visible = useMemo(() => {
     const f = FILTERS.find((x) => x.id === filter)!;
@@ -43,7 +56,46 @@ export default function GuestTable({ guests, onChange }: { guests: Guest[]; onCh
   async function respond(guestId: string, decision: "accept" | "decline") {
     setBusyId(guestId);
     setError(null);
-    const result = await postJson(`/api/guests/${guestId}/respond`, { decision });
+    const result = await postJson(`/api/guests/${guestId}/respond`, {
+      decision,
+    });
+    setBusyId(null);
+    if (!result.ok) setError(result.error);
+    onChange();
+  }
+
+  async function saveEdit(g: Guest) {
+    if (!editing) return;
+    const phoneChanged = editing.phone.replace(/[\s\-()]/g, "") !== g.phone;
+    if (
+      phoneChanged &&
+      (g.status === "accepted" || g.status === "declined") &&
+      !window.confirm(
+        `${g.name} has already replied. Changing their number clears that reply and sends a new invitation to the new number. Continue?`,
+      )
+    ) {
+      return;
+    }
+    setBusyId(g.id);
+    setError(null);
+    const result = await requestJson("PATCH", `/api/guests/${g.id}`, {
+      name: editing.name,
+      ...(phoneChanged ? { phone: editing.phone } : {}),
+    });
+    setBusyId(null);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    setEditing(null);
+    onChange();
+  }
+
+  async function remove(g: Guest) {
+    if (!window.confirm(`Remove ${g.name} from the guest list? This can't be undone.`)) return;
+    setBusyId(g.id);
+    setError(null);
+    const result = await requestJson("DELETE", `/api/guests/${g.id}`);
     setBusyId(null);
     if (!result.ok) setError(result.error);
     onChange();
@@ -53,7 +105,7 @@ export default function GuestTable({ guests, onChange }: { guests: Guest[]; onCh
     return (
       <div className="card px-6 py-10 text-center">
         <p className="font-serif text-xl">Your guest list is empty</p>
-        <p className="text-sm text-muted mt-1">Upload a CSV above and invitations go out right away.</p>
+        <p className="text-sm text-muted mt-1">Add guests above, one by one or from an Excel file. Invitations go out right away.</p>
       </div>
     );
   }
@@ -76,6 +128,13 @@ export default function GuestTable({ guests, onChange }: { guests: Guest[]; onCh
           <X size={13} /> Not coming
         </button>
       </div>
+    ) : g.status === "invalid" ? (
+      <button
+        onClick={() => setEditing({ id: g.id, name: g.name, phone: g.phone })}
+        className="btn btn-sm whitespace-nowrap border border-line bg-surface hover:border-pine hover:bg-pine-soft hover:text-pine"
+      >
+        <Pencil size={13} /> Fix number
+      </button>
     ) : g.status === "accepted" && g.barcodeValue ? (
       <span className="inline-flex items-center gap-1.5 text-xs text-muted font-mono" title="Entry pass code">
         <QrCode size={13} /> {g.barcodeValue}
@@ -83,7 +142,7 @@ export default function GuestTable({ guests, onChange }: { guests: Guest[]; onCh
     ) : null;
 
   return (
-    <div className="card overflow-hidden">
+    <div className="card overflow-hidden @container">
       <div className="flex flex-col gap-3 border-b border-line p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 [scrollbar-width:none]">
           {FILTERS.map((f) => {
@@ -120,26 +179,89 @@ export default function GuestTable({ guests, onChange }: { guests: Guest[]; onCh
         <p className="px-4 py-10 text-center text-sm text-muted">No guests match that.</p>
       ) : (
         <ul className="divide-y divide-line">
-          {visible.map((g) => (
-            <li key={g.id} className="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:gap-4">
-              <div className="flex min-w-0 flex-1 items-center gap-3">
-                <Avatar name={g.name} seed={g.id} />
-                <div className="min-w-0">
-                  <p className="font-medium truncate">{g.name}</p>
-                  <p className="text-xs text-muted tabular-nums">{g.phone}</p>
-                  {g.lastError && (
-                    <p className="mt-0.5 flex items-start gap-1 text-[11px] text-decline">
-                      <TriangleAlert size={11} className="mt-0.5 shrink-0" /> {describeError(g.lastError)}
-                    </p>
-                  )}
+          {visible.map((g) =>
+            editing?.id === g.id ? (
+              <li key={g.id} className="bg-pine-soft/40 px-4 py-4">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    saveEdit(g);
+                  }}
+                  className="flex flex-col gap-3 sm:flex-row sm:items-end"
+                >
+                  <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="label">Name</span>
+                      <input
+                        autoFocus
+                        value={editing.name}
+                        onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                        className="input"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="label">Mobile number</span>
+                      <input
+                        type="tel"
+                        inputMode="tel"
+                        value={editing.phone}
+                        onChange={(e) => setEditing({ ...editing, phone: e.target.value })}
+                        className="input tabular-nums"
+                      />
+                    </label>
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="submit" disabled={busyId === g.id} className="btn-primary btn-md">
+                      {busyId === g.id ? "Saving…" : "Save"}
+                    </button>
+                    <button type="button" onClick={() => setEditing(null)} className="btn-secondary btn-md">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+                <p className="mt-2 text-xs text-muted">A new number gets a fresh invitation on WhatsApp straight away.</p>
+              </li>
+            ) : (
+              <li key={g.id} className="flex flex-col gap-3 px-4 py-3.5 @2xl:flex-row @2xl:items-center @2xl:gap-4">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <Avatar name={g.name} seed={g.id} />
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{g.name}</p>
+                    <p className="text-xs text-muted tabular-nums">{g.phone}</p>
+                    {g.lastError && (
+                      <p className="mt-0.5 flex items-start gap-1 text-[11px] text-decline">
+                        <TriangleAlert size={11} className="mt-0.5 shrink-0" /> {describeError(g.lastError)}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-3 pl-[3.25rem] sm:pl-0 sm:justify-end">
-                <StatusBadge status={g.status} />
-                <div className="sm:w-52 sm:flex sm:justify-end">{actions(g)}</div>
-              </div>
-            </li>
-          ))}
+                <div className="flex flex-wrap items-center gap-3 pl-[3.25rem] @2xl:pl-0 @2xl:justify-end">
+                  <StatusBadge status={g.status} />
+                  <div className="@2xl:w-52 @2xl:flex @2xl:justify-end">{actions(g)}</div>
+                  <div className="ml-auto flex gap-0.5 @2xl:ml-0">
+                    <button
+                      onClick={() => setEditing({ id: g.id, name: g.name, phone: g.phone })}
+                      disabled={busyId === g.id}
+                      className="grid h-8 w-8 place-items-center rounded-full text-muted hover:bg-paper hover:text-ink"
+                      aria-label={`Edit ${g.name}`}
+                      title="Edit"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button
+                      onClick={() => remove(g)}
+                      disabled={busyId === g.id}
+                      className="grid h-8 w-8 place-items-center rounded-full text-muted hover:bg-decline-bg hover:text-decline"
+                      aria-label={`Remove ${g.name}`}
+                      title="Remove"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ),
+          )}
         </ul>
       )}
     </div>

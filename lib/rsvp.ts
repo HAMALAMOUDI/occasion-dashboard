@@ -1,6 +1,6 @@
 import { randomBytes, randomUUID } from "crypto";
 import QRCode from "qrcode";
-import { db, GuestPatch } from "./db";
+import { db, DuplicatePhoneError, GuestPatch } from "./db";
 import { normalizePhone } from "./phone";
 import { daysUntil, DEFAULT_TIMEZONE } from "./dates";
 import { Event, Guest, GuestStatus, Stats } from "./types";
@@ -118,6 +118,55 @@ async function deliverInvites(event: Event, guests: Guest[]) {
   await db.updateGuests(patches, { ifStatusIn: ["pending"] });
   await db.addConversations(event.id, sent);
   return { sent, invalid, failed };
+}
+
+// ---------------------------------------------------------------- editing
+
+export type EditGuestResult =
+  | { ok: true; guest: Guest; reinvited: boolean }
+  | { ok: false; error: "invalid_name" | "invalid_phone" | "duplicate_phone" | "not_found" };
+
+// Updates a guest's name and/or phone. A new phone number means the invite
+// went to the wrong place (or never went out), so the guest is reset and
+// invited again at the new number. A name-only change just saves.
+export async function editGuest(event: Event, guest: Guest, changes: { name?: string; phone?: string }): Promise<EditGuestResult> {
+  const patch: GuestPatch = {};
+
+  if (changes.name !== undefined) {
+    const name = changes.name.trim();
+    if (!name) return { ok: false, error: "invalid_name" };
+    patch.name = name;
+  }
+
+  let phoneChanged = false;
+  if (changes.phone !== undefined) {
+    const phone = normalizePhone(changes.phone);
+    if (!phone) return { ok: false, error: "invalid_phone" };
+    if (phone !== guest.phone) {
+      phoneChanged = true;
+      Object.assign(patch, {
+        phone,
+        status: "pending",
+        inviteSentAt: null,
+        respondedAt: null,
+        barcodeValue: null,
+        lastError: null,
+      } satisfies GuestPatch);
+    }
+  }
+
+  let updated: Guest | undefined;
+  try {
+    updated = await db.updateGuest(guest.id, patch);
+  } catch (e) {
+    if (e instanceof DuplicatePhoneError) return { ok: false, error: "duplicate_phone" };
+    throw e;
+  }
+  if (!updated) return { ok: false, error: "not_found" };
+  if (!phoneChanged) return { ok: true, guest: updated, reinvited: false };
+
+  await deliverInvites(event, [updated]);
+  return { ok: true, guest: (await db.getGuest(guest.id)) ?? updated, reinvited: true };
 }
 
 // ---------------------------------------------------------------- responses

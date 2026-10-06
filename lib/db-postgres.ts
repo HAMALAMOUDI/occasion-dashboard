@@ -1,6 +1,6 @@
 import { Pool, PoolClient } from "pg";
 import { BillingRecord, CardTemplate, Event, Guest, LoginCode, Session } from "./types";
-import type { GuestGuard, GuestPatch, ReminderField, Store } from "./db";
+import { DuplicatePhoneError, type GuestGuard, type GuestPatch, type ReminderField, type Store } from "./db";
 import { DEFAULT_TEMPLATES } from "./templates";
 
 // Postgres store (Neon on Vercel). Tables are created on first use, so a fresh
@@ -153,6 +153,8 @@ const EVENT_PATCH_SET = patchSet("e", [
 ]);
 
 const GUEST_PATCH_SET = patchSet("g", [
+  ["name", "name", "text"],
+  ["phone", "phone", "text"],
   ["status", "status", "text"],
   ["inviteSentAt", "invite_sent_at", "timestamptz"],
   ["respondedAt", "responded_at", "timestamptz"],
@@ -227,7 +229,11 @@ export function postgresStore(connectionString: string): Store {
        WHERE g.id = p->>'id' AND ($2::text[] IS NULL OR g.status = ANY($2::text[]))
        RETURNING g.*`,
       [JSON.stringify(patches), guard?.ifStatusIn ?? null]
-    );
+    ).catch((e: { code?: string; constraint?: string }) => {
+      // UNIQUE (event_id, phone)
+      if (e.code === "23505" && e.constraint?.includes("phone")) throw new DuplicatePhoneError();
+      throw e;
+    });
     return rows.map(toGuest);
   }
 
@@ -317,6 +323,9 @@ export function postgresStore(connectionString: string): Store {
     },
     async updateGuests(patches, guard) {
       await updateGuestsReturning(patches, guard);
+    },
+    async deleteGuest(id) {
+      return (await query("DELETE FROM guests WHERE id = $1 RETURNING id", [id])).length > 0;
     },
 
     async getTemplates() {

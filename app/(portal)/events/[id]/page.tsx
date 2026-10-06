@@ -7,7 +7,8 @@ import { ArrowLeft, CalendarDays, MapPin, RefreshCw, UserRound } from "lucide-re
 import { Event, Guest, Stats, BillingRecord, CardTemplate } from "@/lib/types";
 import StatsGrid from "@/components/StatsGrid";
 import GuestTable from "@/components/GuestTable";
-import CsvUploader from "@/components/CsvUploader";
+import GuestUploader from "@/components/GuestUploader";
+import AddGuestForm from "@/components/AddGuestForm";
 import ReminderPanel from "@/components/ReminderPanel";
 import BillingPanel from "@/components/BillingPanel";
 import InvitePreview from "@/components/InvitePreview";
@@ -141,9 +142,13 @@ export default function EventDetailPage() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-8 min-w-0">
           <section>
-            <h2 className="font-serif text-xl mb-1">Invite more guests</h2>
-            <p className="text-sm text-muted mb-4">Each new guest gets a personal WhatsApp invitation as soon as you upload.</p>
-            <CsvUploader eventId={event.id} onUploaded={refresh} />
+            <h2 className="font-serif text-xl mb-1">Add guests</h2>
+            <p className="text-sm text-muted mb-4">Each new guest gets a personal WhatsApp invitation straight away.</p>
+            <AddGuestForm eventId={event.id} onAdded={refresh} />
+            <div className="my-4 flex items-center gap-3 text-xs text-muted">
+              <span className="h-px flex-1 bg-line" /> or upload a whole list <span className="h-px flex-1 bg-line" />
+            </div>
+            <GuestUploader eventId={event.id} onUploaded={refresh} />
           </section>
 
           <section>

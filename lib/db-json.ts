@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { Event, Guest, BillingRecord, CardTemplate, LoginCode, Session } from "./types";
-import type { GuestGuard, GuestPatch, Store } from "./db";
+import { DuplicatePhoneError, type GuestGuard, type GuestPatch, type Store } from "./db";
 import { DEFAULT_TEMPLATES } from "./templates";
 
 // Local-development store: a JSON file at data/store.json. Each operation is
@@ -116,6 +116,12 @@ export const jsonStore: Store = {
   },
   async updateGuest(id, patch, guard) {
     const data = readDb();
+    if (patch.phone) {
+      const current = data.guests.find((g) => g.id === id);
+      if (current && data.guests.some((g) => g.id !== id && g.eventId === current.eventId && g.phone === patch.phone)) {
+        throw new DuplicatePhoneError();
+      }
+    }
     const [updated] = applyGuestPatches(data, [{ ...patch, id }], guard);
     if (updated) writeDb(data);
     return updated;
@@ -125,6 +131,15 @@ export const jsonStore: Store = {
     const data = readDb();
     applyGuestPatches(data, patches, guard);
     writeDb(data);
+  },
+
+  async deleteGuest(id) {
+    const data = readDb();
+    const before = data.guests.length;
+    data.guests = data.guests.filter((g) => g.id !== id);
+    if (data.guests.length === before) return false;
+    writeDb(data);
+    return true;
   },
 
   async getTemplates() {

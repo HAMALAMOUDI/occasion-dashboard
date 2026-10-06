@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "crypto";
 import { db } from "./db";
 import { normalizePhone } from "./phone";
-import { Event } from "./types";
+import { Event, Guest } from "./types";
 import { isLiveMode, sendLoginCode } from "./whatsapp";
 
 // Organizer sign-in by mobile number. A 6-digit code is sent to the number on
@@ -148,4 +148,14 @@ export async function requireEvent(eventId: string): Promise<{ user: User; event
   const event = await db.getEvent(eventId);
   if (!event || !canAccessEvent(user, event)) return NextResponse.json({ error: "Event not found" }, { status: 404 });
   return { user, event };
+}
+
+// For route handlers: a guest, if it belongs to one of the signed-in user's events.
+export async function requireGuest(guestId: string): Promise<{ user: User; event: Event; guest: Guest } | NextResponse> {
+  const user = await currentUser();
+  if (!user) return unauthorized();
+  const guest = await db.getGuest(guestId);
+  const event = guest && (await db.getEvent(guest.eventId));
+  if (!guest || !event || !canAccessEvent(user, event)) return NextResponse.json({ error: "Guest not found" }, { status: 404 });
+  return { user, event, guest };
 }

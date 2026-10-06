@@ -15,9 +15,16 @@ import { postgresStore } from "./db-postgres";
 
 export type ReminderField = "reminderWeekSentAt" | "reminderDaySentAt";
 export type EventPatch = Partial<Pick<Event, "name" | "eventDate" | "venue" | "inviterName" | "templateId">>;
-export type GuestPatch = Partial<Pick<Guest, "status" | "inviteSentAt" | "respondedAt" | "barcodeValue" | "checkedInAt" | "lastError">>;
+export type GuestPatch = Partial<Pick<Guest, "name" | "phone" | "status" | "inviteSentAt" | "respondedAt" | "barcodeValue" | "checkedInAt" | "lastError">>;
 // Apply the patch only if the guest's current status is one of these.
 export type GuestGuard = { ifStatusIn?: GuestStatus[] };
+
+// Thrown when a guest's phone would duplicate another guest on the same event.
+export class DuplicatePhoneError extends Error {
+  constructor() {
+    super("duplicate_phone");
+  }
+}
 
 export interface Store {
   // All events — for system jobs (reminder cron) and admins only.
@@ -35,6 +42,7 @@ export interface Store {
   addGuests(guests: Guest[]): Promise<Guest[]>;
   updateGuest(id: string, patch: GuestPatch, guard?: GuestGuard): Promise<Guest | undefined>;
   updateGuests(patches: (GuestPatch & { id: string })[], guard?: GuestGuard): Promise<void>;
+  deleteGuest(id: string): Promise<boolean>;
 
   getTemplates(): Promise<CardTemplate[]>;
   getTemplate(id: string): Promise<CardTemplate | undefined>;

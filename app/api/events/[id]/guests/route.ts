@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import { db } from "@/lib/db";
 import { requireEvent } from "@/lib/auth";
 import { badRequest, readJson } from "@/lib/http";
+import { extractGuestRows, GuestRow } from "@/lib/guest-import";
 import { inviteGuests } from "@/lib/rsvp";
 
 const MAX_ROWS = 5000;
@@ -14,36 +15,34 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   return NextResponse.json(await db.getGuests(id));
 }
 
-// Expects a CSV with headers: name,phone  (case-insensitive). Phone numbers
-// are normalized to E.164 and de-duplicated against the existing guest list,
-// so re-uploading the same file never double-invites (or double-bills).
+// Adds guests and sends their invites. Accepts either
+//   { rows: [{ name, phone }] }  — from the Excel upload or the "Add guest" form
+//   { csv: "..." }               — raw CSV text
+// Phone numbers are normalized to E.164 and de-duplicated against the existing
+// guest list, so re-uploading the same file never double-invites (or double-bills).
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const access = await requireEvent(id);
   if (access instanceof NextResponse) return access;
   const { event } = access;
 
-  const body = await readJson<{ csv: string }>(req);
-  const csvText = body?.csv;
-  if (typeof csvText !== "string" || !csvText.trim()) return badRequest("Missing csv field");
+  const body = await readJson<{ rows: unknown; csv: unknown }>(req);
+  let rows: GuestRow[];
 
-  const parsed = Papa.parse<Record<string, string>>(csvText.replace(/^﻿/, ""), {
-    header: true,
-    skipEmptyLines: "greedy",
-    transformHeader: (h) => h.trim().toLowerCase(),
-  });
-
-  if (parsed.errors.length > 0) {
-    const first = parsed.errors[0];
-    const where = first.row !== undefined ? ` (row ${first.row + 2})` : "";
-    return badRequest(`Could not parse CSV: ${first.message}${where}`, { details: parsed.errors.slice(0, 10) });
+  if (Array.isArray(body?.rows)) {
+    rows = body.rows
+      .filter((r): r is GuestRow => typeof r?.name === "string" && typeof r?.phone === "string")
+      .map((r) => ({ name: r.name.trim(), phone: r.phone.trim() }))
+      .filter((r) => r.name && r.phone);
+  } else if (typeof body?.csv === "string" && body.csv.trim()) {
+    const parsed = Papa.parse<string[]>(body.csv.replace(/^﻿/, ""), { skipEmptyLines: "greedy" });
+    rows = extractGuestRows(parsed.data).rows;
+  } else {
+    return badRequest("Please add at least one guest.");
   }
 
-  const rows = parsed.data
-    .filter((r) => r.name?.trim() && r.phone?.trim())
-    .map((r) => ({ name: r.name, phone: r.phone }));
-  if (rows.length === 0) return badRequest("No valid rows found. Expected columns: name, phone");
-  if (rows.length > MAX_ROWS) return badRequest(`Too many rows (${rows.length}). Upload at most ${MAX_ROWS} guests at a time.`);
+  if (rows.length === 0) return badRequest("We couldn't find any guests. Each row needs a name and a mobile number.");
+  if (rows.length > MAX_ROWS) return badRequest(`Too many guests (${rows.length}). Add at most ${MAX_ROWS} at a time.`);
 
   return NextResponse.json(await inviteGuests(event, rows));
 }
