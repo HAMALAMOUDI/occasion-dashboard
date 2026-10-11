@@ -14,6 +14,7 @@ export interface Guest {
 }
 
 import type { Lang, OccasionType } from "./occasions";
+import type { DesignChoice } from "./designs/render";
 
 export interface CardTemplate {
   id: string;
@@ -29,6 +30,8 @@ export interface Event {
   occasionType: OccasionType;
   // Language of the card and WhatsApp messages guests receive.
   language: Lang;
+  // A card from the design library (lib/designs), or null for the simple built-in card.
+  design: DesignChoice | null;
   eventDate: string;
   venue: string;
   inviterName: string;

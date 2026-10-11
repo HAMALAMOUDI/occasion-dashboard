@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, Info, Languages, MapPin, RefreshCw, UserRound } from "lucide-react";
+import { ArrowLeft, CalendarDays, Info, Languages, MapPin, Palette, RefreshCw, UserRound } from "lucide-react";
 import { Event, Guest, Stats, BillingRecord, CardTemplate } from "@/lib/types";
 import StatsGrid from "@/components/StatsGrid";
 import GuestTable from "@/components/GuestTable";
@@ -12,12 +12,16 @@ import AddGuestForm from "@/components/AddGuestForm";
 import ReminderPanel from "@/components/ReminderPanel";
 import BillingPanel from "@/components/BillingPanel";
 import InvitePreview from "@/components/InvitePreview";
+import { versionOf } from "@/components/DesignFrame";
 import RsvpBar from "@/components/RsvpBar";
 import { useLocale, useT } from "@/components/I18nProvider";
 import { postJson } from "@/lib/client";
 import { daysUntil } from "@/lib/dates";
 import { formatDate, formatHijri } from "@/lib/i18n";
 import { hostLine, occasion } from "@/lib/occasions";
+import { DESIGN_CATEGORIES, DESIGN_STYLES, LAYOUT_NAMES } from "@/lib/designs/catalog";
+
+const DESIGN_COUNT = DESIGN_STYLES.length * DESIGN_CATEGORIES.length * 20;
 
 interface EventDetail {
   event: Event;
@@ -188,7 +192,30 @@ export default function EventDetailPage() {
         <aside className="space-y-5">
           <section>
             <h2 className="eyebrow mb-3">{t.event.whatGuestsReceive}</h2>
-            <InvitePreview event={event} template={template} guestName={guests[0]?.name.split(" ")[0]} />
+            <InvitePreview
+              event={event}
+              template={template}
+              guestName={guests[0]?.name.split(" ")[0]}
+              // ?v= changes whenever the design or event details change, so the card reloads after an edit.
+              cardSrc={event.design ? `/api/events/${event.id}/card?v=${versionOf([event.design, event.venue, event.eventDate])}` : undefined}
+            />
+            {o.rsvp ? (
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-paper px-3.5 py-2.5">
+                <p className="min-w-0 truncate text-xs text-muted">
+                  {event.design
+                    ? t.designs.chosen(LAYOUT_NAMES[event.design.style][event.design.layout - 1][locale])
+                    : t.designs.builtIn}
+                </p>
+                <Link
+                  href={event.design ? `/events/${event.id}/design` : `/designs?event=${event.id}`}
+                  className="btn-secondary btn-sm shrink-0"
+                >
+                  <Palette size={13} /> {event.design ? t.designs.edit : t.designs.browse(DESIGN_COUNT)}
+                </Link>
+              </div>
+            ) : (
+              <p className="mt-3 text-xs text-muted">{t.designs.notForCondolence}</p>
+            )}
           </section>
           {o.rsvp && <ReminderPanel event={event} comingCount={stats.accepted} onChange={refresh} />}
           {billing && <BillingPanel billing={billing} onChange={refresh} />}

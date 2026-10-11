@@ -37,6 +37,19 @@ stats and billing update live.
 - **Excel templates:** `public/guest-list-template.xlsx` (English) and
   `public/guest-list-template-ar.xlsx` (Arabic, right to left).
 
+## Design library
+
+The **Designs** section has 320 Arabic invitation designs from the Hikayati
+collection: 8 categories × 20 layouts × classic or modern, each with a choice
+of colours. Pick one for an event, fill in the names and wording (the date and
+venue come from the event), and the event uses it in place of the simple
+built-in card. Condolences keep their solemn built-in card.
+
+The sources live in `designs/hikayati/`; see the README there for how they're
+imported and updated (`npm run designs:import`). Cards are rendered on the
+server (`/api/designs/render`, `/api/events/[id]/card`) and shown in
+sandboxed iframes.
+
 ## Managing guests
 
 - **Excel upload:** `.xlsx` files with a Name and a Mobile number column.

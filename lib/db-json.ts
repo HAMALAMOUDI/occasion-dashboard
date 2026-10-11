@@ -36,6 +36,7 @@ function readDb(): DbShape {
   for (const e of parsed.events) {
     e.ownerPhone ??= null;
     e.language ??= "en";
+    e.design ??= null;
   }
   return parsed;
 }

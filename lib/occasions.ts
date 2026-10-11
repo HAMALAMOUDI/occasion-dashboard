@@ -38,6 +38,18 @@ export const OCCASIONS = [
     hostPrefix: { en: "Hosted by", ar: "الداعي" },
   },
   {
+    id: "henna",
+    emoji: "🌸",
+    rsvp: true,
+    tone: "celebration",
+    label: { en: "Henna night", ar: "ليلة الحناء" },
+    namePlaceholder: { en: "Jood's Henna Night", ar: "ليلة حناء العروس جود" },
+    hostLabel: { en: "Who is the invitation from?", ar: "الداعي" },
+    hostPlaceholder: { en: "Jood's family", ar: "أهل العروس" },
+    cardLine: { en: "Join us to celebrate", ar: "يسعدنا دعوتكم لمشاركتنا" },
+    hostPrefix: { en: "Hosted by", ar: "الداعي" },
+  },
+  {
     id: "engagement",
     emoji: "💐",
     rsvp: true,

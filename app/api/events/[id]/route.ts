@@ -6,10 +6,13 @@ import { badRequest, notFound, readJson } from "@/lib/http";
 import { computeStats } from "@/lib/rsvp";
 import { Event } from "@/lib/types";
 import { isLocale } from "@/lib/i18n";
+import { occasion } from "@/lib/occasions";
+import { SAMPLE } from "@/lib/designs/catalog";
+import { parseDesignChoice } from "@/lib/designs/validate";
 
 // Fields an organizer may edit. Ids, timestamps, and reminder state are
 // managed by the server.
-const EDITABLE_FIELDS = ["name", "eventDate", "venue", "inviterName", "templateId", "language"] as const;
+const EDITABLE_FIELDS = ["name", "eventDate", "venue", "inviterName", "templateId", "language", "design"] as const;
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -37,6 +40,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (key in body) Object.assign(patch, { [key]: body[key] });
   }
   if (patch.language !== undefined && !isLocale(patch.language)) return badRequest(err.invalidBody);
+  if (patch.design !== undefined && patch.design !== null) {
+    // Announcements (condolences) keep their solemn built-in card.
+    if (!occasion(access.event.occasionType).rsvp) return badRequest(err.noDesignForOccasion);
+    const design = parseDesignChoice(patch.design, SAMPLE.wedding);
+    if (!design) return badRequest(err.invalidDesign);
+    patch.design = design;
+  }
   if (patch.eventDate !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(patch.eventDate)) {
     return badRequest(err.invalidDate);
   }

@@ -2,6 +2,7 @@ import { CardTemplate, Event } from "@/lib/types";
 import { dir, formatDate, formatHijri } from "@/lib/i18n";
 import { messages } from "@/lib/messages";
 import { hostLine, occasion } from "@/lib/occasions";
+import DesignFrame from "./DesignFrame";
 
 type PreviewEvent = Pick<Event, "name" | "occasionType" | "inviterName" | "eventDate" | "venue" | "language">;
 
@@ -41,7 +42,18 @@ export function OccasionCard({ event, template, guestName }: { event: PreviewEve
   );
 }
 
-export default function InvitePreview({ event, template, guestName }: { event: PreviewEvent; template?: CardTemplate; guestName?: string }) {
+// `cardSrc`: a rendered library design to show instead of the built-in card.
+export default function InvitePreview({
+  event,
+  template,
+  guestName,
+  cardSrc,
+}: {
+  event: PreviewEvent;
+  template?: CardTemplate;
+  guestName?: string;
+  cardSrc?: string;
+}) {
   const lang = event.language;
   const t = messages[lang].card;
   const rsvp = occasion(event.occasionType).rsvp;
@@ -51,7 +63,11 @@ export default function InvitePreview({ event, template, guestName }: { event: P
     <div className="rounded-2xl bg-chat-bg p-4 sm:p-5" lang={lang} dir={dir(lang)}>
       {/* An incoming message, as the guest sees it. */}
       <div className="me-auto max-w-[19rem] rounded-xl rounded-ss-sm bg-surface p-1.5 shadow-sm">
-        <OccasionCard event={event} template={template} guestName={name} />
+        {cardSrc ? (
+          <DesignFrame src={cardSrc} title={eventName} className="rounded-xl" />
+        ) : (
+          <OccasionCard event={event} template={template} guestName={name} />
+        )}
         <p className="px-2 pt-2.5 text-[13px] leading-relaxed text-ink">
           {rsvp ? t.message(name, eventName, event.venue) : t.announcement(name, eventName, event.venue)}
         </p>

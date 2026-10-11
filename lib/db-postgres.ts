@@ -59,6 +59,9 @@ CREATE INDEX IF NOT EXISTS events_owner_phone_idx ON events (owner_phone);
 ALTER TABLE events ADD COLUMN IF NOT EXISTS language text NOT NULL DEFAULT 'en';
 ALTER TABLE card_templates ADD COLUMN IF NOT EXISTS name_ar text NOT NULL DEFAULT '';
 
+-- Added with the design library.
+ALTER TABLE events ADD COLUMN IF NOT EXISTS design jsonb;
+
 CREATE TABLE IF NOT EXISTS login_codes (
   phone      text PRIMARY KEY,
   code_hash  text NOT NULL,
@@ -91,6 +94,7 @@ const toEvent = (r: Row): Event => ({
   templateId: (r.template_id as string | null) ?? null,
   ownerPhone: (r.owner_phone as string | null) ?? null,
   language: r.language === "ar" ? "ar" : "en",
+  design: (r.design as Event["design"]) ?? null,
   reminderWeekSentAt: iso(r.reminder_week_sent_at),
   reminderDaySentAt: iso(r.reminder_day_sent_at),
   createdAt: iso(r.created_at)!,
@@ -146,7 +150,10 @@ const toTemplate = (r: Row): CardTemplate => ({
 // Column names come from the fixed lists below, never from user input.
 function patchSet(alias: string, columns: [key: string, column: string, cast: string][]) {
   return columns
-    .map(([key, col, cast]) => `${col} = CASE WHEN p ? '${key}' THEN (p->>'${key}')::${cast} ELSE ${alias}.${col} END`)
+    .map(([key, col, cast]) => {
+      const value = cast === "jsonb" ? `NULLIF(p->'${key}', 'null'::jsonb)` : `(p->>'${key}')::${cast}`;
+      return `${col} = CASE WHEN p ? '${key}' THEN ${value} ELSE ${alias}.${col} END`;
+    })
     .join(",\n    ");
 }
 
@@ -157,6 +164,7 @@ const EVENT_PATCH_SET = patchSet("e", [
   ["inviterName", "inviter_name", "text"],
   ["templateId", "template_id", "text"],
   ["language", "language", "text"],
+  ["design", "design", "jsonb"],
 ]);
 
 const GUEST_PATCH_SET = patchSet("g", [
@@ -265,11 +273,11 @@ export function postgresStore(connectionString: string): Store {
       try {
         await client.query("BEGIN");
         await client.query(
-          `INSERT INTO events (id, name, occasion_type, event_date, venue, inviter_name, template_id, owner_phone, language, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+          `INSERT INTO events (id, name, occasion_type, event_date, venue, inviter_name, template_id, owner_phone, language, design, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
           [
             event.id, event.name, event.occasionType, event.eventDate, event.venue, event.inviterName,
-            event.templateId, event.ownerPhone, event.language, event.createdAt,
+            event.templateId, event.ownerPhone, event.language, event.design ? JSON.stringify(event.design) : null, event.createdAt,
           ]
         );
         await client.query(

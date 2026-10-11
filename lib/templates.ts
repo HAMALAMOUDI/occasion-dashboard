@@ -5,6 +5,8 @@ import { CardTemplate } from "./types";
 export const DEFAULT_TEMPLATES: CardTemplate[] = [
   { id: "tpl-wedding-gold", name: "Gold foil", nameAr: "ذهبي", occasionType: "wedding", previewColor: "#8a6a3f" },
   { id: "tpl-wedding-floral", name: "Floral", nameAr: "ورود", occasionType: "wedding", previewColor: "#a1665f" },
+  { id: "tpl-henna-terracotta", name: "Terracotta", nameAr: "حنّائي", occasionType: "henna", previewColor: "#9a3b22" },
+  { id: "tpl-henna-plum", name: "Plum & gold", nameAr: "عنبي وذهبي", occasionType: "henna", previewColor: "#5b1a3e" },
   { id: "tpl-engagement-blush", name: "Blush", nameAr: "وردي ناعم", occasionType: "engagement", previewColor: "#b07a86" },
   { id: "tpl-engagement-pearl", name: "Pearl", nameAr: "لؤلؤي", occasionType: "engagement", previewColor: "#8c8173" },
   { id: "tpl-grad-navy", name: "Navy", nameAr: "كحلي", occasionType: "graduation", previewColor: "#1f3a5f" },

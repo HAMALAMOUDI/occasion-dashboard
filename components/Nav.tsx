@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CalendarHeart, LogOut, Plus, ReceiptText, ShieldCheck } from "lucide-react";
+import { CalendarHeart, LogOut, Palette, Plus, ReceiptText, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useT } from "./I18nProvider";
 import LanguageToggle from "./LanguageToggle";
 
 const LINKS = [
-  { href: "/", key: "events", icon: CalendarHeart, match: (p: string) => p === "/" || (p.startsWith("/events/") && p !== "/events/new") },
+  { href: "/", key: "events", icon: CalendarHeart, match: (p: string) => p === "/" || (p.startsWith("/events/") && p !== "/events/new" && !p.endsWith("/design")) },
   { href: "/events/new", key: "newEvent", icon: Plus, match: (p: string) => p === "/events/new" },
+  { href: "/designs", key: "designs", icon: Palette, match: (p: string) => p.startsWith("/designs") || p.endsWith("/design") },
   { href: "/billing", key: "billing", icon: ReceiptText, match: (p: string) => p.startsWith("/billing") },
 ] as const;
 
@@ -105,7 +106,7 @@ export default function Nav({ phone, isAdmin }: { phone: string; isAdmin: boolea
       </header>
 
       {/* Mobile tab bar */}
-      <nav className="md:hidden fixed inset-x-0 bottom-0 z-20 grid grid-cols-3 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+      <nav className="md:hidden fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
         {LINKS.map(({ href, key, icon: Icon, match }) => {
           const active = match(pathname);
           return (
