@@ -19,6 +19,16 @@
   --invalid: #66625a;
   --invalid-bg: #efece6;
   --whatsapp: #d9fdd3;
+  /* Landing page (editorial palette) */
+  --ivory: #f5f0e6;
+  --bone: #ebe4d6;
+  --paper-warm: #faf7f0;
+  --champagne: #c9b68b;
+  --olive: #66664a;
+  --sage: #9aa585;
+  --ink-deep: #24241f;
+  --ink-soft: #55554b;
+  --hair: #24241f24;
   --chat-bg: #efeae2;
 }
 
@@ -42,6 +52,17 @@
   --color-invalid-bg: var(--invalid-bg);
   --color-whatsapp: var(--whatsapp);
   --color-chat-bg: var(--chat-bg);
+  --color-ivory: var(--ivory);
+  --color-bone: var(--bone);
+  --color-paper-warm: var(--paper-warm);
+  --color-champagne: var(--champagne);
+  --color-olive: var(--olive);
+  --color-sage: var(--sage);
+  --color-ink-deep: var(--ink-deep);
+  --color-ink-soft: var(--ink-soft);
+  --color-hair: var(--hair);
+  --font-editorial: var(--font-cormorant), var(--font-display-ar), Georgia, serif;
+  --font-clean: var(--font-jost), var(--font-body-ar), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-display), var(--font-display-ar), Georgia, serif;
   --font-sans: var(--font-body), var(--font-body-ar), ui-sans-serif, system-ui, sans-serif;
 }
@@ -113,5 +134,75 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up {
     animation: none;
+  }
+}
+
+/* ---------- Landing page ---------- */
+
+.hairline {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--champagne), transparent);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) var(--rise-delay, 0s) both;
+}
+
+/* Fades sections in as they scroll into view (see components/landing/Reveal.tsx). */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 1.1s cubic-bezier(0.22, 0.61, 0.36, 1) var(--reveal-delay, 0s),
+    transform 1.1s cubic-bezier(0.22, 0.61, 0.36, 1) var(--reveal-delay, 0s);
+}
+.reveal[data-visible="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes draw-line {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.draw-line {
+  transform-origin: center;
+  animation: draw-line 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) 0.4s both;
+}
+
+/* Small spaced capitals — but never letter-space Arabic. */
+.tracked {
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+}
+:lang(ar) .tracked {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.95rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .draw-line {
+    animation: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }

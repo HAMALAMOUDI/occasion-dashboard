@@ -11,7 +11,8 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000, sign in with any mobile number (the code is shown
+Open http://localhost:3000 for the public landing page, or go to /events and
+sign in with any mobile number (the code is shown
 on screen until WhatsApp is connected), and create an event. Add guests one by
 one, or upload `public/guest-list-template.xlsx` (also downloadable from the
 event page). Use the "Coming / Not coming" buttons on the guest list to see
@@ -158,9 +159,10 @@ The app stores data in **Postgres** whenever `DATABASE_URL` (or
 
 ```
 app/
+  (site)/page.tsx              Public landing page at / (English & Arabic)
   login/page.tsx               Sign in with mobile number + WhatsApp code
   (portal)/                    Signed-in pages (layout checks the session)
-    page.tsx                   Dashboard home (your events)
+    events/page.tsx            Dashboard (your events) at /events
     events/new/page.tsx        Event creation + template picker
     events/[id]/page.tsx       Event detail: stats, guests, reminders, billing
     billing/page.tsx           Billing overview across your events

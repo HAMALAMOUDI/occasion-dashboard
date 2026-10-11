@@ -4,7 +4,8 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Check } from "lucide-react";
-import DesignFrame, { designSrc } from "@/components/DesignFrame";
+import DesignFrame from "@/components/DesignFrame";
+import { designSrc } from "@/lib/designs/urls";
 import { useLocale, useT } from "@/components/I18nProvider";
 import { requestJson } from "@/lib/client";
 import { formatDate } from "@/lib/i18n";
@@ -66,7 +67,7 @@ function Editor() {
           router.replace(`/designs?event=${id}`);
         }
       })
-      .catch(() => router.replace("/"));
+      .catch(() => router.replace("/events"));
   }, [id, q, router]);
 
   const sample = choice ? SAMPLE[choice.category] : null;

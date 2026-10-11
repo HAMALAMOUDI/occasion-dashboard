@@ -4,7 +4,8 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, X } from "lucide-react";
-import DesignFrame, { designSrc } from "@/components/DesignFrame";
+import DesignFrame from "@/components/DesignFrame";
+import { designSrc } from "@/lib/designs/urls";
 import { useLocale, useT } from "@/components/I18nProvider";
 import {
   CATEGORIES_FOR_OCCASION,

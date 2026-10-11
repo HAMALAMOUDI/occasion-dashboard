@@ -6,11 +6,12 @@ import { NextRequest, NextResponse } from "next/server";
 const SESSION_COOKIE = "occasion_session";
 
 export function proxy(request: NextRequest) {
-  if (request.cookies.has(SESSION_COOKIE)) return NextResponse.next();
+  // The landing page at / is public.
+  if (request.nextUrl.pathname === "/" || request.cookies.has(SESSION_COOKIE)) return NextResponse.next();
 
   const login = new URL("/login", request.url);
   const next = request.nextUrl.pathname + request.nextUrl.search;
-  if (next !== "/") login.searchParams.set("next", next);
+  login.searchParams.set("next", next);
   return NextResponse.redirect(login);
 }
 

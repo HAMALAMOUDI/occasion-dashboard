@@ -9,7 +9,7 @@ import LanguageToggle from "@/components/LanguageToggle";
 
 // Only allow redirects back into this site after signing in.
 function safeNext(next: string | null) {
-  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  return next && next.startsWith("/") && !next.startsWith("//") && next !== "/" ? next : "/events";
 }
 
 function LoginForm() {

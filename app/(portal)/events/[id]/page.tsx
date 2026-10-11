@@ -12,7 +12,7 @@ import AddGuestForm from "@/components/AddGuestForm";
 import ReminderPanel from "@/components/ReminderPanel";
 import BillingPanel from "@/components/BillingPanel";
 import InvitePreview from "@/components/InvitePreview";
-import { versionOf } from "@/components/DesignFrame";
+import { versionOf } from "@/lib/designs/urls";
 import RsvpBar from "@/components/RsvpBar";
 import { useLocale, useT } from "@/components/I18nProvider";
 import { postJson } from "@/lib/client";
@@ -81,7 +81,7 @@ export default function EventDetailPage() {
       <div className="card px-6 py-14 text-center">
         <p className="font-serif text-2xl">{t.event.oops}</p>
         <p className="text-muted mt-2">{loadError}</p>
-        <Link href="/" className="btn-secondary btn-md mt-6">
+        <Link href="/events" className="btn-secondary btn-md mt-6">
           <ArrowLeft size={15} className="rtl:rotate-180" /> {t.event.back}
         </Link>
       </div>
@@ -111,7 +111,7 @@ export default function EventDetailPage() {
   return (
     <div className="space-y-8 animate-fade-up">
       <div>
-        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink">
+        <Link href="/events" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink">
           <ArrowLeft size={15} className="rtl:rotate-180" /> {t.event.allEvents}
         </Link>
 

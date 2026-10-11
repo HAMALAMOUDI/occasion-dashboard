@@ -8,7 +8,7 @@ import { useT } from "./I18nProvider";
 import LanguageToggle from "./LanguageToggle";
 
 const LINKS = [
-  { href: "/", key: "events", icon: CalendarHeart, match: (p: string) => p === "/" || (p.startsWith("/events/") && p !== "/events/new" && !p.endsWith("/design")) },
+  { href: "/events", key: "events", icon: CalendarHeart, match: (p: string) => p === "/events" || (p.startsWith("/events/") && p !== "/events/new" && !p.endsWith("/design")) },
   { href: "/events/new", key: "newEvent", icon: Plus, match: (p: string) => p === "/events/new" },
   { href: "/designs", key: "designs", icon: Palette, match: (p: string) => p.startsWith("/designs") || p.endsWith("/design") },
   { href: "/billing", key: "billing", icon: ReceiptText, match: (p: string) => p.startsWith("/billing") },
@@ -17,7 +17,7 @@ const LINKS = [
 export function Logo() {
   const t = useT();
   return (
-    <Link href="/" className="flex items-center gap-2.5">
+    <Link href="/events" className="flex items-center gap-2.5">
       <span className="grid h-9 w-9 place-items-center rounded-xl bg-pine text-white font-serif text-lg">{t.brand.initial}</span>
       <span className="font-serif text-xl">{t.brand.name}</span>
     </Link>
