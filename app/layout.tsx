@@ -13,8 +13,8 @@ const bodyAr = IBM_Plex_Sans_Arabic({ subsets: ["arabic"], weight: ["400", "500"
 
 export async function generateMetadata(): Promise<Metadata> {
   return (await getLocale()) === "ar"
-    ? { title: "مناسبة — لوحة المنظم", description: "أدر دعوات واتساب والردود والتذكيرات لمناسباتك" }
-    : { title: "Occasion — organizer dashboard", description: "Manage WhatsApp invitations, RSVPs, and reminders for your events" };
+    ? { title: "حكايتي — لوحة المنظم", description: "أدر دعوات واتساب والردود والتذكيرات لمناسباتك" }
+    : { title: "Hikayati — organizer dashboard", description: "Manage WhatsApp invitations, RSVPs, and reminders for your events" };
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

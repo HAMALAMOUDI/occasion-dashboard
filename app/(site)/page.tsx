@@ -1,31 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import QRCode from "qrcode";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Mail, MapPin, Phone } from "lucide-react";
 import Reveal from "@/components/landing/Reveal";
 import LanguageToggle from "@/components/LanguageToggle";
-import DesignFrame from "@/components/DesignFrame";
-import { designSrc } from "@/lib/designs/urls";
 import { currentUser } from "@/lib/auth";
-import { getLocale, getMessages } from "@/lib/i18n-server";
-import { OCCASIONS } from "@/lib/occasions";
-import { DESIGN_CATEGORIES, DESIGN_STYLES } from "@/lib/designs/catalog";
+import { getMessages } from "@/lib/i18n-server";
 
 export const dynamic = "force-dynamic";
 
-const DESIGN_COUNT = DESIGN_STYLES.length * DESIGN_CATEGORIES.length * 20;
-
-// A few designs from the library to show off — real renders, not screenshots.
-const SHOWCASE = [
-  { style: "classic", category: "wedding", layout: 2 },
-  { style: "modern", category: "henna", layout: 11 },
-  { style: "classic", category: "graduation", layout: 9 },
-  { style: "modern", category: "baby", layout: 6 },
-] as const;
+const CONTACT = { email: "hikayati@gmail.com", phone: "+966 55 123 4567", tel: "+966551234567" };
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getMessages();
-  return { title: `${t.brand.name} — ${t.landing.tagline}`, description: t.landing.intro };
+  return { title: `Hikayati · حكايتي — ${t.landing.tagline}`, description: t.landing.intro };
 }
 
 const btnSolid =
@@ -33,28 +21,49 @@ const btnSolid =
 const btnLine =
   "inline-flex items-center justify-center gap-3 border border-ink-deep/35 px-8 py-3.5 text-[0.78rem] font-medium text-ink-deep transition-colors duration-500 hover:border-champagne hover:bg-paper-warm tracked";
 
+function Wordmark({ size = "sm" }: { size?: "sm" | "lg" }) {
+  return (
+    <span className="flex items-baseline gap-2.5">
+      <span className={`font-editorial font-medium tracking-[0.22em] ${size === "lg" ? "text-2xl" : "text-xl"}`} lang="en">
+        HIKAYATI
+      </span>
+      {size === "lg" && <span className="text-champagne">—</span>}
+      <span className="font-[family-name:var(--font-ruqaa)] text-lg text-champagne" lang="ar">
+        حكايتي
+      </span>
+    </span>
+  );
+}
+
+// Small ornament used on the sample invitation card.
+function Ornament() {
+  return (
+    <svg width="120" height="16" viewBox="0 0 120 16" aria-hidden="true" className="mx-auto my-4 text-champagne">
+      <path d="M2 8 H48 M72 8 H118" stroke="currentColor" strokeWidth="1" />
+      <path d="M60 1 L67 8 L60 15 L53 8 Z" fill="none" stroke="currentColor" strokeWidth="1.2" />
+      <circle cx="51" cy="8" r="1.6" fill="currentColor" />
+      <circle cx="69" cy="8" r="1.6" fill="currentColor" />
+    </svg>
+  );
+}
+
 export default async function LandingPage() {
-  const [t, locale, user] = await Promise.all([getMessages(), getLocale(), currentUser()]);
+  const [t, user] = await Promise.all([getMessages(), currentUser()]);
   const L = t.landing;
   const createHref = user ? "/events/new" : "/login?next=/events/new";
   // A real, scannable QR for the sample guest pass.
-  const qr = await QRCode.toString("INV-SAMPLE-PASS", { type: "svg", margin: 0, color: { dark: "#24241f", light: "#0000" } });
+  const qr = await QRCode.toString("HIKAYATI-SAMPLE-PASS", { type: "svg", margin: 0, color: { dark: "#24241f", light: "#0000" } });
 
   return (
     <>
       {/* ---------- Header ---------- */}
       <header className="sticky top-0 z-40 border-b border-hair bg-ivory/90 backdrop-blur">
         <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center justify-between gap-4 px-6">
-          <a href="#home" className="flex items-baseline gap-2.5">
-            <span className="font-editorial text-xl font-medium tracking-[0.22em] rtl:tracking-normal" lang="en">
-              OCCASION
-            </span>
-            <span className="font-[family-name:var(--font-ruqaa)] text-lg text-champagne" lang="ar">
-              مناسبة
-            </span>
+          <a href="#home" aria-label="Hikayati · حكايتي">
+            <Wordmark />
           </a>
           <nav className="hidden items-center gap-9 text-[0.8rem] text-ink-soft lg:flex">
-            {(["about", "how", "occasions", "designs"] as const).map((id) => (
+            {(["home", "occasions", "how", "about", "contact"] as const).map((id) => (
               <a key={id} href={`#${id}`} className="tracked transition-colors hover:text-ink-deep">
                 {L.nav[id]}
               </a>
@@ -62,26 +71,32 @@ export default async function LandingPage() {
           </nav>
           <div className="flex items-center gap-3">
             <LanguageToggle className="border-hair bg-transparent" />
-            <Link
-              href={user ? "/events" : "/login"}
-              className="hidden border border-ink-deep/35 px-5 py-2 text-[0.72rem] font-medium transition-colors duration-500 hover:border-champagne sm:inline-flex tracked"
-            >
+            <Link href={user ? "/events" : "/login"} className="hidden text-[0.8rem] text-ink-soft hover:text-ink-deep md:inline">
               {user ? L.myEvents : L.signIn}
+            </Link>
+            <Link
+              href={createHref}
+              className="hidden bg-ink-deep px-5 py-2 text-[0.72rem] font-medium text-ivory transition-colors duration-500 hover:bg-olive sm:inline-flex tracked"
+            >
+              {L.headerCta}
             </Link>
           </div>
         </div>
       </header>
 
-      <main id="home">
+      <main>
         {/* ---------- Hero ---------- */}
-        <section className="relative flex min-h-[calc(100svh-4.5rem)] flex-col items-center justify-center px-6 pb-24 pt-16 text-center">
+        <section
+          id="home"
+          className="relative flex min-h-[calc(100svh-4.5rem)] scroll-mt-20 flex-col items-center justify-center px-6 pb-24 pt-16 text-center"
+        >
           <div className="rise flex flex-col items-center">
             <h1 className="font-editorial text-[clamp(3.2rem,12vw,8.5rem)] font-light leading-none tracking-[0.1em] sm:tracking-[0.16em]" lang="en">
-              OCCASION
+              HIKAYATI
             </h1>
             <span className="hairline draw-line mt-6 w-full max-w-md" />
             <p className="mt-4 font-[family-name:var(--font-ruqaa)] text-[clamp(2.6rem,8vw,5rem)] leading-tight text-champagne" lang="ar">
-              مناسبة
+              حكايتي
             </p>
           </div>
           <div className="rise mt-8 max-w-2xl" style={{ "--rise-delay": "0.3s" } as React.CSSProperties}>
@@ -119,7 +134,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ---------- Example: the guest's experience ---------- */}
+        {/* ---------- Example: the guest's experience and the invitation ---------- */}
         <section className="relative bg-bone/60 px-6 py-28 sm:py-36">
           <div className="hairline absolute inset-x-0 top-0" />
           <div className="mx-auto max-w-6xl">
@@ -135,10 +150,10 @@ export default async function LandingPage() {
                 <div className="mx-auto w-full max-w-[24rem]" dir="rtl" lang="ar">
                   <div className="mb-3 flex items-center gap-3 px-1">
                     <span className="flex h-9 w-9 items-center justify-center rounded-full bg-olive font-[family-name:var(--font-ruqaa)] text-lg text-paper-warm">
-                      م
+                      ح
                     </span>
                     <div className="leading-tight">
-                      <p className="text-[0.95rem]">مناسبة</p>
+                      <p className="text-[0.95rem]">حكايتي</p>
                       <p className="text-[0.7rem] text-ink-soft">دعوة جديدة · الآن</p>
                     </div>
                   </div>
@@ -162,18 +177,52 @@ export default async function LandingPage() {
                     />
                     <p className="mt-4 text-[0.8rem] leading-6 text-ink-soft">رمز الدخول الخاص بك إلى المناسبة</p>
                     <p className="text-[0.68rem] uppercase tracking-[0.18em] text-ink-soft/70" lang="en" dir="ltr">
-                      Please present this QR on arrival
+                      Please present this QR upon arrival
                     </p>
                   </article>
                 </div>
                 <p className="mt-8 text-center text-[0.72rem] text-ink-soft/80 tracked">{L.guestCaption}</p>
               </Reveal>
 
-              {/* The invitation card itself, rendered from the design library */}
+              {/* The invitation */}
               <Reveal delay={0.15} className="order-1 lg:order-2">
-                <div className="mx-auto w-full max-w-[22rem] shadow-[0_40px_70px_-30px_rgba(70,58,28,0.45)]">
-                  <DesignFrame src={designSrc({ style: "classic", category: "wedding", layout: 1 })} title={L.cardCaption} />
-                </div>
+                <article
+                  dir="rtl"
+                  lang="ar"
+                  className="relative mx-auto aspect-[3/4.25] w-full max-w-[26.5rem] overflow-hidden bg-[#fdfbf6] font-[family-name:var(--font-display-ar)] shadow-[0_40px_70px_-30px_rgba(70,58,28,0.45)]"
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_30%_0%,rgba(255,255,255,0.9),transparent_60%)]" />
+                  <div className="absolute inset-[0.9rem] border border-champagne/70" />
+                  <div className="absolute inset-[1.15rem] border border-champagne/35" />
+                  <div className="relative flex h-full flex-col items-center px-[13%] pb-[11%] pt-[12%] text-center">
+                    <p className="text-[0.95rem] leading-8 text-olive sm:text-base">بارك الله لهما وبارك عليهما وجمع بينهما في خير</p>
+                    <Ornament />
+                    <p className="text-[0.82rem] leading-7 text-ink-soft">تتشرف الأسرتان الكريمتان بدعوتكم لحضور حفل زفاف</p>
+                    <p className="mt-2 text-[0.85rem] leading-7 text-ink-soft">
+                      سارة آل سعود <span className="mx-1 text-champagne">·</span> مها العتيبي
+                    </p>
+                    <div className="mt-auto">
+                      <p className="text-[1.65rem] leading-[1.5] sm:text-[1.9rem]">فهد آل سعود</p>
+                      <p className="my-1 text-xl text-champagne">و</p>
+                      <p className="text-[1.65rem] leading-[1.5] sm:text-[1.9rem]">نوف بنت محمد آل الشيخ</p>
+                    </div>
+                    <Ornament />
+                    <dl className="space-y-2 text-[0.82rem] leading-6 text-ink-soft">
+                      <div>
+                        <dt className="sr-only">الموقع</dt>
+                        <dd>نايراه هول، الرياض، المملكة العربية السعودية</dd>
+                      </div>
+                      <div className="flex items-center justify-center gap-3 text-ink-deep">
+                        <dt className="sr-only">التاريخ</dt>
+                        <dd>15 ديسمبر 2026</dd>
+                        <span className="h-3 w-px bg-champagne" aria-hidden="true" />
+                        <dt className="sr-only">الوقت</dt>
+                        <dd>الزفة 8:00 مساءً</dd>
+                      </div>
+                    </dl>
+                    <p className="mt-5 text-sm text-olive">نتشرف بحضوركم</p>
+                  </div>
+                </article>
                 <p className="mt-8 text-center text-[0.72rem] text-ink-soft/80 tracked">{L.cardCaption}</p>
               </Reveal>
             </div>
@@ -189,7 +238,7 @@ export default async function LandingPage() {
             <ol className="mt-20 grid gap-14 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
               {L.steps.map((step, i) => (
                 <Reveal as="li" key={step.title} delay={i * 0.12}>
-                  <span className="block font-editorial text-5xl font-light text-champagne">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="block font-editorial text-5xl font-light text-champagne">{step.num}</span>
                   <span className="my-6 block h-px w-full bg-hair" />
                   <h3 className="font-editorial text-3xl">{step.title}</h3>
                   <p className="mt-3 max-w-[16rem] leading-8 text-ink-soft">{step.body}</p>
@@ -207,12 +256,12 @@ export default async function LandingPage() {
               <h2 className="text-center font-editorial text-4xl font-light sm:text-6xl">{L.occasionsTitle}</h2>
             </Reveal>
             <ul className="mt-20 grid gap-x-16 md:grid-cols-2">
-              {OCCASIONS.map((o, i) => (
-                <Reveal as="li" key={o.id} delay={(i % 2) * 0.08}>
+              {L.occasions.map((label, i) => (
+                <Reveal as="li" key={label} delay={(i % 2) * 0.08}>
                   <div className="group flex items-baseline gap-5 border-b border-hair py-6 transition-colors duration-500 hover:border-champagne">
                     <span className="font-editorial text-lg text-champagne">{String(i + 1).padStart(2, "0")}</span>
                     <span className="font-editorial text-2xl transition-transform duration-500 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 sm:text-3xl">
-                      {o.label[locale]}
+                      {label}
                     </span>
                   </div>
                 </Reveal>
@@ -221,34 +270,8 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ---------- Design library ---------- */}
-        <section id="designs" className="scroll-mt-20 px-6 py-28 sm:py-36">
-          <div className="mx-auto max-w-6xl">
-            <Reveal className="mx-auto max-w-2xl text-center">
-              <p className="tracked text-[0.72rem] text-olive">{L.designsLabel}</p>
-              <h2 className="mt-6 font-editorial text-4xl font-light leading-[1.15] sm:text-6xl">{L.designsTitle(DESIGN_COUNT)}</h2>
-              <p className="mx-auto mt-6 max-w-xl leading-8 text-ink-soft">{L.designsBody}</p>
-            </Reveal>
-            <div className="mt-16 grid grid-cols-2 gap-5 sm:gap-8 lg:grid-cols-4">
-              {SHOWCASE.map((d, i) => (
-                <Reveal key={`${d.style}-${d.category}-${d.layout}`} delay={i * 0.1}>
-                  <div className="shadow-[0_30px_50px_-28px_rgba(70,58,28,0.5)] transition-transform duration-700 hover:-translate-y-1">
-                    <DesignFrame src={designSrc(d)} title={L.designsLabel} />
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-            <Reveal className="mt-14 text-center">
-              <Link href={user ? "/designs" : "/login?next=/designs"} className={btnLine}>
-                {L.designsCta} <ArrowRight size={15} className="rtl:rotate-180" />
-              </Link>
-            </Reveal>
-          </div>
-        </section>
-
         {/* ---------- Closing ---------- */}
         <section className="relative px-6 py-36 text-center sm:py-48">
-          <div className="hairline absolute inset-x-0 top-0" />
           <Reveal>
             <p className="font-editorial text-4xl font-light sm:text-6xl">{L.closingTitle}</p>
             <p className="mt-4 font-editorial text-2xl italic text-ink-soft sm:text-3xl rtl:not-italic">{L.closingSub}</p>
@@ -259,23 +282,46 @@ export default async function LandingPage() {
         </section>
       </main>
 
-      {/* ---------- Footer ---------- */}
-      <footer className="relative border-t border-hair px-6 pb-10 pt-16">
-        <div className="mx-auto flex max-w-6xl flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
+      {/* ---------- Footer / contact ---------- */}
+      <footer id="contact" className="relative scroll-mt-20 border-t border-hair px-6 pb-10 pt-20">
+        <div className="mx-auto grid max-w-6xl gap-12 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
           <div className="max-w-sm">
-            <p className="flex items-baseline gap-2.5">
-              <span className="font-editorial text-xl font-medium tracking-[0.22em]" lang="en">
-                OCCASION
-              </span>
-              <span className="text-champagne">—</span>
-              <span className="font-[family-name:var(--font-ruqaa)] text-lg text-champagne" lang="ar">
-                مناسبة
-              </span>
-            </p>
-            <p className="mt-4 leading-7 text-ink-soft">{L.footerLine}</p>
+            <Wordmark size="lg" />
+            <p className="mt-5 leading-7 text-ink-soft">{L.footerLine}</p>
           </div>
-          <nav className="grid grid-cols-2 gap-x-12 gap-y-3 text-[0.85rem] text-ink-soft">
-            {(["about", "how", "occasions", "designs"] as const).map((id) => (
+          <dl className="grid gap-5 text-[0.9rem] sm:grid-cols-3 md:grid-cols-1 lg:grid-cols-3">
+            <div>
+              <dt className="flex items-center gap-2 text-[0.7rem] text-olive tracked">
+                <Mail size={13} /> {L.email}
+              </dt>
+              <dd className="mt-2">
+                <a href={`mailto:${CONTACT.email}`} dir="ltr" className="hover:text-olive">
+                  {CONTACT.email}
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt className="flex items-center gap-2 text-[0.7rem] text-olive tracked">
+                <Phone size={13} /> {L.phone}
+              </dt>
+              <dd className="mt-2">
+                <a href={`tel:${CONTACT.tel}`} dir="ltr" className="hover:text-olive">
+                  {CONTACT.phone}
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt className="flex items-center gap-2 text-[0.7rem] text-olive tracked">
+                <MapPin size={13} /> {L.location}
+              </dt>
+              <dd className="mt-2">{L.locationValue}</dd>
+            </div>
+          </dl>
+        </div>
+        <div className="mx-auto mt-16 flex max-w-6xl flex-col gap-4 border-t border-hair pt-6 text-[0.75rem] text-ink-soft/80 sm:flex-row sm:items-center sm:justify-between">
+          <p>{L.rights(new Date().getFullYear())}</p>
+          <nav className="flex gap-6">
+            {(["home", "occasions", "how", "about"] as const).map((id) => (
               <a key={id} href={`#${id}`} className="hover:text-ink-deep">
                 {L.nav[id]}
               </a>
@@ -285,7 +331,6 @@ export default async function LandingPage() {
             </Link>
           </nav>
         </div>
-        <p className="mx-auto mt-14 max-w-6xl border-t border-hair pt-6 text-[0.75rem] text-ink-soft/80">{L.rights(new Date().getFullYear())}</p>
       </footer>
     </>
   );

@@ -1,4 +1,4 @@
-# Occasion — organizer dashboard
+# Hikayati · حكايتي — organizer dashboard
 
 A working prototype of the WhatsApp event-RSVP organizer dashboard: event
 creation, guest list CSV upload, occasion card template picker, live RSVP
