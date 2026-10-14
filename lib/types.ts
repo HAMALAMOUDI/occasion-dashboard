@@ -15,6 +15,7 @@ export interface Guest {
 
 import type { Lang, OccasionType } from "./occasions";
 import type { DesignChoice } from "./designs/render";
+import type { ClipStyle } from "./clips/themes";
 
 export interface CardTemplate {
   id: string;
@@ -32,6 +33,8 @@ export interface Event {
   language: Lang;
   // A card from the design library (lib/designs), or null for the simple built-in card.
   design: DesignChoice | null;
+  // An animated invitation (lib/clips), or null for none.
+  clip: { style: ClipStyle } | null;
   eventDate: string;
   venue: string;
   inviterName: string;

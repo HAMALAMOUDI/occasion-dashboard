@@ -12,6 +12,7 @@ import AddGuestForm from "@/components/AddGuestForm";
 import ReminderPanel from "@/components/ReminderPanel";
 import BillingPanel from "@/components/BillingPanel";
 import InvitePreview from "@/components/InvitePreview";
+import ClipPanel from "@/components/ClipPanel";
 import { versionOf } from "@/lib/designs/urls";
 import RsvpBar from "@/components/RsvpBar";
 import { useLocale, useT } from "@/components/I18nProvider";
@@ -217,6 +218,7 @@ export default function EventDetailPage() {
               <p className="mt-3 text-xs text-muted">{t.designs.notForCondolence}</p>
             )}
           </section>
+          <ClipPanel event={event} onChange={refresh} />
           {o.rsvp && <ReminderPanel event={event} comingCount={stats.accepted} onChange={refresh} />}
           {billing && <BillingPanel billing={billing} onChange={refresh} />}
         </aside>

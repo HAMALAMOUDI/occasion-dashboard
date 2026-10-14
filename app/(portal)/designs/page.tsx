@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, X } from "lucide-react";
 import DesignFrame from "@/components/DesignFrame";
+import DesignTabs from "@/components/designs/DesignTabs";
 import { designSrc } from "@/lib/designs/urls";
 import { useLocale, useT } from "@/components/I18nProvider";
 import {
@@ -63,6 +64,7 @@ function Gallery() {
         </div>
       )}
 
+      <DesignTabs />
       <p className="text-muted">{t.designs.eyebrow}</p>
       <h1 className="font-serif text-3xl sm:text-4xl mt-1">{t.designs.title}</h1>
       <p className="text-muted mt-2 mb-6 max-w-2xl">{t.designs.subtitle(TOTAL)}</p>

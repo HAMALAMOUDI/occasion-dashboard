@@ -51,6 +51,28 @@ imported and updated (`npm run designs:import`). Cards are rendered on the
 server (`/api/designs/render`, `/api/events/[id]/card`) and shown in
 sandboxed iframes.
 
+## Animated invitations
+
+**Designs → Animated** has a 12-second animated invitation for every occasion,
+in two original styles (inspired by, but not using, two reference art films):
+
+- **Paper collage:** cut-paper petals, leaves and occasion motifs (paisleys,
+  lanterns and crescents, balloons, stars, caps) drift in and settle into a
+  wreath around the invitation.
+- **Flowing threads:** fans of glowing strands swirl like a dancer's skirt,
+  with a thread scarf and falling petals.
+
+Each occasion has its own palette and motifs. Condolences get a slow, quiet
+variant. The event's details (title, Gregorian and Hijri date, venue, host)
+appear in its invitation language. Choose one for an event and it plays on the
+event page. **Download video** records an MP4 (WebM in Firefox) in the
+browser, ready to share on WhatsApp.
+
+The animation is drawn frame by frame by `lib/clips/engine.ts` (pure Canvas
+2D, deterministic), with themes in `lib/clips/themes.ts`. The same code runs
+outside the browser, so sample MP4s can be rendered offline. The rendered
+samples live in `exports/`, which is git-ignored.
+
 ## Managing guests
 
 - **Excel upload:** `.xlsx` files with a Name and a Mobile number column.
@@ -175,6 +197,7 @@ lib/
   db-json.ts                   JSON-file implementation (local development)
   auth.ts                      Sign-in codes, sessions, and per-event access checks
   guest-import.ts              Reads Excel/CSV rows (English or Arabic headings)
+  clips/                       Animated invitations: engine, themes, content
   whatsapp.ts                  WhatsApp Cloud API client (console stub without credentials)
   rsvp.ts                      Invite / response / reminder workflow shared by routes, webhook, cron
   phone.ts                     Phone number normalization (E.164)

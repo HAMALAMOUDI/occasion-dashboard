@@ -9,10 +9,11 @@ import { isLocale } from "@/lib/i18n";
 import { occasion } from "@/lib/occasions";
 import { SAMPLE } from "@/lib/designs/catalog";
 import { parseDesignChoice } from "@/lib/designs/validate";
+import { CLIP_STYLES, type ClipStyle } from "@/lib/clips/themes";
 
 // Fields an organizer may edit. Ids, timestamps, and reminder state are
 // managed by the server.
-const EDITABLE_FIELDS = ["name", "eventDate", "venue", "inviterName", "templateId", "language", "design"] as const;
+const EDITABLE_FIELDS = ["name", "eventDate", "venue", "inviterName", "templateId", "language", "design", "clip"] as const;
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -40,6 +41,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (key in body) Object.assign(patch, { [key]: body[key] });
   }
   if (patch.language !== undefined && !isLocale(patch.language)) return badRequest(err.invalidBody);
+  if (patch.clip !== undefined && patch.clip !== null) {
+    const style = (patch.clip as { style?: unknown }).style;
+    if (!CLIP_STYLES.includes(style as ClipStyle)) return badRequest(err.invalidBody);
+    patch.clip = { style: style as ClipStyle };
+  }
   if (patch.design !== undefined && patch.design !== null) {
     // Announcements (condolences) keep their solemn built-in card.
     if (!occasion(access.event.occasionType).rsvp) return badRequest(err.noDesignForOccasion);

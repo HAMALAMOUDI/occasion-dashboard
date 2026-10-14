@@ -37,6 +37,7 @@ function readDb(): DbShape {
     e.ownerPhone ??= null;
     e.language ??= "en";
     e.design ??= null;
+    e.clip ??= null;
   }
   return parsed;
 }

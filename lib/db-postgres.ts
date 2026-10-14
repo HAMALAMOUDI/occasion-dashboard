@@ -62,6 +62,9 @@ ALTER TABLE card_templates ADD COLUMN IF NOT EXISTS name_ar text NOT NULL DEFAUL
 -- Added with the design library.
 ALTER TABLE events ADD COLUMN IF NOT EXISTS design jsonb;
 
+-- Added with animated invitations.
+ALTER TABLE events ADD COLUMN IF NOT EXISTS clip jsonb;
+
 CREATE TABLE IF NOT EXISTS login_codes (
   phone      text PRIMARY KEY,
   code_hash  text NOT NULL,
@@ -95,6 +98,7 @@ const toEvent = (r: Row): Event => ({
   ownerPhone: (r.owner_phone as string | null) ?? null,
   language: r.language === "ar" ? "ar" : "en",
   design: (r.design as Event["design"]) ?? null,
+  clip: (r.clip as Event["clip"]) ?? null,
   reminderWeekSentAt: iso(r.reminder_week_sent_at),
   reminderDaySentAt: iso(r.reminder_day_sent_at),
   createdAt: iso(r.created_at)!,
@@ -165,6 +169,7 @@ const EVENT_PATCH_SET = patchSet("e", [
   ["templateId", "template_id", "text"],
   ["language", "language", "text"],
   ["design", "design", "jsonb"],
+  ["clip", "clip", "jsonb"],
 ]);
 
 const GUEST_PATCH_SET = patchSet("g", [
@@ -273,11 +278,12 @@ export function postgresStore(connectionString: string): Store {
       try {
         await client.query("BEGIN");
         await client.query(
-          `INSERT INTO events (id, name, occasion_type, event_date, venue, inviter_name, template_id, owner_phone, language, design, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+          `INSERT INTO events (id, name, occasion_type, event_date, venue, inviter_name, template_id, owner_phone, language, design, clip, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
           [
             event.id, event.name, event.occasionType, event.eventDate, event.venue, event.inviterName,
-            event.templateId, event.ownerPhone, event.language, event.design ? JSON.stringify(event.design) : null, event.createdAt,
+            event.templateId, event.ownerPhone, event.language, event.design ? JSON.stringify(event.design) : null,
+            event.clip ? JSON.stringify(event.clip) : null, event.createdAt,
           ]
         );
         await client.query(

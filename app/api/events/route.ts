@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
     // Invitations default to the organizer's own language.
     language: isLocale(body.language) ? body.language : await getLocale(),
     design: null,
+    clip: null,
     reminderWeekSentAt: null,
     reminderDaySentAt: null,
     createdAt: new Date().toISOString(),
