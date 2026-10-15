@@ -5,8 +5,13 @@ import type { OccasionType } from "../occasions";
 //             wreath around the invitation, on a soft paper ground.
 //   threads — fans of fine glowing strands sweep and swirl like a dancer's
 //             skirt, with a ribbon and falling petals, on a deep ground.
-export type ClipStyle = "collage" | "threads";
-export const CLIP_STYLES: ClipStyle[] = ["collage", "threads"];
+//   bloom   — a garden grows: stems rise, buds open, grass sways, butterflies.
+//   dunes   — desert night (or dawn): rolling dunes, rising moon or sun, stars.
+//   sea     — sun on the horizon, rolling waves, glittering water, gulls.
+//   oasis   — palms swaying in the breeze over a reflecting pool, light rays.
+// All motion is natural (wind noise, parallax, easing) — no figures.
+export type ClipStyle = "collage" | "threads" | "bloom" | "dunes" | "sea" | "oasis";
+export const CLIP_STYLES: ClipStyle[] = ["bloom", "dunes", "sea", "oasis", "collage", "threads"];
 
 export type Motif =
   | "leaf"
@@ -262,4 +267,59 @@ export const CLIP_THEMES: Record<OccasionType, ClipTheme> = {
       sparkle: "#f6cf4a",
     },
   },
+};
+
+// ------------------------------------------------------------ nature scenes
+
+// Time-of-day palettes shared by the nature scenes.
+export type Mood = "dawn" | "morning" | "golden" | "sunset" | "dusk" | "night" | "mist";
+
+export interface MoodPalette {
+  sky: [string, string, string]; // top → horizon
+  light: string; // sun or moon
+  glow: string;
+  land: [string, string, string]; // far → near (dunes, sea, ground)
+  ink: string;
+  muted: string;
+  dark: boolean; // text is light on a dark scene
+}
+
+export const MOODS: Record<Mood, MoodPalette> = {
+  dawn: { sky: ["#f3d9e4", "#f9e2cf", "#fff4e2"], light: "#fff1cf", glow: "#ffd6a8", land: ["#e8c9b8", "#d9ab93", "#c48d72"], ink: "#3a2630", muted: "#7a5a64", dark: false },
+  morning: { sky: ["#bfe0f2", "#dcefF6", "#f6fbf6"], light: "#fffbe6", glow: "#fff2b8", land: ["#cfe3d2", "#a9cfae", "#7fb38a"], ink: "#16303f", muted: "#4a6472", dark: false },
+  golden: { sky: ["#f6d79c", "#fbe6bf", "#fff4dc"], light: "#fff3d0", glow: "#ffcf73", land: ["#e8c08a", "#d6a368", "#b9824a"], ink: "#3a2812", muted: "#76593a", dark: false },
+  sunset: { sky: ["#5a3a78", "#d0607a", "#f7b267"], light: "#ffe0a3", glow: "#ff9a5a", land: ["#7a4a6a", "#5a3256", "#3a2040"], ink: "#fff3e6", muted: "#f2cfc4", dark: true },
+  dusk: { sky: ["#232a5c", "#4b4a86", "#c48aa0"], light: "#f6e7c4", glow: "#e7a2b4", land: ["#3a3a6a", "#2a2a52", "#1a1a38"], ink: "#f6f0e6", muted: "#cfc6dc", dark: true },
+  night: { sky: ["#070b22", "#121a44", "#25306a"], light: "#f6efd2", glow: "#c9c6ff", land: ["#1b2350", "#121839", "#0a0e24"], ink: "#f6efe0", muted: "#bcbad8", dark: true },
+  mist: { sky: ["#c9ccce", "#dcdedc", "#ecece8"], light: "#f7f7f3", glow: "#ffffff", land: ["#b9bdb8", "#a3a8a2", "#8c918b"], ink: "#2a2c2e", muted: "#5e6266", dark: false },
+};
+
+// Each occasion's time of day in each nature scene.
+export const OCCASION_MOODS: Record<OccasionType, Record<"bloom" | "dunes" | "sea" | "oasis", Mood>> = {
+  wedding: { bloom: "golden", dunes: "dusk", sea: "sunset", oasis: "golden" },
+  henna: { bloom: "sunset", dunes: "sunset", sea: "sunset", oasis: "golden" },
+  engagement: { bloom: "dawn", dunes: "dawn", sea: "sunset", oasis: "dusk" },
+  graduation: { bloom: "morning", dunes: "sunset", sea: "dawn", oasis: "morning" },
+  eid: { bloom: "morning", dunes: "dawn", sea: "dawn", oasis: "morning" },
+  ramadan: { bloom: "dusk", dunes: "night", sea: "night", oasis: "dusk" },
+  newborn: { bloom: "dawn", dunes: "dawn", sea: "dawn", oasis: "morning" },
+  birthday: { bloom: "morning", dunes: "sunset", sea: "morning", oasis: "morning" },
+  corporate: { bloom: "dusk", dunes: "night", sea: "night", oasis: "dusk" },
+  condolence: { bloom: "mist", dunes: "night", sea: "mist", oasis: "mist" },
+  other: { bloom: "golden", dunes: "sunset", sea: "sunset", oasis: "golden" },
+};
+
+// Styles in order of fit for each occasion; the first is shown as the best match.
+export const RECOMMENDED_STYLES: Record<OccasionType, ClipStyle[]> = {
+  wedding: ["bloom", "threads", "collage", "sea", "oasis", "dunes"],
+  henna: ["bloom", "collage", "oasis", "threads", "dunes", "sea"],
+  engagement: ["bloom", "sea", "collage", "threads", "oasis", "dunes"],
+  graduation: ["sea", "threads", "oasis", "collage", "bloom", "dunes"],
+  eid: ["dunes", "oasis", "bloom", "collage", "threads", "sea"],
+  ramadan: ["dunes", "threads", "oasis", "collage", "sea", "bloom"],
+  newborn: ["bloom", "sea", "collage", "threads", "oasis", "dunes"],
+  birthday: ["bloom", "collage", "sea", "threads", "oasis", "dunes"],
+  corporate: ["sea", "dunes", "threads", "oasis", "collage", "bloom"],
+  condolence: ["dunes", "sea", "bloom", "collage", "threads", "oasis"],
+  other: ["oasis", "bloom", "sea", "dunes", "collage", "threads"],
 };

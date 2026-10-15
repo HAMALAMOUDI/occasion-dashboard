@@ -53,24 +53,32 @@ sandboxed iframes.
 
 ## Animated invitations
 
-**Designs → Animated** has a 12-second animated invitation for every occasion,
-in two original styles (inspired by, but not using, two reference art films):
+**Designs → Animated** has 12-second animated invitations for every occasion,
+in six original styles. None show people; all motion is natural (wind, swell,
+growth, light):
 
-- **Paper collage:** cut-paper petals, leaves and occasion motifs (paisleys,
-  lanterns and crescents, balloons, stars, caps) drift in and settle into a
-  wreath around the invitation.
-- **Flowing threads:** fans of glowing strands swirl like a dancer's skirt,
-  with a thread scarf and falling petals.
+| Style | What happens |
+| --- | --- |
+| Garden in bloom | stems rise and buds open into flowers in the occasion's colours, with grass swaying and butterflies |
+| Desert night | layered dunes, a rising crescent and stars (or the sun at dawn), sand blowing off the crests |
+| Golden sea | the sun on the horizon, rolling waves, glittering light on the water, gulls |
+| Palm oasis | palms swaying over a still pool that reflects the sky, with slow light rays |
+| Paper collage | cut-paper petals and motifs settle into a wreath |
+| Flowing threads | fans of glowing strands swirl, with a ribbon and falling petals |
 
-Each occasion has its own palette and motifs. Condolences get a slow, quiet
-variant. The event's details (title, Gregorian and Hijri date, venue, host)
-appear in its invitation language. Choose one for an event and it plays on the
-event page. **Download video** records an MP4 (WebM in Firefox) in the
-browser, ready to share on WhatsApp.
+Each occasion has its own time of day and colours in every style (for
+example, Ramadan is a deep night, Eid is dawn, and weddings are golden hour).
+Styles are listed in order of fit, best first (`RECOMMENDED_STYLES` in
+`lib/clips/themes.ts`). Condolences get calm variants with no celebratory
+touches.
 
-The animation is drawn frame by frame by `lib/clips/engine.ts` (pure Canvas
-2D, deterministic), with themes in `lib/clips/themes.ts`. The same code runs
-outside the browser, so sample MP4s can be rendered offline. The rendered
+The event's details (title, Gregorian and Hijri date, venue, host) appear in
+its invitation language. Choose a clip for an event and it plays on the event
+page. **Download video** records an MP4 (WebM in Firefox) in the browser.
+
+The frames are drawn by `lib/clips/engine.ts` (collage, threads, text) and
+`lib/clips/nature.ts` (the four nature scenes), using pure, deterministic
+Canvas 2D, so the same code can render sample MP4s offline. The rendered
 samples live in `exports/`, which is git-ignored.
 
 ## Managing guests

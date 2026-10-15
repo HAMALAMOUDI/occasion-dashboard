@@ -39,10 +39,22 @@ const POSTER_TIME = 10;
 
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export default function ClipPlayer({ spec: specProp, className = "", label }: { spec: PlayerSpec; className?: string; label: string }) {
+// `autoPlay: false` starts on the finished still and plays on hover or the play button —
+// used when many clips share a page, to keep slower phones smooth.
+export default function ClipPlayer({
+  spec: specProp,
+  className = "",
+  label,
+  autoPlay = true,
+}: {
+  spec: PlayerSpec;
+  className?: string;
+  label: string;
+  autoPlay?: boolean;
+}) {
   const t = useT();
   const canvas = useRef<HTMLCanvasElement>(null);
-  const [playing, setPlaying] = useState(() => !reducedMotion());
+  const [playing, setPlaying] = useState(() => autoPlay && !reducedMotion());
   const [visible, setVisible] = useState(false);
   // Fonts are loaded per spec; "ready" means they're loaded for the spec on screen.
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
@@ -108,7 +120,7 @@ export default function ClipPlayer({ spec: specProp, className = "", label }: { 
   };
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div className={`relative overflow-hidden ${className}`} onMouseEnter={() => !reducedMotion() && setPlaying(true)}>
       <canvas ref={canvas} width={CLIP_W} height={CLIP_H} className="block h-auto w-full" role="img" aria-label={label} />
       {!ready && <div className="absolute inset-0 animate-pulse bg-line/50" />}
       <div className="absolute bottom-2 end-2 flex gap-1">

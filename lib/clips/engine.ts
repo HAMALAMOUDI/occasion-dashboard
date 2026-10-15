@@ -40,42 +40,8 @@ export interface ClipSpec {
   fonts: ClipFonts;
 }
 
-// ------------------------------------------------------------ helpers
-
-function rng(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let x = Math.imul(a ^ (a >>> 15), 1 | a);
-    x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
-    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function hash(s: string) {
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
-  return h >>> 0;
-}
-
-const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
-const easeOutCubic = (x: number) => 1 - Math.pow(1 - x, 3);
-const easeInOut = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
-const easeOutBack = (x: number) => {
-  const c1 = 1.4, c3 = c1 + 1;
-  return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
-};
-const progress = (t: number, start: number, dur: number) => clamp01((t - start) / dur);
-
-function hexToRgb(hex: string) {
-  const h = hex.replace("#", "");
-  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
-}
-function mix(a: string, b: string, k: number, alpha = 1) {
-  const [r1, g1, b1] = hexToRgb(a), [r2, g2, b2] = hexToRgb(b);
-  return `rgba(${Math.round(r1 + (r2 - r1) * k)},${Math.round(g1 + (g2 - g1) * k)},${Math.round(b1 + (b2 - b1) * k)},${alpha})`;
-}
-const rgba = (hex: string, a: number) => mix(hex, hex, 0, a);
+import { clamp01, easeInOut, easeOutBack, easeOutCubic, hash, mix, progress, rgba, rng } from "./util";
+import { drawNature, NATURE_STYLES, type NatureStyle } from "./nature";
 
 // ------------------------------------------------------------ motifs (centred at 0,0, size s)
 
@@ -520,7 +486,15 @@ function wrap(ctx: Ctx, text: string, maxWidth: number) {
   return lines;
 }
 
-function drawText(ctx: Ctx, t: number, spec: ClipSpec, colors: { ink: string; muted: string; accent: string }, panel: string | null) {
+function drawText(
+  ctx: Ctx,
+  t: number,
+  spec: ClipSpec,
+  colors: { ink: string; muted: string; accent: string },
+  panel: string | null,
+  centerY = 790,
+  minTop = 470,
+) {
   const { text: tx, fonts } = spec;
   const ar = tx.lang === "ar";
   const display = ar ? fonts.displayAr : fonts.display;
@@ -556,7 +530,7 @@ function drawText(ctx: Ctx, t: number, spec: ClipSpec, colors: { ink: string; mu
   add(tx.cta, `400 ${ar ? 36 : 32}px ${display}`, ar ? 36 : 32, colors.accent, 8.6, 0);
 
   const total = lines.reduce((s, l) => s + l.size * 1.25 + l.gap, 0) + 30;
-  let y = Math.max(470, 790 - total / 2);
+  let y = Math.max(minTop, centerY - total / 2);
 
   // A soft paper panel behind the text (collage) keeps it legible over pieces.
   if (panel) {
@@ -647,18 +621,25 @@ export function renderClipFrame(ctx: Ctx, t: number, spec: ClipSpec) {
   const theme = CLIP_THEMES[spec.occasion] ?? CLIP_THEMES.other;
   const key = `${spec.style}:${spec.occasion}`;
   ctx.save();
-  if (spec.style === "collage") {
+  let ground: string;
+  if ((NATURE_STYLES as string[]).includes(spec.style)) {
+    const scene = drawNature(ctx, t, spec.style as NatureStyle, spec.occasion);
+    drawText(ctx, t, spec, scene.colors, null, scene.centerY, 90);
+    ground = scene.ground;
+  } else if (spec.style === "collage") {
     drawCollage(ctx, t, key, theme.collage);
     drawText(ctx, t, spec, theme.collage, mix(theme.collage.ground[0], "#ffffff", 0.55));
+    ground = theme.collage.ground[0];
   } else {
     drawThreads(ctx, t, key, theme.threads);
     drawText(ctx, t, spec, theme.threads, null);
+    ground = theme.threads.ground[1];
   }
   // fade in from the ground colour at the very start, so loops feel seamless
   const fade = 1 - progress(t, 0, 0.6);
   if (fade > 0) {
     ctx.globalAlpha = fade;
-    ctx.fillStyle = spec.style === "collage" ? theme.collage.ground[0] : theme.threads.ground[1];
+    ctx.fillStyle = ground;
     ctx.fillRect(0, 0, CLIP_W, CLIP_H);
   }
   ctx.restore();

@@ -9,7 +9,7 @@ import DesignTabs from "@/components/designs/DesignTabs";
 import { useLocale, useT } from "@/components/I18nProvider";
 import { requestJson } from "@/lib/client";
 import { clipSampleText, clipTextForEvent } from "@/lib/clips/content";
-import { CLIP_STYLES, type ClipStyle } from "@/lib/clips/themes";
+import { RECOMMENDED_STYLES, type ClipStyle } from "@/lib/clips/themes";
 import { OCCASIONS, isOccasionType, occasion, type OccasionType } from "@/lib/occasions";
 import type { Event } from "@/lib/types";
 
@@ -99,16 +99,24 @@ function Animated() {
       )}
       {error && <p className="mb-4 rounded-xl bg-decline-bg px-4 py-3 text-sm text-decline">{error}</p>}
 
-      <div className="grid gap-8 sm:grid-cols-2 lg:max-w-4xl">
-        {CLIP_STYLES.map((style) => {
+      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        {RECOMMENDED_STYLES[occ].map((style, i) => {
           const inUse = chosen?.clip?.style === style && chosen.occasionType === occ;
           return (
-            <section key={style} className="card overflow-hidden">
-              <ClipPlayer spec={{ style, occasion: occ, text }} label={`${t.clips.styles[style]} — ${occasion(occ).label[locale]}`} />
+            <section key={`${occ}-${style}`} className={`card overflow-hidden ${i === 0 ? "ring-2 ring-pine/30" : ""}`}>
+              <ClipPlayer
+                spec={{ style, occasion: occ, text }}
+                label={`${t.clips.styles[style]} — ${occasion(occ).label[locale]}`}
+                autoPlay={i === 0}
+              />
               <div className="p-5">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <h2 className="font-serif text-xl">{t.clips.styles[style]}</h2>
-                  {inUse && <span className="rounded-full bg-accept-bg px-2.5 py-0.5 text-xs font-medium text-accept">{t.clips.inUse}</span>}
+                  {inUse ? (
+                    <span className="rounded-full bg-accept-bg px-2.5 py-0.5 text-xs font-medium text-accept">{t.clips.inUse}</span>
+                  ) : (
+                    i === 0 && <span className="rounded-full bg-pine-soft px-2.5 py-0.5 text-xs font-medium text-pine">{t.clips.bestMatch}</span>
+                  )}
                 </div>
                 <p className="mt-1 text-sm text-muted">{t.clips.styleHints[style]}</p>
                 {!(chosen && chosen.occasionType === occ) && <p className="mt-2 text-xs text-muted">{t.clips.sample}</p>}
