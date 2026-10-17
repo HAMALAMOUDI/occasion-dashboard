@@ -18,6 +18,8 @@ function pageFonts(): ClipFonts {
     displayAr: v("--font-display-ar", "serif"),
     body: v("--font-body", "system-ui, sans-serif"),
     bodyAr: v("--font-body-ar", "system-ui, sans-serif"),
+    script: v("--font-script", "cursive"),
+    scriptAr: v("--font-script-ar", "serif"),
   };
 }
 
@@ -25,9 +27,18 @@ function pageFonts(): ClipFonts {
 // (or deferred in a background tab) mustn't stop the clip from showing. The
 // player redraws when fonts finish loading.
 async function loadFonts(fonts: ClipFonts, text: ClipText) {
-  const sample = Object.values(text).join(" ");
+  const { names, ...rest } = text;
+  const sample = [...Object.values(rest), names?.a, names?.b, names?.line, "&و"].join(" ");
   const all = Promise.all(
-    [`700 72px ${fonts.displayAr}`, `400 30px ${fonts.displayAr}`, `500 28px ${fonts.bodyAr}`, `700 64px ${fonts.display}`, `500 28px ${fonts.body}`].map((f) =>
+    [
+      `700 72px ${fonts.displayAr}`,
+      `400 30px ${fonts.displayAr}`,
+      `500 28px ${fonts.bodyAr}`,
+      `700 64px ${fonts.display}`,
+      `500 28px ${fonts.body}`,
+      `400 96px ${fonts.script}`,
+      `400 96px ${fonts.scriptAr}`,
+    ].map((f) =>
       document.fonts.load(f, sample).catch(() => undefined),
     ),
   );
@@ -56,14 +67,15 @@ export default function ClipPlayer({
   const canvas = useRef<HTMLCanvasElement>(null);
   const [playing, setPlaying] = useState(() => autoPlay && !reducedMotion());
   const [visible, setVisible] = useState(false);
-  // Fonts are loaded per spec; "ready" means they're loaded for the spec on screen.
+  // Fonts are loaded per spec; "ready" once the first load settles (later
+  // specs, like names being typed, redraw in place when their fonts arrive).
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const clock = useRef({ start: 0, offset: 0 });
   const fonts = useRef<ClipFonts | null>(null);
   // Re-render only when the spec's content changes, not on every new object.
   const specKey = JSON.stringify(specProp);
   const spec = useMemo(() => JSON.parse(specKey) as PlayerSpec, [specKey]);
-  const ready = loadedKey === specKey;
+  const ready = loadedKey !== null;
   // Bumped when late fonts arrive, so a paused still frame is redrawn with them.
   const [fontEpoch, setFontEpoch] = useState(0);
   useEffect(() => {
@@ -76,11 +88,16 @@ export default function ClipPlayer({
     let alive = true;
     fonts.current = pageFonts();
     loadFonts(fonts.current, spec.text).then(() => alive && setLoadedKey(specKey));
-    clock.current = { start: performance.now(), offset: 0 };
     return () => {
       alive = false;
     };
   }, [spec, specKey]);
+
+  // A new scene starts from the beginning; edited wording (e.g. names typed in
+  // the editor) carries on from the current moment.
+  useEffect(() => {
+    clock.current = { start: performance.now(), offset: 0 };
+  }, [spec.style, spec.occasion]);
 
   // Only animate while on screen.
   useEffect(() => {

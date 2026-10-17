@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Amiri, Fraunces, IBM_Plex_Sans_Arabic, Plus_Jakarta_Sans } from "next/font/google";
+import { Amiri, Aref_Ruqaa, Fraunces, Great_Vibes, IBM_Plex_Sans_Arabic, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/components/I18nProvider";
 import { dir } from "@/lib/i18n";
@@ -11,6 +11,10 @@ const body = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-body", di
 const displayAr = Amiri({ subsets: ["arabic"], weight: ["400", "700"], variable: "--font-display-ar", display: "swap" });
 const bodyAr = IBM_Plex_Sans_Arabic({ subsets: ["arabic"], weight: ["400", "500", "600", "700"], variable: "--font-body-ar", display: "swap" });
 
+// Calligraphy for names on animated cards; fetched only when a card draws with them.
+const script = Great_Vibes({ subsets: ["latin"], weight: "400", variable: "--font-script", display: "swap", preload: false });
+const scriptAr = Aref_Ruqaa({ subsets: ["arabic"], weight: ["400", "700"], variable: "--font-script-ar", display: "swap", preload: false });
+
 export async function generateMetadata(): Promise<Metadata> {
   return (await getLocale()) === "ar"
     ? { title: "حكايتي — لوحة المنظم", description: "أدر دعوات واتساب والردود والتذكيرات لمناسباتك" }
@@ -20,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   return (
-    <html lang={locale} dir={dir(locale)} className={`${display.variable} ${body.variable} ${displayAr.variable} ${bodyAr.variable}`}>
+    <html lang={locale} dir={dir(locale)} className={`${display.variable} ${body.variable} ${displayAr.variable} ${bodyAr.variable} ${script.variable} ${scriptAr.variable}`}>
       <body className="bg-paper text-ink">
         <I18nProvider locale={locale}>{children}</I18nProvider>
       </body>

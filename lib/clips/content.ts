@@ -1,6 +1,6 @@
 import { formatDate, formatHijri } from "../i18n";
 import { hostLine, occasion, type Lang, type OccasionType } from "../occasions";
-import type { Event } from "../types";
+import type { ClipNames, Event } from "../types";
 import type { ClipText } from "./engine";
 
 // Closing line of a clip, by the occasion's tone.
@@ -28,13 +28,30 @@ function build(occ: OccasionType, lang: Lang, title: string, host: string, date:
   };
 }
 
-// The words of an event's clip, in its invitation language.
-export function clipTextForEvent(event: Pick<Event, "occasionType" | "language" | "name" | "inviterName" | "eventDate" | "venue">): ClipText {
-  return build(event.occasionType, event.language, event.name, event.inviterName, event.eventDate, event.venue);
+// The words of an event's clip, in its invitation language. Cards that feature
+// names (the royal style) use the names saved with the clip, else the event name.
+export function clipTextForEvent(
+  event: Pick<Event, "occasionType" | "language" | "name" | "inviterName" | "eventDate" | "venue"> & { clip?: { names?: ClipNames } | null },
+  names?: ClipNames,
+): ClipText {
+  const text = build(event.occasionType, event.language, event.name, event.inviterName, event.eventDate, event.venue);
+  const n = names ?? event.clip?.names;
+  if (n?.a) text.names = n;
+  return text;
+}
+
+// Sample couple names for occasions that celebrate two people.
+const SAMPLE_NAMES: Partial<Record<OccasionType, Record<Lang, ClipNames>>> = {
+  wedding: { en: { a: "Fahad", b: "Noura", line: "The Wedding of" }, ar: { a: "فهد", b: "نوف", line: "حفل زفاف" } },
+  engagement: { en: { a: "Sultan", b: "Lama", line: "The Engagement of" }, ar: { a: "سلطان", b: "لمى", line: "حفل خطوبة" } },
+  henna: { en: { a: "Jood", b: "", line: "Henna Night" }, ar: { a: "جود", b: "", line: "ليلة الحناء" } },
 }
 
 // Sample wording for previews and the sample video files.
 export function clipSampleText(occ: OccasionType, lang: Lang): ClipText {
   const o = occasion(occ);
-  return build(occ, lang, o.namePlaceholder[lang], o.hostPlaceholder[lang], SAMPLE_DATE, SAMPLE_VENUE[lang]);
+  const text = build(occ, lang, o.namePlaceholder[lang], o.hostPlaceholder[lang], SAMPLE_DATE, SAMPLE_VENUE[lang]);
+  const names = SAMPLE_NAMES[occ]?.[lang];
+  if (names) text.names = names;
+  return text;
 }

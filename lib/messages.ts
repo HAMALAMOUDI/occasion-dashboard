@@ -320,6 +320,7 @@ const en = {
     title: "Invitations that come alive",
     subtitle: "Short animated invitations for every occasion — your names, date and venue appear as the artwork moves. Play them here, or download a video to share on WhatsApp.",
     styles: {
+      royal: "Royal entrance",
       bloom: "Garden in bloom",
       dunes: "Desert night",
       sea: "Golden sea",
@@ -328,6 +329,7 @@ const en = {
       threads: "Flowing threads",
     },
     styleHints: {
+      royal: "Curtains part and a golden gate opens onto a palace hall with a grand staircase; roses bloom and your names appear in gold calligraphy.",
       bloom: "Stems rise and buds open into flowers in your occasion’s colours, with grass swaying and butterflies passing.",
       dunes: "Rolling dunes under a rising crescent and twinkling stars — or the first light of dawn.",
       sea: "The sun on the horizon, waves rolling in and light glittering across the water.",
@@ -353,6 +355,13 @@ const en = {
     add: "Add animation",
     change: "Change",
     remove: "Remove",
+    namesTitle: "Names on the card",
+    nameA: "Name 1",
+    nameB: "Name 2 (optional)",
+    nameLine: "Line above the names",
+    nameLineHint: "e.g. The Wedding of",
+    saveNames: "Save names",
+    namesSaved: "Saved",
     sample: "Sample wording — your event’s details appear when you use it.",
   },
 
@@ -734,6 +743,7 @@ const ar: Messages = {
     title: "دعوات تنبض بالحياة",
     subtitle: "دعوات قصيرة متحركة لكل مناسبة — تظهر أسماؤك وتاريخ مناسبتك ومكانها مع حركة العمل الفني. شغّلها هنا، أو نزّلها فيديو لمشاركتها عبر واتساب.",
     styles: {
+      royal: "المدخل الملكي",
       bloom: "حديقة مزهرة",
       dunes: "ليل الصحراء",
       sea: "بحر ذهبي",
@@ -742,6 +752,7 @@ const ar: Messages = {
       threads: "خيوط منسابة",
     },
     styleHints: {
+      royal: "تنفرج الستائر ويُفتح باب ذهبي على قاعة قصر بدرج فخم، تتفتح الورود وتظهر الأسماء بخط ذهبي.",
       bloom: "سيقان تنمو وبراعم تتفتح زهوراً بألوان مناسبتك، مع عشب يتمايل وفراشات عابرة.",
       dunes: "كثبان متموجة تحت هلال يعلو ونجوم تتلألأ — أو مع أول خيوط الفجر.",
       sea: "شمس على الأفق، وأمواج تتهادى، وضوء يتلألأ على صفحة الماء.",
@@ -767,6 +778,13 @@ const ar: Messages = {
     add: "إضافة دعوة متحركة",
     change: "تغيير",
     remove: "إزالة",
+    namesTitle: "الأسماء على البطاقة",
+    nameA: "الاسم الأول",
+    nameB: "الاسم الثاني (اختياري)",
+    nameLine: "السطر فوق الأسماء",
+    nameLineHint: "مثال: حفل زفاف",
+    saveNames: "حفظ الأسماء",
+    namesSaved: "تم الحفظ",
     sample: "نص تجريبي — تظهر تفاصيل مناسبتك عند استخدامها.",
   },
 

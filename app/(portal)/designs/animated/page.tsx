@@ -45,7 +45,7 @@ function Animated() {
     if (!chosen) return;
     setBusy(style);
     setError(null);
-    const res = await requestJson("PATCH", `/api/events/${chosen.id}`, { clip: { style } });
+    const res = await requestJson("PATCH", `/api/events/${chosen.id}`, { clip: { style, names: chosen.clip?.names } });
     setBusy(null);
     if (!res.ok) setError(res.error);
     else router.push(`/events/${chosen.id}`);

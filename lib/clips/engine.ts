@@ -22,6 +22,7 @@ export interface ClipText {
   venue: string;
   host: string; // e.g. "الداعي: عائلة العتيبي"
   cta: string; // closing line
+  names?: { a: string; b: string; line: string }; // for cards that feature names
 }
 
 // Font families as CSS font-family values (resolved by the caller: next/font
@@ -31,6 +32,8 @@ export interface ClipFonts {
   displayAr: string; // Arabic display
   body: string; // Latin body
   bodyAr: string; // Arabic body
+  script?: string; // Latin calligraphy (names)
+  scriptAr?: string; // Arabic calligraphy (names)
 }
 
 export interface ClipSpec {
@@ -42,6 +45,7 @@ export interface ClipSpec {
 
 import { clamp01, easeInOut, easeOutBack, easeOutCubic, hash, mix, progress, rgba, rng } from "./util";
 import { drawNature, NATURE_STYLES, type NatureStyle } from "./nature";
+import { drawRoyal } from "./royal";
 
 // ------------------------------------------------------------ motifs (centred at 0,0, size s)
 
@@ -622,7 +626,9 @@ export function renderClipFrame(ctx: Ctx, t: number, spec: ClipSpec) {
   const key = `${spec.style}:${spec.occasion}`;
   ctx.save();
   let ground: string;
-  if ((NATURE_STYLES as string[]).includes(spec.style)) {
+  if (spec.style === "royal") {
+    ground = drawRoyal(ctx, t, spec.occasion, spec.text, spec.fonts).ground;
+  } else if ((NATURE_STYLES as string[]).includes(spec.style)) {
     const scene = drawNature(ctx, t, spec.style as NatureStyle, spec.occasion);
     drawText(ctx, t, spec, scene.colors, null, scene.centerY, 90);
     ground = scene.ground;

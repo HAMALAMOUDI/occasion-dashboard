@@ -17,6 +17,18 @@ import type { Lang, OccasionType } from "./occasions";
 import type { DesignChoice } from "./designs/render";
 import type { ClipStyle } from "./clips/themes";
 
+// Names shown on cards that feature them (e.g. "Royal entrance"); editable per event.
+export interface ClipNames {
+  a: string;
+  b: string; // empty for a single name
+  line: string; // small line above the names, e.g. "حفل زفاف" / "The Wedding of"
+}
+
+export interface ClipChoice {
+  style: ClipStyle;
+  names?: ClipNames;
+}
+
 export interface CardTemplate {
   id: string;
   name: string;
@@ -34,7 +46,7 @@ export interface Event {
   // A card from the design library (lib/designs), or null for the simple built-in card.
   design: DesignChoice | null;
   // An animated invitation (lib/clips), or null for none.
-  clip: { style: ClipStyle } | null;
+  clip: ClipChoice | null;
   eventDate: string;
   venue: string;
   inviterName: string;

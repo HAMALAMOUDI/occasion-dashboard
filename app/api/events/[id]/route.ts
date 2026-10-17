@@ -42,9 +42,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   if (patch.language !== undefined && !isLocale(patch.language)) return badRequest(err.invalidBody);
   if (patch.clip !== undefined && patch.clip !== null) {
-    const style = (patch.clip as { style?: unknown }).style;
+    const { style, names } = patch.clip as { style?: unknown; names?: unknown };
     if (!CLIP_STYLES.includes(style as ClipStyle)) return badRequest(err.invalidBody);
     patch.clip = { style: style as ClipStyle };
+    if (names !== undefined && names !== null) {
+      // Names on the card: short plain strings only.
+      const n = names as Record<string, unknown>;
+      const field = (k: string) => (typeof n[k] === "string" ? (n[k] as string).trim().slice(0, 60) : "");
+      if (typeof names !== "object" || !field("a")) return badRequest(err.enterName);
+      patch.clip.names = { a: field("a"), b: field("b"), line: field("line") };
+    }
   }
   if (patch.design !== undefined && patch.design !== null) {
     // Announcements (condolences) keep their solemn built-in card.
