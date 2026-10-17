@@ -10,8 +10,8 @@ import type { OccasionType } from "../occasions";
 //   sea     — sun on the horizon, rolling waves, glittering water, gulls.
 //   oasis   — palms swaying in the breeze over a reflecting pool, light rays.
 // All motion is natural (wind noise, parallax, easing) — no figures.
-export type ClipStyle = "royal" | "collage" | "threads" | "bloom" | "dunes" | "sea" | "oasis";
-export const CLIP_STYLES: ClipStyle[] = ["royal", "bloom", "dunes", "sea", "oasis", "collage", "threads"];
+export type ClipStyle = "palace" | "royal" | "collage" | "threads" | "bloom" | "dunes" | "sea" | "oasis";
+export const CLIP_STYLES: ClipStyle[] = ["palace", "royal", "bloom", "dunes", "sea", "oasis", "collage", "threads"];
 
 export type Motif =
   | "leaf"
@@ -311,15 +311,15 @@ export const OCCASION_MOODS: Record<OccasionType, Record<"bloom" | "dunes" | "se
 
 // Styles in order of fit for each occasion; the first is shown as the best match.
 export const RECOMMENDED_STYLES: Record<OccasionType, ClipStyle[]> = {
-  wedding: ["royal", "bloom", "threads", "collage", "sea", "oasis", "dunes"],
-  henna: ["bloom", "royal", "collage", "oasis", "threads", "dunes", "sea"],
-  engagement: ["royal", "bloom", "sea", "collage", "threads", "oasis", "dunes"],
-  graduation: ["sea", "threads", "oasis", "collage", "royal", "bloom", "dunes"],
-  eid: ["dunes", "oasis", "bloom", "collage", "royal", "threads", "sea"],
-  ramadan: ["dunes", "threads", "oasis", "collage", "sea", "royal", "bloom"],
-  newborn: ["bloom", "sea", "collage", "royal", "threads", "oasis", "dunes"],
-  birthday: ["bloom", "collage", "sea", "threads", "royal", "oasis", "dunes"],
-  corporate: ["sea", "dunes", "threads", "oasis", "collage", "royal", "bloom"],
-  condolence: ["dunes", "sea", "bloom", "collage", "threads", "oasis", "royal"],
-  other: ["oasis", "bloom", "royal", "sea", "dunes", "collage", "threads"],
+  wedding: ["palace", "royal", "bloom", "threads", "collage", "sea", "oasis", "dunes"],
+  henna: ["bloom", "royal", "palace", "collage", "oasis", "threads", "dunes", "sea"],
+  engagement: ["palace", "royal", "bloom", "sea", "collage", "threads", "oasis", "dunes"],
+  graduation: ["sea", "threads", "oasis", "collage", "royal", "palace", "bloom", "dunes"],
+  eid: ["dunes", "oasis", "bloom", "collage", "royal", "palace", "threads", "sea"],
+  ramadan: ["dunes", "threads", "oasis", "collage", "sea", "royal", "palace", "bloom"],
+  newborn: ["bloom", "sea", "collage", "royal", "palace", "threads", "oasis", "dunes"],
+  birthday: ["bloom", "collage", "sea", "threads", "royal", "palace", "oasis", "dunes"],
+  corporate: ["sea", "dunes", "threads", "oasis", "collage", "royal", "palace", "bloom"],
+  condolence: ["dunes", "sea", "bloom", "collage", "threads", "oasis", "royal", "palace"],
+  other: ["oasis", "bloom", "royal", "palace", "sea", "dunes", "collage", "threads"],
 };

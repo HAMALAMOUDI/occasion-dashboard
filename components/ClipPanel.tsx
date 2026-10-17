@@ -43,7 +43,7 @@ export default function ClipPanel({ event, onChange }: { event: Event; onChange:
     setStatus({ kind: "idle" });
   };
 
-  const hasNames = event.clip?.style === "royal";
+  const hasNames = event.clip?.style === "royal" || event.clip?.style === "palace";
   // While editing, the preview shows the names as typed.
   const text = event.clip ? clipTextForEvent(event, hasNames && names.a.trim() ? names : undefined) : null;
   const ar = event.language === "ar";

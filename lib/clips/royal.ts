@@ -12,14 +12,14 @@ type Ctx = CanvasRenderingContext2D;
 const W = 720;
 const H = 1280;
 
-const IVORY = "#fbf6ec";
-const CREAM = "#f3e8d4";
+export const IVORY = "#fbf6ec";
+export const CREAM = "#f3e8d4";
 const SAND = "#e6d4b4";
-const GOLD = "#b8893a";
-const GOLD_LIGHT = "#e9cd8a";
-const GOLD_DEEP = "#8a6424";
+export const GOLD = "#b8893a";
+export const GOLD_LIGHT = "#e9cd8a";
+export const GOLD_DEEP = "#8a6424";
 
-function goldGradient(ctx: Ctx, x0: number, y0: number, x1: number, y1: number, shine = 0) {
+export function goldGradient(ctx: Ctx, x0: number, y0: number, x1: number, y1: number, shine = 0) {
   const g = ctx.createLinearGradient(x0, y0, x1, y1);
   g.addColorStop(0, GOLD_DEEP);
   g.addColorStop(clamp01(0.35 + shine * 0.3), GOLD_LIGHT);
@@ -212,7 +212,7 @@ function gateDoor(ctx: Ctx, hingeX: number, dir: 1 | -1, open: number) {
   ctx.restore();
 }
 
-function pillar(ctx: Ctx, x: number, t: number, side: number) {
+export function pillar(ctx: Ctx, x: number, t: number, side: number) {
   const g = ctx.createLinearGradient(x - 50, 0, x + 50, 0);
   g.addColorStop(0, "#e7dac0");
   g.addColorStop(0.5, "#fffaf0");
@@ -277,7 +277,7 @@ function curtains(ctx: Ctx, open: number) {
 
 // ------------------------------------------------------------ roses
 
-function rose(ctx: Ctx, x: number, y: number, size: number, color: string, open: number, rot: number) {
+export function rose(ctx: Ctx, x: number, y: number, size: number, color: string, open: number, rot: number) {
   if (open <= 0) return;
   ctx.save();
   ctx.translate(x, y);
@@ -306,7 +306,7 @@ function rose(ctx: Ctx, x: number, y: number, size: number, color: string, open:
   ctx.restore();
 }
 
-function leaf(ctx: Ctx, x: number, y: number, len: number, a: number, k: number) {
+export function leaf(ctx: Ctx, x: number, y: number, len: number, a: number, k: number) {
   if (k <= 0) return;
   ctx.save();
   ctx.translate(x, y);
@@ -321,7 +321,7 @@ function leaf(ctx: Ctx, x: number, y: number, len: number, a: number, k: number)
   ctx.restore();
 }
 
-function roseFrame(ctx: Ctx, t: number, key: string, tint: string, calm: boolean) {
+export function roseFrame(ctx: Ctx, t: number, key: string, tint: string, calm: boolean, begin = 4.4) {
   const r = rng(hash(key + "roses"));
   const colors = [IVORY, CREAM, "#f6dfc6", mix(tint, "#ffffff", 0.6), "#ffffff"];
   const clusters: [number, number, number][] = [
@@ -329,7 +329,7 @@ function roseFrame(ctx: Ctx, t: number, key: string, tint: string, calm: boolean
     [60, H - 70, 1.3], [W - 60, H - 70, 1.3], [W / 2, H - 20, 1], [200, H - 10, 0.9], [W - 200, H - 10, 0.9], // bottom
   ];
   clusters.forEach(([cx, cy, sc], ci) => {
-    const start = 4.4 + ci * 0.12;
+    const start = begin + ci * 0.12;
     for (let j = 0; j < 7; j++) {
       const a = r() * Math.PI * 2, d = r() * 90 * sc;
       const x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d * 0.7;
@@ -375,7 +375,8 @@ function fitSize(ctx: Ctx, text: string, font: string, start: number, maxWidth: 
   return size;
 }
 
-function names(ctx: Ctx, t: number, tx: ClipText, fonts: ClipFonts) {
+// `shift` delays the whole text sequence (seconds), for longer scenes.
+export function drawNames(ctx: Ctx, t: number, tx: ClipText, fonts: ClipFonts, shift = 0) {
   const ar = tx.lang === "ar";
   const script = ar ? fonts.scriptAr ?? fonts.displayAr : fonts.script ?? fonts.display;
   const body = ar ? fonts.bodyAr : fonts.body;
@@ -385,7 +386,7 @@ function names(ctx: Ctx, t: number, tx: ClipText, fonts: ClipFonts) {
   ctx.direction = ar ? "rtl" : "ltr";
 
   // soft ivory glow behind the text
-  const v = progress(t, 5.2, 1.4);
+  const v = progress(t, shift + 5.2, 1.4);
   if (v > 0) {
     const g = ctx.createRadialGradient(W / 2, 600, 40, W / 2, 600, 420);
     g.addColorStop(0, rgba(IVORY, 0.92 * v));
@@ -395,7 +396,7 @@ function names(ctx: Ctx, t: number, tx: ClipText, fonts: ClipFonts) {
     ctx.fillRect(0, 0, W, H);
   }
 
-  const reveal = (start: number) => easeOutCubic(progress(t, start, 1.1));
+  const reveal = (start: number) => easeOutCubic(progress(t, shift + start, 1.1));
   const line = n.line || tx.label;
   let p = reveal(5.8);
   if (p > 0) {
@@ -420,7 +421,7 @@ function names(ctx: Ctx, t: number, tx: ClipText, fonts: ClipFonts) {
   }
 
   // ornament and details
-  const o = easeInOut(progress(t, 8.2, 1));
+  const o = easeInOut(progress(t, shift + 8.2, 1));
   if (o > 0) {
     ctx.strokeStyle = rgba(GOLD, 0.8);
     ctx.lineWidth = 1.4;
@@ -548,6 +549,6 @@ export function drawRoyal(ctx: Ctx, t: number, occ: OccasionType, tx: ClipText, 
     }
   }
 
-  names(ctx, t, tx, fonts);
+  drawNames(ctx, t, tx, fonts);
   return { ground: IVORY };
 }

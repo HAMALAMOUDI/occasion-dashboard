@@ -10,6 +10,9 @@ export const CLIP_W = 720;
 export const CLIP_H = 1280;
 export const CLIP_DURATION = 12; // seconds; the player loops
 
+// Most clips run 12 seconds; the grand palace tells a longer story.
+export const clipDuration = (style: ClipStyle) => (style === "palace" ? PALACE_DURATION : CLIP_DURATION);
+
 type Ctx = CanvasRenderingContext2D;
 
 export interface ClipText {
@@ -46,6 +49,7 @@ export interface ClipSpec {
 import { clamp01, easeInOut, easeOutBack, easeOutCubic, hash, mix, progress, rgba, rng } from "./util";
 import { drawNature, NATURE_STYLES, type NatureStyle } from "./nature";
 import { drawRoyal } from "./royal";
+import { drawPalace, PALACE_DURATION } from "./palace";
 
 // ------------------------------------------------------------ motifs (centred at 0,0, size s)
 
@@ -626,7 +630,9 @@ export function renderClipFrame(ctx: Ctx, t: number, spec: ClipSpec) {
   const key = `${spec.style}:${spec.occasion}`;
   ctx.save();
   let ground: string;
-  if (spec.style === "royal") {
+  if (spec.style === "palace") {
+    ground = drawPalace(ctx, t, spec.occasion, spec.text, spec.fonts).ground;
+  } else if (spec.style === "royal") {
     ground = drawRoyal(ctx, t, spec.occasion, spec.text, spec.fonts).ground;
   } else if ((NATURE_STYLES as string[]).includes(spec.style)) {
     const scene = drawNature(ctx, t, spec.style as NatureStyle, spec.occasion);

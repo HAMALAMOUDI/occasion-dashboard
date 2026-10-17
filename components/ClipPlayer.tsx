@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Download, Pause, Play, RotateCcw } from "lucide-react";
-import { CLIP_DURATION, CLIP_H, CLIP_W, renderClipFrame, type ClipFonts, type ClipSpec, type ClipText } from "@/lib/clips/engine";
+import { CLIP_H, CLIP_W, clipDuration, renderClipFrame, type ClipFonts, type ClipSpec, type ClipText } from "@/lib/clips/engine";
 import type { ClipStyle } from "@/lib/clips/themes";
 import type { OccasionType } from "@/lib/occasions";
 import { useT } from "./I18nProvider";
@@ -46,7 +46,7 @@ async function loadFonts(fonts: ClipFonts, text: ClipText) {
 }
 
 // The moment shown as a still: everything has arrived and the text is complete.
-const POSTER_TIME = 10;
+const posterTime = (style: ClipStyle) => clipDuration(style) - 2;
 
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -115,14 +115,14 @@ export default function ClipPlayer({
     if (!playing || !visible) {
       // Paused or off screen: show where playback stopped, or the finished
       // invitation if it hasn't played yet (never the blank opening frame).
-      const at = clock.current.offset || POSTER_TIME;
+      const at = clock.current.offset || posterTime(spec.style);
       renderClipFrame(ctx, at, full);
       return;
     }
     clock.current.start = performance.now() - clock.current.offset * 1000;
     let raf = 0;
     const tick = (now: number) => {
-      const time = ((now - clock.current.start) / 1000) % CLIP_DURATION;
+      const time = ((now - clock.current.start) / 1000) % clipDuration(spec.style);
       clock.current.offset = time;
       renderClipFrame(ctx, time, full);
       raf = requestAnimationFrame(tick);
@@ -181,6 +181,7 @@ async function recordClip(spec: PlayerSpec, onSecond: (s: number) => void): Prom
   el.style.cssText = "position:fixed;left:-10000px;top:0;pointer-events:none";
   document.body.appendChild(el);
   const ctx = el.getContext("2d")!;
+  const duration = clipDuration(spec.style);
   const full: ClipSpec = { ...spec, fonts };
   renderClipFrame(ctx, 0, full);
 
@@ -195,10 +196,10 @@ async function recordClip(spec: PlayerSpec, onSecond: (s: number) => void): Prom
     let lastSecond = -1;
     const tick = (now: number) => {
       const time = (now - start) / 1000;
-      renderClipFrame(ctx, Math.min(time, CLIP_DURATION), full);
+      renderClipFrame(ctx, Math.min(time, duration), full);
       const s = Math.floor(time);
       if (s !== lastSecond) onSecond((lastSecond = s));
-      if (time < CLIP_DURATION + 0.2) requestAnimationFrame(tick);
+      if (time < duration + 0.2) requestAnimationFrame(tick);
       else resolve();
     };
     requestAnimationFrame(tick);
@@ -218,7 +219,7 @@ export function DownloadClipButton({ spec, filename, className = "" }: { spec: P
   async function download() {
     setState({ kind: "recording", s: 0 });
     try {
-      const { blob, ext } = await recordClip(spec, (s) => setState({ kind: "recording", s: Math.max(0, CLIP_DURATION - s) }));
+      const { blob, ext } = await recordClip(spec, (s) => setState({ kind: "recording", s: Math.max(0, clipDuration(spec.style) - s) }));
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

@@ -320,6 +320,7 @@ const en = {
     title: "Invitations that come alive",
     subtitle: "Short animated invitations for every occasion — your names, date and venue appear as the artwork moves. Play them here, or download a video to share on WhatsApp.",
     styles: {
+      palace: "Grand palace",
       royal: "Royal entrance",
       bloom: "Garden in bloom",
       dunes: "Desert night",
@@ -329,6 +330,7 @@ const en = {
       threads: "Flowing threads",
     },
     styleHints: {
+      palace: "A tall golden gate opens onto a fairy-tale castle; golden doors part onto a grand staircase hall with chandeliers, and your names appear in gold. 18 seconds.",
       royal: "Curtains part and a golden gate opens onto a palace hall with a grand staircase; roses bloom and your names appear in gold calligraphy.",
       bloom: "Stems rise and buds open into flowers in your occasion’s colours, with grass swaying and butterflies passing.",
       dunes: "Rolling dunes under a rising crescent and twinkling stars — or the first light of dawn.",
@@ -743,6 +745,7 @@ const ar: Messages = {
     title: "دعوات تنبض بالحياة",
     subtitle: "دعوات قصيرة متحركة لكل مناسبة — تظهر أسماؤك وتاريخ مناسبتك ومكانها مع حركة العمل الفني. شغّلها هنا، أو نزّلها فيديو لمشاركتها عبر واتساب.",
     styles: {
+      palace: "القصر الكبير",
       royal: "المدخل الملكي",
       bloom: "حديقة مزهرة",
       dunes: "ليل الصحراء",
@@ -752,6 +755,7 @@ const ar: Messages = {
       threads: "خيوط منسابة",
     },
     styleHints: {
+      palace: "بوابة ذهبية شاهقة تُفتح على قصر خيالي، ثم أبواب ذهبية على قاعة بدرج فخم وثريات، وتظهر الأسماء بالذهب. ١٨ ثانية.",
       royal: "تنفرج الستائر ويُفتح باب ذهبي على قاعة قصر بدرج فخم، تتفتح الورود وتظهر الأسماء بخط ذهبي.",
       bloom: "سيقان تنمو وبراعم تتفتح زهوراً بألوان مناسبتك، مع عشب يتمايل وفراشات عابرة.",
       dunes: "كثبان متموجة تحت هلال يعلو ونجوم تتلألأ — أو مع أول خيوط الفجر.",

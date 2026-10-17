@@ -53,12 +53,13 @@ sandboxed iframes.
 
 ## Animated invitations
 
-**Designs → Animated** has 12-second animated invitations for every occasion,
-in seven original styles. None show people; all motion is natural (wind, swell,
+**Designs → Animated** has animated invitations for every occasion (12
+seconds; 18 for Grand palace), in eight original styles. None show people; all motion is natural (wind, swell,
 growth, light):
 
 | Style | What happens |
 | --- | --- |
+| Grand palace | a tall ivory-and-gold gate opens onto a fairy-tale castle at the end of a garden path; golden doors under a crest part onto a hall with a flaring staircase, garlands and chandeliers; then the names appear in gold |
 | Royal entrance | curtains part and a gilded gate opens onto a palace hall with a staircase and chandelier; cream roses bloom and the names appear in gold calligraphy |
 | Garden in bloom | stems rise and buds open into flowers in the occasion's colours, with grass swaying and butterflies |
 | Desert night | layered dunes, a rising crescent and stars (or the sun at dawn), sand blowing off the crests |
@@ -77,13 +78,14 @@ The event's details (title, Gregorian and Hijri date, venue, host) appear in
 its invitation language. Choose a clip for an event and it plays on the event
 page. **Download video** records an MP4 (WebM in Firefox) in the browser.
 
-The Royal entrance card features names: on the event page, edit Name 1, the
+The Grand palace and Royal entrance cards feature names: on the event page, edit Name 1, the
 optional Name 2 (joined by "&" / «و») and the small line above them (e.g.
 "The Wedding of"); the preview updates as you type. They're saved with the
 clip (`event.clip.names`). Without names, the card shows the event title.
 
 The frames are drawn by `lib/clips/engine.ts` (collage, threads, text) and
-`lib/clips/nature.ts` (the four nature scenes) and `lib/clips/royal.ts`, using pure, deterministic
+`lib/clips/nature.ts` (the four nature scenes), `lib/clips/royal.ts` and
+`lib/clips/palace.ts`, using pure, deterministic
 Canvas 2D, so the same code can render sample MP4s offline. The rendered
 samples live in `exports/`, which is git-ignored.
 
