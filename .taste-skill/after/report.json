@@ -1,0 +1,2269 @@
+{
+ "url": "http://localhost:3000/",
+ "at": "2026-10-19T13:47:09.672Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 8,
+   "filled": [
+    0.38,
+    0.57,
+    0.74,
+    0.99,
+    0.53,
+    0.31,
+    0.77,
+    0.97
+   ],
+   "motion": {
+    "elements": 16,
+    "css": 2,
+    "transitions": 13,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 7083,
+     "screens": 7.9,
+     "words": 476,
+     "img": 5,
+     "video": 0,
+     "canvas": 1,
+     "svg": 11,
+     "sections": 6,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 6,
+     "uiAbuse": false,
+     "realPictures": 5,
+     "videoCount": 0,
+     "uiPictures": 6,
+     "pictureSamples": [
+      "image?url=%2Flanding%2Ftaif-rose-harvest.jpg&w=6",
+      "image?url=%2Flanding%2Fdallah.jpg&w=384&q=75",
+      "image?url=%2Flanding%2Fardha-turaif.jpg&w=828&q=",
+      "image?url=%2Flanding%2Ftaif-rose-sack.jpg&w=640&",
+      "image?url=%2Flanding%2Fhenna-hands.jpg&w=640&q=7"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Every guest, invited by name.",
+     "words": 5,
+     "chars": 29,
+     "lines": 2,
+     "size": 151.2,
+     "vw": 10.5,
+     "font": "Cormorant Garamond",
+     "weight": 500,
+     "tracking": -0.035,
+     "leading": 0.95,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.96,
+     "top": 180,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Every guest, invited by name.",
+     "words": 5,
+     "lines": 2,
+     "size": 151.2,
+     "font": "Cormorant Garamond"
+    },
+    "headings": [
+     {
+      "text": "Every guest, invited by name.",
+      "words": 5,
+      "chars": 29,
+      "lines": 2,
+      "size": 151.2,
+      "vw": 10.5,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.95,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.96,
+      "top": 180,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "More than an invitation.",
+      "words": 4,
+      "chars": 24,
+      "lines": 2,
+      "size": 66.2,
+      "vw": 4.6,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.02,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.39,
+      "top": 761,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Not a template.",
+      "words": 3,
+      "chars": 15,
+      "lines": 1,
+      "size": 129.6,
+      "vw": 9,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.92,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.96,
+      "top": 2378,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "The invitation itself.",
+      "words": 3,
+      "chars": 22,
+      "lines": 1,
+      "size": 129.6,
+      "vw": 9,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.92,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.96,
+      "top": 2497,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "In Arabic or English.",
+      "words": 4,
+      "chars": 21,
+      "lines": 1,
+      "size": 129.6,
+      "vw": 9,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.92,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.96,
+      "top": 2616,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "Fahad Al-Otaibi",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 27.7,
+      "vw": 1.9,
+      "font": "Cormorant Garamond",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1.4,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "left",
+      "widthRatio": 0.13,
+      "top": 3098,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "Nouf Al-Qahtani",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 27.7,
+      "vw": 1.9,
+      "font": "Cormorant Garamond",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1.4,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "left",
+      "widthRatio": 0.13,
+      "top": 3170,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "First, the card is made.",
+      "words": 5,
+      "chars": 24,
+      "lines": 1,
+      "size": 66.2,
+      "vw": 4.6,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.02,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.46,
+      "top": 3675,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "A story for every occasion.",
+      "words": 5,
+      "chars": 27,
+      "lines": 1,
+      "size": 66.2,
+      "vw": 4.6,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.02,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.96,
+      "top": 4625,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Name your occasion",
+      "words": 3,
+      "chars": 18,
+      "lines": 1,
+      "size": 86.4,
+      "vw": 6,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.45,
+      "top": 5783,
+      "tag": "label",
+      "kind": "heading"
+     },
+     {
+      "text": "hikayati@gmail.com",
+      "words": 1,
+      "chars": 18,
+      "lines": 1,
+      "size": 165.6,
+      "vw": 11.5,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.03,
+      "leading": 0.95,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.96,
+      "top": 6584,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 11,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 4,
+     "centered": 2,
+     "medianWords": 3,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Jost",
+       "share": 0.72,
+       "mono": false
+      },
+      {
+       "family": "Cormorant Garamond",
+       "share": 0.28,
+       "mono": false
+      },
+      {
+       "family": "Aref Ruqaa",
+       "share": 0,
+       "mono": false
+      }
+     ],
+     "familyCount": 3,
+     "sizes": [
+      14,
+      17,
+      18,
+      20,
+      66,
+      86,
+      130,
+      151,
+      166
+     ],
+     "sizeCount": 9,
+     "notLoaded": [],
+     "body": {
+      "font": "Jost",
+      "size": 20,
+      "leading": 1.55,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 13.7
+     },
+     "measureChars": 54,
+     "max": {
+      "size": 165.6,
+      "vw": 11.5,
+      "font": "Cormorant Garamond",
+      "text": "hikayati@gmail.com"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.03,
+     "centerShare": 0.21,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f5f0e6",
+     "bodyBgHsl": {
+      "h": 40,
+      "s": 0.43,
+      "l": 0.93
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f5f0e6",
+       "top": 0,
+       "hsl": {
+        "h": 40,
+        "s": 0.43,
+        "l": 0.93
+       }
+      },
+      {
+       "color": "#ebe4d6",
+       "top": 1439,
+       "hsl": {
+        "h": 40,
+        "s": 0.34,
+        "l": 0.88
+       }
+      },
+      {
+       "color": "#66664a",
+       "top": 6273,
+       "hsl": {
+        "h": 60,
+        "s": 0.16,
+        "l": 0.35
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#24241f",
+       "share": 0.39
+      },
+      {
+       "color": "#55554b",
+       "share": 0.34
+      },
+      {
+       "color": "#f5f0e6",
+       "share": 0.2
+      },
+      {
+       "color": "#66664a",
+       "share": 0.06
+      },
+      {
+       "color": "#69736c",
+       "share": 0
+      }
+     ],
+     "button": {
+      "bg": "#24241f",
+      "hsl": {
+       "h": 60,
+       "s": 0.07,
+       "l": 0.13
+      },
+      "fg": "#f5f0e6"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 3,
+     "inHero": 3,
+     "radius": 0,
+     "height": 48,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "العربية",
+      "Create invitation",
+      "Create your invitation"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 5,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 6,
+     "fixed": true,
+     "height": 72,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "fraunces",
+     "fraunces fallback",
+     "plus jakarta sans",
+     "plus jakarta sans fallback",
+     "amiri",
+     "amiri fallback",
+     "ibm plex sans arabic",
+     "ibm plex sans arabic fallback",
+     "great vibes",
+     "great vibes fallback",
+     "aref ruqaa",
+     "aref ruqaa fallback"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 7083,
+    "margins": {
+     "left": 32,
+     "right": 32
+    },
+    "sections": [
+     {
+      "sel": "section#home.scroll-mt-20.px-safe",
+      "tag": "section",
+      "top": 72,
+      "height": 577,
+      "words": 30,
+      "media": 1,
+      "middle": 140,
+      "heading": {
+       "text": "Every guest,",
+       "size": 151,
+       "tag": "h1"
+      },
+      "left": 32,
+      "right": 90,
+      "textLeft": 32,
+      "textRight": 90,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.grid.gap-x-6",
+      "tag": "section",
+      "top": 649,
+      "height": 1537,
+      "words": 77,
+      "media": 3,
+      "middle": 54,
+      "heading": {
+       "text": "More than an invitation.",
+       "size": 66,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 103,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.relative.overflow-hidden",
+      "tag": "section",
+      "top": 2186,
+      "height": 1409,
+      "words": 98,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Not a template.",
+       "size": 130,
+       "tag": "p"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 45,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#how.scroll-mt-[4.5rem]",
+      "tag": "section",
+      "top": 3595,
+      "height": 838,
+      "words": 61,
+      "media": 0,
+      "middle": 268,
+      "heading": {
+       "text": "First, the card is made.",
+       "size": 66,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 236,
+      "textLeft": 32,
+      "textRight": 236,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#occasions.scroll-mt-20.px-safe",
+      "tag": "section",
+      "top": 4433,
+      "height": 1158,
+      "words": 86,
+      "media": 1,
+      "middle": 51,
+      "heading": {
+       "text": "A story for every occasion.",
+       "size": 66,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 32,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-bone.px-safe",
+      "tag": "section",
+      "top": 5591,
+      "height": 682,
+      "words": 23,
+      "media": 0,
+      "middle": 26,
+      "heading": {
+       "text": "Name your occasion",
+       "size": 86,
+       "tag": "h2"
+      },
+      "left": 32,
+      "right": 82,
+      "textLeft": 32,
+      "textRight": 756,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer#contact.flex.min-h-[90svh]",
+      "tag": "footer",
+      "top": 6273,
+      "height": 810,
+      "words": 86,
+      "media": 0,
+      "middle": 21,
+      "heading": {
+       "text": "hikayati",
+       "size": 166,
+       "tag": "a"
+      },
+      "left": 32,
+      "right": 32,
+      "textLeft": 32,
+      "textRight": 32,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Every guest, invited by name.",
+      "size": 151,
+      "top": 180,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 32,
+      "n": 10
+     },
+     {
+      "x": 863,
+      "n": 2
+     },
+     {
+      "x": 75,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 13,
+    "bodySize": 20,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0.13,
+    "voidBox": {
+     "x": 0,
+     "y": 600,
+     "w": 1440,
+     "h": 120
+    }
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 8,
+   "filled": [
+    0.45,
+    0.74,
+    0.66,
+    0.97,
+    0.87,
+    0.24,
+    0.76,
+    0.98
+   ],
+   "motion": {
+    "elements": 16,
+    "css": 2,
+    "transitions": 13,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 7855,
+     "screens": 7.7,
+     "words": 471,
+     "img": 5,
+     "video": 0,
+     "canvas": 1,
+     "svg": 11,
+     "sections": 6,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 6,
+     "uiAbuse": false,
+     "realPictures": 5,
+     "videoCount": 0,
+     "uiPictures": 5,
+     "pictureSamples": [
+      "image?url=%2Flanding%2Ftaif-rose-harvest.jpg&w=8",
+      "image?url=%2Flanding%2Fdallah.jpg&w=640&q=75",
+      "image?url=%2Flanding%2Fardha-turaif.jpg&w=828&q=",
+      "image?url=%2Flanding%2Ftaif-rose-sack.jpg&w=384&",
+      "image?url=%2Flanding%2Fhenna-hands.jpg&w=256&q=7"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Every guest, invited by name.",
+     "words": 5,
+     "chars": 29,
+     "lines": 2,
+     "size": 80.6,
+     "vw": 10.5,
+     "font": "Cormorant Garamond",
+     "weight": 500,
+     "tracking": -0.035,
+     "leading": 0.95,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.95,
+     "top": 195,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Every guest, invited by name.",
+     "words": 5,
+     "lines": 2,
+     "size": 80.6,
+     "font": "Cormorant Garamond"
+    },
+    "headings": [
+     {
+      "text": "Every guest, invited by name.",
+      "words": 5,
+      "chars": 29,
+      "lines": 2,
+      "size": 80.6,
+      "vw": 10.5,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.95,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.95,
+      "top": 195,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "More than an invitation.",
+      "words": 4,
+      "chars": 24,
+      "lines": 1,
+      "size": 40,
+      "vw": 5.2,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.02,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.95,
+      "top": 632,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Not a template.",
+      "words": 3,
+      "chars": 15,
+      "lines": 1,
+      "size": 69.1,
+      "vw": 9,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.92,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.95,
+      "top": 3271,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "The invitation itself.",
+      "words": 3,
+      "chars": 22,
+      "lines": 1,
+      "size": 69.1,
+      "vw": 9,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.92,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.95,
+      "top": 3335,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "In Arabic or English.",
+      "words": 4,
+      "chars": 21,
+      "lines": 1,
+      "size": 69.1,
+      "vw": 9,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.92,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.95,
+      "top": 3399,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "First, the card is made.",
+      "words": 5,
+      "chars": 24,
+      "lines": 1,
+      "size": 40,
+      "vw": 5.2,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.02,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.95,
+      "top": 5068,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "A story for every occasion.",
+      "words": 5,
+      "chars": 27,
+      "lines": 1,
+      "size": 40,
+      "vw": 5.2,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.02,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.95,
+      "top": 5549,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Name your occasion",
+      "words": 3,
+      "chars": 18,
+      "lines": 1,
+      "size": 46.1,
+      "vw": 6,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.45,
+      "top": 6622,
+      "tag": "label",
+      "kind": "heading"
+     },
+     {
+      "text": "hikayati@gmail.com",
+      "words": 1,
+      "chars": 18,
+      "lines": 1,
+      "size": 88.3,
+      "vw": 11.5,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.03,
+      "leading": 0.95,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.95,
+      "top": 7277,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 9,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 2,
+     "centered": 0,
+     "medianWords": 4,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Jost",
+       "share": 0.71,
+       "mono": false
+      },
+      {
+       "family": "Cormorant Garamond",
+       "share": 0.28,
+       "mono": false
+      },
+      {
+       "family": "Aref Ruqaa",
+       "share": 0,
+       "mono": false
+      }
+     ],
+     "familyCount": 3,
+     "sizes": [
+      14,
+      17,
+      18,
+      20,
+      40,
+      46,
+      69,
+      81,
+      88
+     ],
+     "sizeCount": 9,
+     "notLoaded": [],
+     "body": {
+      "font": "Jost",
+      "size": 20,
+      "leading": 1.55,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 13.7
+     },
+     "measureChars": 54,
+     "max": {
+      "size": 88.3,
+      "vw": 11.5,
+      "font": "Cormorant Garamond",
+      "text": "hikayati@gmail.com"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.03,
+     "centerShare": 0.21,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f5f0e6",
+     "bodyBgHsl": {
+      "h": 40,
+      "s": 0.43,
+      "l": 0.93
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f5f0e6",
+       "top": 0,
+       "hsl": {
+        "h": 40,
+        "s": 0.43,
+        "l": 0.93
+       }
+      },
+      {
+       "color": "#ebe4d6",
+       "top": 897,
+       "hsl": {
+        "h": 40,
+        "s": 0.34,
+        "l": 0.88
+       }
+      },
+      {
+       "color": "#66664a",
+       "top": 6934,
+       "hsl": {
+        "h": 60,
+        "s": 0.16,
+        "l": 0.35
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#24241f",
+       "share": 0.4
+      },
+      {
+       "color": "#55554b",
+       "share": 0.33
+      },
+      {
+       "color": "#f5f0e6",
+       "share": 0.2
+      },
+      {
+       "color": "#66664a",
+       "share": 0.06
+      },
+      {
+       "color": "#69736c",
+       "share": 0
+      }
+     ],
+     "button": {
+      "bg": "#24241f",
+      "hsl": {
+       "h": 60,
+       "s": 0.07,
+       "l": 0.13
+      },
+      "fg": "#f5f0e6"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 4,
+     "inHero": 3,
+     "radius": 0,
+     "height": 48,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "العربية",
+      "Create invitation",
+      "Create your invitation"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 5,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.12
+     }
+    ],
+    "nav": {
+     "links": 3,
+     "fixed": true,
+     "height": 72,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "fraunces",
+     "fraunces fallback",
+     "plus jakarta sans",
+     "plus jakarta sans fallback",
+     "amiri",
+     "amiri fallback",
+     "ibm plex sans arabic",
+     "ibm plex sans arabic fallback",
+     "great vibes",
+     "great vibes fallback",
+     "aref ruqaa",
+     "aref ruqaa fallback"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 7855,
+    "margins": {
+     "left": 20,
+     "right": 20
+    },
+    "sections": [
+     {
+      "sel": "section#home.scroll-mt-20.px-safe",
+      "tag": "section",
+      "top": 72,
+      "height": 496,
+      "words": 30,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Every guest,",
+       "size": 81,
+       "tag": "h1"
+      },
+      "left": 20,
+      "right": 78,
+      "textLeft": 20,
+      "textRight": 78,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.lg:col-span-5",
+      "tag": "div",
+      "top": 632,
+      "height": 201,
+      "words": 39,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": 20,
+      "right": 219,
+      "textLeft": 20,
+      "textRight": 219,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.gap-y-[clamp(3rem,5vw,4rem)]",
+      "tag": "div",
+      "top": 897,
+      "height": 2151,
+      "words": 34,
+      "media": 3,
+      "middle": 0,
+      "heading": null,
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 275,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.relative.overflow-hidden",
+      "tag": "section",
+      "top": 3159,
+      "height": 1062,
+      "words": 98,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Not a template.",
+       "size": 69,
+       "tag": "p"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 22,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#how.scroll-mt-[4.5rem]",
+      "tag": "section",
+      "top": 4222,
+      "height": 1215,
+      "words": 61,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#occasions.scroll-mt-20.px-safe",
+      "tag": "section",
+      "top": 5437,
+      "height": 1073,
+      "words": 86,
+      "media": 1,
+      "middle": 23,
+      "heading": {
+       "text": "A story for every occasion.",
+       "size": 40,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 20,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-bone.px-safe",
+      "tag": "section",
+      "top": 6510,
+      "height": 424,
+      "words": 23,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Name your occasion",
+       "size": 46,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 41,
+      "textLeft": 20,
+      "textRight": 150,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer#contact.flex.min-h-[90svh]",
+      "tag": "footer",
+      "top": 6934,
+      "height": 922,
+      "words": 86,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "hikayati",
+       "size": 88,
+       "tag": "a"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 20,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Every guest, invited by name.",
+      "size": 81,
+      "top": 195,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 20,
+      "n": 10
+     },
+     {
+      "x": 473,
+      "n": 2
+     },
+     {
+      "x": 43,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 13,
+    "bodySize": 20,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 10,
+   "filled": [
+    0.57,
+    0.69,
+    0.57,
+    0.99,
+    0.97,
+    0.77,
+    0.28,
+    0.51,
+    0.97,
+    0.97
+   ],
+   "motion": {
+    "elements": 16,
+    "css": 2,
+    "transitions": 13,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 7813,
+     "screens": 9.3,
+     "words": 463,
+     "img": 5,
+     "video": 0,
+     "canvas": 1,
+     "svg": 11,
+     "sections": 6,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 6,
+     "uiAbuse": false,
+     "realPictures": 5,
+     "videoCount": 0,
+     "uiPictures": 6,
+     "pictureSamples": [
+      "image?url=%2Flanding%2Ftaif-rose-harvest.jpg&w=6",
+      "image?url=%2Flanding%2Fdallah.jpg&w=384&q=75",
+      "image?url=%2Flanding%2Fardha-turaif.jpg&w=640&q=",
+      "image?url=%2Flanding%2Ftaif-rose-sack.jpg&w=640&",
+      "image?url=%2Flanding%2Fhenna-hands.jpg&w=384&q=7"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Every guest, invited by name.",
+     "words": 5,
+     "chars": 29,
+     "lines": 2,
+     "size": 52,
+     "vw": 13.3,
+     "font": "Cormorant Garamond",
+     "weight": 500,
+     "tracking": -0.035,
+     "leading": 0.95,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.9,
+     "top": 173,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Every guest, invited by name.",
+     "words": 5,
+     "lines": 2,
+     "size": 52,
+     "font": "Cormorant Garamond"
+    },
+    "headings": [
+     {
+      "text": "Every guest, invited by name.",
+      "words": 5,
+      "chars": 29,
+      "lines": 2,
+      "size": 52,
+      "vw": 13.3,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.95,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 173,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "More than an invitation.",
+      "words": 4,
+      "chars": 24,
+      "lines": 2,
+      "size": 40,
+      "vw": 10.3,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.02,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 796,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Not a template.",
+      "words": 3,
+      "chars": 15,
+      "lines": 1,
+      "size": 46,
+      "vw": 11.8,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.92,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 2567,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "The invitation itself.",
+      "words": 3,
+      "chars": 22,
+      "lines": 1,
+      "size": 46,
+      "vw": 11.8,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.92,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 2609,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "In Arabic or English.",
+      "words": 4,
+      "chars": 21,
+      "lines": 1,
+      "size": 46,
+      "vw": 11.8,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.92,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 2651,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "Fahad Al-Otaibi",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 23.8,
+      "vw": 6.1,
+      "font": "Cormorant Garamond",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1.4,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.42,
+      "top": 3001,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "Nouf Al-Qahtani",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 23.8,
+      "vw": 6.1,
+      "font": "Cormorant Garamond",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1.4,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.42,
+      "top": 3063,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "Fahad Al-Otaibi",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 23,
+      "vw": 5.9,
+      "font": "Cormorant Garamond",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1.4,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.4,
+      "top": 4339,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "Nouf Al-Qahtani",
+      "words": 2,
+      "chars": 15,
+      "lines": 1,
+      "size": 23,
+      "vw": 5.9,
+      "font": "Cormorant Garamond",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1.4,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.4,
+      "top": 4399,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "First, the card is made.",
+      "words": 5,
+      "chars": 24,
+      "lines": 1,
+      "size": 40,
+      "vw": 10.3,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.02,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 4763,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "A story for every occasion.",
+      "words": 5,
+      "chars": 27,
+      "lines": 2,
+      "size": 40,
+      "vw": 10.3,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.02,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 5244,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Name your occasion",
+      "words": 3,
+      "chars": 18,
+      "lines": 1,
+      "size": 40,
+      "vw": 10.3,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.77,
+      "top": 6672,
+      "tag": "label",
+      "kind": "heading"
+     },
+     {
+      "text": "hikayati@gmail.com",
+      "words": 1,
+      "chars": 18,
+      "lines": 2,
+      "size": 50.7,
+      "vw": 13,
+      "font": "Cormorant Garamond",
+      "weight": 500,
+      "tracking": -0.03,
+      "leading": 0.95,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 7326,
+      "tag": "a",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 13,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 6,
+     "centered": 4,
+     "medianWords": 3,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Jost",
+       "share": 0.71,
+       "mono": false
+      },
+      {
+       "family": "Cormorant Garamond",
+       "share": 0.29,
+       "mono": false
+      },
+      {
+       "family": "Aref Ruqaa",
+       "share": 0,
+       "mono": false
+      }
+     ],
+     "familyCount": 3,
+     "sizes": [
+      14,
+      17,
+      18,
+      20,
+      40,
+      46,
+      51,
+      52
+     ],
+     "sizeCount": 8,
+     "notLoaded": [],
+     "body": {
+      "font": "Jost",
+      "size": 20,
+      "leading": 1.55,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 13.7
+     },
+     "measureChars": 35,
+     "max": {
+      "size": 52,
+      "vw": 13.3,
+      "font": "Cormorant Garamond",
+      "text": "Every guest,"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.03,
+     "centerShare": 0.22,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f5f0e6",
+     "bodyBgHsl": {
+      "h": 40,
+      "s": 0.43,
+      "l": 0.93
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f5f0e6",
+       "top": 0,
+       "hsl": {
+        "h": 40,
+        "s": 0.43,
+        "l": 0.93
+       }
+      },
+      {
+       "color": "#ebe4d6",
+       "top": 1165,
+       "hsl": {
+        "h": 40,
+        "s": 0.34,
+        "l": 0.88
+       }
+      },
+      {
+       "color": "#fdfbf6",
+       "top": 2741,
+       "hsl": {
+        "h": 43,
+        "s": 0.64,
+        "l": 0.98
+       }
+      },
+      {
+       "color": "#66664a",
+       "top": 7047,
+       "hsl": {
+        "h": 60,
+        "s": 0.16,
+        "l": 0.35
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#24241f",
+       "share": 0.4
+      },
+      {
+       "color": "#55554b",
+       "share": 0.33
+      },
+      {
+       "color": "#f5f0e6",
+       "share": 0.2
+      },
+      {
+       "color": "#66664a",
+       "share": 0.06
+      },
+      {
+       "color": "#69736c",
+       "share": 0
+      }
+     ],
+     "button": {
+      "bg": "#24241f",
+      "hsl": {
+       "h": 60,
+       "s": 0.07,
+       "l": 0.13
+      },
+      "fg": "#f5f0e6"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 3,
+     "inHero": 2,
+     "radius": 0,
+     "height": 40,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "العربية",
+      "Create your invitation"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 6,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "canvas",
+      "ratio": 0.16
+     }
+    ],
+    "nav": {
+     "links": 1,
+     "fixed": true,
+     "height": 72,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "fraunces",
+     "fraunces fallback",
+     "plus jakarta sans",
+     "plus jakarta sans fallback",
+     "amiri",
+     "amiri fallback",
+     "ibm plex sans arabic",
+     "ibm plex sans arabic fallback",
+     "great vibes",
+     "great vibes fallback",
+     "aref ruqaa",
+     "aref ruqaa fallback"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 7813,
+    "margins": {
+     "left": 20,
+     "right": 20
+    },
+    "sections": [
+     {
+      "sel": "section#home.scroll-mt-20.px-safe",
+      "tag": "section",
+      "top": 72,
+      "height": 660,
+      "words": 30,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Every guest,",
+       "size": 52,
+       "tag": "h1"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 33,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.lg:col-span-5",
+      "tag": "div",
+      "top": 796,
+      "height": 306,
+      "words": 39,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": 20,
+      "right": 24,
+      "textLeft": 20,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.gap-y-[clamp(3rem,5vw,4rem)]",
+      "tag": "div",
+      "top": 1165,
+      "height": 1177,
+      "words": 34,
+      "media": 3,
+      "middle": 0,
+      "heading": null,
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 21,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.relative.overflow-hidden",
+      "tag": "section",
+      "top": 2455,
+      "height": 1488,
+      "words": 98,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "Not a template.",
+       "size": 46,
+       "tag": "p"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#how.scroll-mt-[4.5rem]",
+      "tag": "section",
+      "top": 3943,
+      "height": 1190,
+      "words": 61,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#occasions.scroll-mt-20.px-safe",
+      "tag": "section",
+      "top": 5132,
+      "height": 1427,
+      "words": 82,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "A story for every occasion.",
+       "size": 40,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 20,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.bg-bone.px-safe",
+      "tag": "section",
+      "top": 6560,
+      "height": 488,
+      "words": 23,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Name your occasion",
+       "size": 40,
+       "tag": "h2"
+      },
+      "left": 20,
+      "right": 20,
+      "textLeft": 20,
+      "textRight": 37,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer#contact.flex.min-h-[90svh]",
+      "tag": "footer",
+      "top": 7047,
+      "height": 765,
+      "words": 86,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "hikayati",
+       "size": 51,
+       "tag": "a"
+      },
+      "left": 20,
+      "right": 29,
+      "textLeft": 20,
+      "textRight": 29,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Every guest, invited by name.",
+      "size": 52,
+      "top": 173,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 20,
+      "n": 13
+     }
+    ],
+    "leftBlocks": 13,
+    "bodySize": 20,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "WARN",
+   "id": "palette-cream",
+   "width": 1440,
+   "message": "Yellow-cream background (page background #f5f0e6, section #f5f0e6, section #ebe4d6).",
+   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "no-footage",
+   "width": 1440,
+   "message": "No video anywhere on the page.",
+   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "/Users/husseinalamoudi/Documents/GitHub/occasion-dashboard/.taste-skill/after/desktop-fold.jpg",
+   "pages": [
+    "/Users/husseinalamoudi/Documents/GitHub/occasion-dashboard/.taste-skill/after/desktop-page-01.jpg",
+    "/Users/husseinalamoudi/Documents/GitHub/occasion-dashboard/.taste-skill/after/desktop-page-02.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "/Users/husseinalamoudi/Documents/GitHub/occasion-dashboard/.taste-skill/after/tablet-fold.jpg",
+   "pages": [
+    "/Users/husseinalamoudi/Documents/GitHub/occasion-dashboard/.taste-skill/after/tablet-page-01.jpg",
+    "/Users/husseinalamoudi/Documents/GitHub/occasion-dashboard/.taste-skill/after/tablet-page-02.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "/Users/husseinalamoudi/Documents/GitHub/occasion-dashboard/.taste-skill/after/mobile-fold.jpg",
+   "pages": [
+    "/Users/husseinalamoudi/Documents/GitHub/occasion-dashboard/.taste-skill/after/mobile-page-01.jpg",
+    "/Users/husseinalamoudi/Documents/GitHub/occasion-dashboard/.taste-skill/after/mobile-page-02.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

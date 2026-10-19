@@ -10,7 +10,7 @@ import { useT } from "./I18nProvider";
 type PlayerSpec = { style: ClipStyle; occasion: OccasionType; text: ClipText };
 
 // The portal's fonts, as loaded by next/font on <html> (see app/layout.tsx).
-function pageFonts(): ClipFonts {
+export function pageFonts(): ClipFonts {
   const css = getComputedStyle(document.documentElement);
   const v = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
   return {
@@ -26,7 +26,7 @@ function pageFonts(): ClipFonts {
 // Waits for the clip's fonts, but never more than a moment: a font that's slow
 // (or deferred in a background tab) mustn't stop the clip from showing. The
 // player redraws when fonts finish loading.
-async function loadFonts(fonts: ClipFonts, text: ClipText) {
+export async function loadFonts(fonts: ClipFonts, text: ClipText) {
   const { names, ...rest } = text;
   const sample = [...Object.values(rest), names?.a, names?.b, names?.line, "&و"].join(" ");
   const all = Promise.all(

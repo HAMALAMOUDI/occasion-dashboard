@@ -4,8 +4,13 @@
 
 const DEFAULT_COUNTRY_CODE = process.env.DEFAULT_COUNTRY_CODE || "966"; // Saudi Arabia
 
+// Arabic keyboards type Arabic-Indic (٠١٢) or Persian (۰۱۲) digits; both mean 0–9.
+export function toLatinDigits(s: string): string {
+  return s.replace(/[٠-٩۰-۹]/g, (d) => String(d.charCodeAt(0) & 0xf));
+}
+
 export function normalizePhone(raw: string): string | null {
-  let digits = raw.trim().replace(/[\s\-().]/g, "");
+  let digits = toLatinDigits(raw.trim()).replace(/[\s\-().]/g, "");
 
   if (digits.startsWith("+")) digits = digits.slice(1);
   else if (digits.startsWith("00")) digits = digits.slice(2);

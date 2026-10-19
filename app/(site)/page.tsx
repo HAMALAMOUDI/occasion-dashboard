@@ -1,83 +1,100 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import QRCode from "qrcode";
-import { ArrowRight, Check, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import GuestJourney from "@/components/landing/GuestJourney";
+import HeroClip from "@/components/landing/HeroClip";
 import Reveal from "@/components/landing/Reveal";
+import { Invitation } from "@/components/landing/fragments";
 import LanguageToggle from "@/components/LanguageToggle";
 import { currentUser } from "@/lib/auth";
-import { getMessages } from "@/lib/i18n-server";
+import { CLIP_STYLES } from "@/lib/clips/themes";
+import { DESIGN_CATEGORIES, DESIGN_STYLES } from "@/lib/designs/catalog";
+import { getLocale, getMessages } from "@/lib/i18n-server";
+import { OCCASIONS } from "@/lib/occasions";
 
 export const dynamic = "force-dynamic";
 
 const CONTACT = { email: "hikayati@gmail.com", phone: "+966 55 123 4567", tel: "+966551234567" };
+const DESIGN_COUNT = DESIGN_STYLES.length * DESIGN_CATEGORIES.length * 20;
+
+// Found pictures of the world around the occasions (credited in the footer).
+// They show Saudi celebration and hospitality, never Hikayati's own customers.
+const CREDITS = [
+  { title: "حصاد الورد الطائفي في السعودية سنة 2026م", by: "وكالة الأنباء السعودية", licence: "CC BY-SA 4.0", page: "https://commons.wikimedia.org/w/index.php?curid=192752189" },
+  { title: "Saudi Ardha in At-Turaif district, Diriyah", by: "Ahad.F", licence: "CC BY-SA 4.0", page: "https://commons.wikimedia.org/wiki/File:Saudi_Ardha_(Najdi_Sword_Dance)_in_At-Turaif_district,_Diriyah,_Saudi_Arabia.jpg" },
+  { title: "Arabic dallah (coffee pot)", by: "Bluehillies", licence: "CC0", page: "https://commons.wikimedia.org/w/index.php?curid=57948288" },
+  { title: "رجل يحصد الورد الطائفي في السعودية سنة 2026م", by: "وكالة الأنباء السعودية", licence: "CC BY-SA 4.0", page: "https://commons.wikimedia.org/w/index.php?curid=192752187" },
+  { title: "Henna hands", by: "Izzah Zainab", licence: "CC BY 2.0", page: "https://commons.wikimedia.org/w/index.php?curid=74800224" },
+];
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getMessages();
-  return { title: `Hikayati · حكايتي — ${t.landing.tagline}`, description: t.landing.intro };
+  return { title: `Hikayati · حكايتي — ${t.landing.heroLine1} ${t.landing.heroLine2}`, description: t.landing.heroSub };
 }
 
 const btnSolid =
-  "inline-flex items-center justify-center gap-3 bg-ink-deep px-8 py-3.5 text-[0.78rem] font-medium text-ivory transition-colors duration-500 hover:bg-olive tracked";
-const btnLine =
-  "inline-flex items-center justify-center gap-3 border border-ink-deep/35 px-8 py-3.5 text-[0.78rem] font-medium text-ink-deep transition-colors duration-500 hover:border-champagne hover:bg-paper-warm tracked";
+  "press tap-control min-h-12 items-center justify-center gap-3 bg-ink-deep px-7 text-[1.0625rem] font-medium text-ivory hover:bg-olive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-deep";
 
-function Wordmark({ size = "sm" }: { size?: "sm" | "lg" }) {
+function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <span className="flex items-baseline gap-2.5">
-      <span className={`font-editorial font-medium tracking-[0.22em] ${size === "lg" ? "text-2xl" : "text-xl"}`} lang="en">
+    <span className={`flex items-baseline gap-2.5 ${className}`}>
+      <span className="font-editorial text-xl font-medium tracking-[0.2em]" lang="en">
         HIKAYATI
       </span>
-      {size === "lg" && <span className="text-champagne">—</span>}
-      <span className="font-[family-name:var(--font-ruqaa)] text-lg text-champagne" lang="ar">
+      <span className="font-[family-name:var(--font-ruqaa)] text-lg text-gold-ink" lang="ar">
         حكايتي
       </span>
     </span>
   );
 }
 
-// Small ornament used on the sample invitation card.
-function Ornament() {
+// A captioned photograph; every picture on the page is cropped by its frame, never stretched.
+function Photo({ src, alt, ratio, sizes, className = "" }: { src: string; alt: string; ratio: string; sizes: string; className?: string }) {
   return (
-    <svg width="120" height="16" viewBox="0 0 120 16" aria-hidden="true" className="mx-auto my-4 text-champagne">
-      <path d="M2 8 H48 M72 8 H118" stroke="currentColor" strokeWidth="1" />
-      <path d="M60 1 L67 8 L60 15 L53 8 Z" fill="none" stroke="currentColor" strokeWidth="1.2" />
-      <circle cx="51" cy="8" r="1.6" fill="currentColor" />
-      <circle cx="69" cy="8" r="1.6" fill="currentColor" />
-    </svg>
+    <figure className={className}>
+      <div className={`relative overflow-hidden bg-bone ${ratio}`}>
+        <Image src={src} alt="" fill sizes={sizes} className="object-cover" />
+      </div>
+      <figcaption className="mt-3 max-w-[34ch] text-[0.875rem] leading-6 text-ink-soft">{alt}</figcaption>
+    </figure>
   );
 }
 
 export default async function LandingPage() {
-  const [t, user] = await Promise.all([getMessages(), currentUser()]);
+  const [t, locale, user] = await Promise.all([getMessages(), getLocale(), currentUser()]);
   const L = t.landing;
   const createHref = user ? "/events/new" : "/login?next=/events/new";
   // A real, scannable QR for the sample guest pass.
   const qr = await QRCode.toString("HIKAYATI-SAMPLE-PASS", { type: "svg", margin: 0, color: { dark: "#24241f", light: "#0000" } });
+  const nav = [
+    { href: "#how", label: L.nav.how },
+    { href: "#occasions", label: L.nav.occasions },
+    { href: "#contact", label: L.nav.contact },
+  ];
 
   return (
     <>
-      {/* ---------- Header ---------- */}
-      <header className="sticky top-0 z-40 border-b border-hair bg-ivory/90 backdrop-blur">
-        <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center justify-between gap-4 px-6">
-          <a href="#home" aria-label="Hikayati · حكايتي">
+      {/* ---------- Header: wordmark, three links, one action ---------- */}
+      <header className="sticky top-0 z-40 bg-ivory pt-[env(safe-area-inset-top,0px)]">
+        <div className="flex h-[4.5rem] items-center justify-between gap-6 px-safe">
+          <a href="#home" aria-label="Hikayati · حكايتي" className="tap-control">
             <Wordmark />
           </a>
-          <nav className="hidden items-center gap-9 text-[0.8rem] text-ink-soft lg:flex">
-            {(["home", "occasions", "how", "about", "contact"] as const).map((id) => (
-              <a key={id} href={`#${id}`} className="tracked transition-colors hover:text-ink-deep">
-                {L.nav[id]}
+          <nav className="hidden items-center gap-8 whitespace-nowrap text-[1.0625rem] text-ink-soft lg:flex">
+            {nav.map((n) => (
+              <a key={n.href} href={n.href} className="tap-control transition-colors hover:text-ink-deep active:text-ink-deep">
+                {n.label}
               </a>
             ))}
           </nav>
-          <div className="flex items-center gap-3">
-            <LanguageToggle className="border-hair bg-transparent" />
-            <Link href={user ? "/events" : "/login"} className="hidden text-[0.8rem] text-ink-soft hover:text-ink-deep md:inline">
+          <div className="flex items-center gap-4 whitespace-nowrap">
+            <LanguageToggle className="press tap-control min-h-10 border-transparent bg-bone text-[0.875rem] text-ink-deep active:text-ink" />
+            <Link href={user ? "/events" : "/login"} className="tap-control hidden text-[1.0625rem] text-ink-soft hover:text-ink-deep active:text-ink-deep md:inline">
               {user ? L.myEvents : L.signIn}
             </Link>
-            <Link
-              href={createHref}
-              className="hidden bg-ink-deep px-5 py-2 text-[0.72rem] font-medium text-ivory transition-colors duration-500 hover:bg-olive sm:inline-flex tracked"
-            >
+            <Link href={createHref} className={`${btnSolid} hidden min-h-10 px-5 sm:inline-flex`}>
               {L.headerCta}
             </Link>
           </div>
@@ -85,251 +102,188 @@ export default async function LandingPage() {
       </header>
 
       <main>
-        {/* ---------- Hero ---------- */}
-        <section
-          id="home"
-          className="relative flex min-h-[calc(100svh-4.5rem)] scroll-mt-20 flex-col items-center justify-center px-6 pb-24 pt-16 text-center"
-        >
-          <div className="rise flex flex-col items-center">
-            <h1 className="font-editorial text-[clamp(3.2rem,12vw,8.5rem)] font-light leading-none tracking-[0.1em] sm:tracking-[0.16em]" lang="en">
-              HIKAYATI
-            </h1>
-            <span className="hairline draw-line mt-6 w-full max-w-md" />
-            <p className="mt-4 font-[family-name:var(--font-ruqaa)] text-[clamp(2.6rem,8vw,5rem)] leading-tight text-champagne" lang="ar">
-              حكايتي
-            </p>
-          </div>
-          <div className="rise mt-8 max-w-2xl" style={{ "--rise-delay": "0.3s" } as React.CSSProperties}>
-            <p className="font-editorial text-3xl font-light italic sm:text-4xl rtl:not-italic">{L.tagline}</p>
-            <p className="mx-auto mt-6 max-w-xl text-[1.02rem] leading-8 text-ink-soft">{L.intro}</p>
-          </div>
-          <div className="rise mt-10 flex flex-col items-center gap-4 sm:flex-row" style={{ "--rise-delay": "0.55s" } as React.CSSProperties}>
-            <Link href={createHref} className={btnSolid}>
-              {L.create} <ArrowRight size={15} className="rtl:rotate-180" />
-            </Link>
-            <a href="#about" className={btnLine}>
-              {L.explore}
-            </a>
-          </div>
-          <span
-            aria-hidden="true"
-            className="rise absolute bottom-8 left-1/2 h-12 w-px -translate-x-1/2 bg-gradient-to-b from-champagne to-transparent"
-            style={{ "--rise-delay": "1s" } as React.CSSProperties}
-          />
-        </section>
-
-        {/* ---------- About ---------- */}
-        <section id="about" className="scroll-mt-20 px-6 py-28 sm:py-40">
-          <div className="mx-auto max-w-3xl text-center">
-            <Reveal>
-              <p className="tracked text-[0.72rem] text-olive">{L.aboutLabel}</p>
-              <span className="mx-auto mt-6 block h-10 w-px bg-champagne" />
-            </Reveal>
-            <Reveal delay={0.1}>
-              <h2 className="mt-10 font-editorial text-5xl font-light leading-[1.1] sm:text-7xl">{L.aboutTitle}</h2>
-            </Reveal>
-            <Reveal delay={0.2}>
-              <p className="mx-auto mt-10 max-w-2xl text-lg leading-9 text-ink-soft">{L.aboutBody}</p>
-            </Reveal>
+        {/* ---------- Hero: the sentence, with the animated invitation set inside it ---------- */}
+        <section id="home" className="scroll-mt-20 px-safe pb-[clamp(3rem,5vw,5rem)] pt-[clamp(4rem,12svh,9rem)]">
+          <h1 className="hero-sentence font-editorial text-[clamp(3.25rem,10.5vw,11.5rem)] font-medium leading-[0.95] tracking-[-0.035em] rtl:leading-[1.15] rtl:tracking-normal">
+            <span className="block">
+              {L.heroLine1}
+              <span className="hero-slot shutter" aria-hidden="true">
+                <HeroClip lang={locale} label={L.heroClipLabel} />
+              </span>
+            </span>
+            <span className="block">{L.heroLine2}</span>
+          </h1>
+          <div className="mt-10 grid items-end gap-8 md:mt-12 md:grid-cols-12">
+            <p className="text-[1.25rem] leading-[1.55] text-ink-deep md:col-span-7 lg:col-span-6">{L.heroSub}</p>
+            <div className="md:col-span-5 md:justify-self-end lg:col-span-6">
+              <Link href={createHref} className={`${btnSolid} flex w-full sm:inline-flex sm:w-auto`}>
+                {L.create} <ArrowRight size={18} className="rtl:rotate-180" />
+              </Link>
+            </div>
           </div>
         </section>
 
-        {/* ---------- Example: the guest's experience and the invitation ---------- */}
-        <section className="relative bg-bone/60 px-6 py-28 sm:py-36">
-          <div className="hairline absolute inset-x-0 top-0" />
-          <div className="mx-auto max-w-6xl">
-            <Reveal className="mx-auto max-w-2xl text-center">
-              <p className="tracked text-[0.72rem] text-olive">{L.exampleLabel}</p>
-              <h2 className="mt-6 font-editorial text-4xl font-light leading-[1.15] sm:text-6xl">{L.exampleTitle}</h2>
-              <p className="mx-auto mt-6 max-w-xl leading-8 text-ink-soft">{L.exampleBody}</p>
-            </Reveal>
-
-            <div className="mt-20 grid items-center gap-20 lg:grid-cols-2 lg:gap-12">
-              {/* Guest pass, as it arrives on WhatsApp */}
-              <Reveal className="order-2 lg:order-1">
-                <div className="mx-auto w-full max-w-[24rem]" dir="rtl" lang="ar">
-                  <div className="mb-3 flex items-center gap-3 px-1">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-olive font-[family-name:var(--font-ruqaa)] text-lg text-paper-warm">
-                      ح
-                    </span>
-                    <div className="leading-tight">
-                      <p className="text-[0.95rem]">حكايتي</p>
-                      <p className="text-[0.7rem] text-ink-soft">دعوة جديدة · الآن</p>
-                    </div>
-                  </div>
-                  <article className="relative overflow-hidden rounded-[1.4rem] rounded-ss-md bg-paper-warm px-7 pb-7 pt-8 text-center shadow-[0_36px_60px_-28px_rgba(70,58,28,0.45)]">
-                    <p className="text-[0.8rem] text-olive">الدعوة باسم</p>
-                    <h3 className="mt-1 font-[family-name:var(--font-display-ar)] text-[2.1rem] leading-tight">عزيزتنا نورة</h3>
-                    <p className="mt-4 text-[0.88rem] leading-7 text-ink-soft">
-                      حفل زفاف فهد ونوف
-                      <br />
-                      15 ديسمبر 2026 · الزفة 8:00 مساءً
-                    </p>
-                    <p className="text-[0.8rem] leading-6 text-ink-soft/80">نايراه هول، الرياض</p>
-                    <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-sage/20 px-4 py-1.5 text-[0.85rem] text-olive">
-                      <Check size={15} strokeWidth={2.4} /> تم تأكيد الحضور
-                    </p>
-                    <div
-                      className="mx-auto mt-6 w-[62%] bg-[#fffdf8] p-3 shadow-[inset_0_0_0_1px_rgba(201,182,139,0.55)] [&>svg]:h-auto [&>svg]:w-full"
-                      role="img"
-                      aria-label="QR"
-                      dangerouslySetInnerHTML={{ __html: qr }}
-                    />
-                    <p className="mt-4 text-[0.8rem] leading-6 text-ink-soft">رمز الدخول الخاص بك إلى المناسبة</p>
-                    <p className="text-[0.68rem] uppercase tracking-[0.18em] text-ink-soft/70" lang="en" dir="ltr">
-                      Please present this QR upon arrival
-                    </p>
-                  </article>
-                </div>
-                <p className="mt-8 text-center text-[0.72rem] text-ink-soft/80 tracked">{L.guestCaption}</p>
+        {/* ---------- About: the statement holds still on the left while its world passes on the right ---------- */}
+        <section aria-labelledby="about-title" className="grid gap-x-6 gap-y-16 px-safe pb-[clamp(7rem,14vw,12rem)] pt-[clamp(4rem,8vw,7rem)] lg:grid-cols-12">
+          <div className="lg:col-span-5">
+            <div className="lg:sticky lg:top-[calc(4.5rem+12svh)]">
+              <Reveal>
+                <h2 id="about-title" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em]">
+                  {L.aboutTitle}
+                </h2>
               </Reveal>
+              <Reveal delay={0.08}>
+                <p className="mt-8 max-w-[34rem] text-[1.25rem] leading-[1.6] text-ink-deep">{L.aboutBody}</p>
+              </Reveal>
+            </div>
+          </div>
+          <div className="grid gap-y-[clamp(3rem,5vw,4rem)] lg:col-span-7 lg:col-start-6 lg:grid-cols-7 lg:gap-x-6">
+            <Reveal className="lg:col-span-4">
+              <Photo src="/landing/taif-rose-harvest.jpg" alt={L.photos.harvest} ratio="aspect-[4/5]" sizes="(min-width: 1024px) 30vw, 100vw" />
+            </Reveal>
+            <Reveal delay={0.08} className="w-[70%] justify-self-end lg:col-span-3 lg:w-full lg:self-end">
+              <Photo src="/landing/dallah.jpg" alt={L.photos.dallah} ratio="aspect-square" sizes="(min-width: 1024px) 22vw, 70vw" />
+            </Reveal>
+            <Reveal className="lg:col-span-7">
+              <Photo src="/landing/ardha-turaif.jpg" alt={L.photos.ardha} ratio="aspect-[16/10]" sizes="(min-width: 1024px) 55vw, 100vw" />
+            </Reveal>
+          </div>
+        </section>
 
-              {/* The invitation */}
-              <Reveal delay={0.15} className="order-1 lg:order-2">
-                <article
-                  dir="rtl"
-                  lang="ar"
-                  className="relative mx-auto aspect-[3/4.25] w-full max-w-[26.5rem] overflow-hidden bg-[#fdfbf6] font-[family-name:var(--font-display-ar)] shadow-[0_40px_70px_-30px_rgba(70,58,28,0.45)]"
-                >
-                  <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_30%_0%,rgba(255,255,255,0.9),transparent_60%)]" />
-                  <div className="absolute inset-[0.9rem] border border-champagne/70" />
-                  <div className="absolute inset-[1.15rem] border border-champagne/35" />
-                  <div className="relative flex h-full flex-col items-center px-[13%] pb-[11%] pt-[12%] text-center">
-                    <p className="text-[0.95rem] leading-8 text-olive sm:text-base">بارك الله لهما وبارك عليهما وجمع بينهما في خير</p>
-                    <Ornament />
-                    <p className="text-[0.82rem] leading-7 text-ink-soft">تتشرف الأسرتان الكريمتان بدعوتكم لحضور حفل زفاف</p>
-                    <p className="mt-2 text-[0.85rem] leading-7 text-ink-soft">
-                      سارة آل سعود <span className="mx-1 text-champagne">·</span> مها العتيبي
-                    </p>
-                    <div className="mt-auto">
-                      <p className="text-[1.65rem] leading-[1.5] sm:text-[1.9rem]">فهد آل سعود</p>
-                      <p className="my-1 text-xl text-champagne">و</p>
-                      <p className="text-[1.65rem] leading-[1.5] sm:text-[1.9rem]">نوف بنت محمد آل الشيخ</p>
-                    </div>
-                    <Ornament />
-                    <dl className="space-y-2 text-[0.82rem] leading-6 text-ink-soft">
-                      <div>
-                        <dt className="sr-only">الموقع</dt>
-                        <dd>نايراه هول، الرياض، المملكة العربية السعودية</dd>
-                      </div>
-                      <div className="flex items-center justify-center gap-3 text-ink-deep">
-                        <dt className="sr-only">التاريخ</dt>
-                        <dd>15 ديسمبر 2026</dd>
-                        <span className="h-3 w-px bg-champagne" aria-hidden="true" />
-                        <dt className="sr-only">الوقت</dt>
-                        <dd>الزفة 8:00 مساءً</dd>
-                      </div>
-                    </dl>
-                    <p className="mt-5 text-sm text-olive">نتشرف بحضوركم</p>
-                  </div>
-                </article>
-                <p className="mt-8 text-center text-[0.72rem] text-ink-soft/80 tracked">{L.cardCaption}</p>
+        {/* ---------- Showcase: the card in front of its own description ---------- */}
+        <section aria-labelledby="card-title" className="relative overflow-hidden bg-bone px-safe py-[clamp(7rem,14vw,12rem)]">
+          <div className="relative">
+            <div className="whitespace-nowrap font-editorial text-[clamp(2.875rem,9vw,9.5rem)] font-medium leading-[0.92] tracking-[-0.035em] rtl:leading-[1.2] rtl:tracking-normal">
+              <Reveal>
+                <p className="text-ink-soft">{L.showcaseLines[0]}</p>
+              </Reveal>
+              <Reveal delay={0.08}>
+                <h2 id="card-title" className="text-ink-deep">
+                  {L.showcaseLines[1]}
+                </h2>
+              </Reveal>
+              <Reveal delay={0.16}>
+                <p className="text-ink-soft">{L.showcaseLines[2]}</p>
+              </Reveal>
+            </div>
+            <div className="mt-14 grid gap-12 md:grid-cols-12 md:items-start">
+              <Reveal className="md:col-span-5 md:col-start-1">
+                <Invitation lang={locale} className="card-tilt mx-auto w-[min(100%,26rem)] text-[clamp(0.85rem,1.1vw,1rem)]" />
+              </Reveal>
+              <Reveal delay={0.12} className="space-y-6 text-[1.25rem] leading-[1.6] text-ink-deep md:col-span-5 md:col-start-8 md:pt-10">
+                <p>{L.showcaseFact}</p>
+                <p>{L.showcaseCounts(DESIGN_COUNT, CLIP_STYLES.length)}</p>
+                <Image src="/landing/taif-rose-sack.jpg" alt="" width={1920} height={1279} sizes="(min-width: 768px) 40vw, 100vw" className="mt-4 aspect-[3/2] w-full object-cover" />
               </Reveal>
             </div>
           </div>
         </section>
 
-        {/* ---------- How it works ---------- */}
-        <section id="how" className="scroll-mt-20 px-6 py-28 sm:py-36">
-          <div className="mx-auto max-w-6xl">
-            <Reveal>
-              <h2 className="text-center font-editorial text-4xl font-light sm:text-6xl">{L.howTitle}</h2>
-            </Reveal>
-            <ol className="mt-20 grid gap-14 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-              {L.steps.map((step, i) => (
-                <Reveal as="li" key={step.title} delay={i * 0.12}>
-                  <span className="block font-editorial text-5xl font-light text-champagne">{step.num}</span>
-                  <span className="my-6 block h-px w-full bg-hair" />
-                  <h3 className="font-editorial text-3xl">{step.title}</h3>
-                  <p className="mt-3 max-w-[16rem] leading-8 text-ink-soft">{step.body}</p>
-                </Reveal>
-              ))}
-            </ol>
-          </div>
+        {/* ---------- How it works: one invitation's journey, addressed to the name typed in ---------- */}
+        <section id="how" aria-labelledby="how-title" className="scroll-mt-[4.5rem]">
+          <GuestJourney lang={locale} copy={L.journey} qr={qr} />
         </section>
 
-        {/* ---------- Occasions ---------- */}
-        <section id="occasions" className="relative scroll-mt-20 bg-bone/60 px-6 py-28 sm:py-36">
-          <div className="hairline absolute inset-x-0 top-0" />
-          <div className="mx-auto max-w-5xl">
-            <Reveal>
-              <h2 className="text-center font-editorial text-4xl font-light sm:text-6xl">{L.occasionsTitle}</h2>
-            </Reveal>
-            <ul className="mt-20 grid gap-x-16 md:grid-cols-2">
-              {L.occasions.map((label, i) => (
-                <Reveal as="li" key={label} delay={(i % 2) * 0.08}>
-                  <div className="group flex items-baseline gap-5 border-b border-hair py-6 transition-colors duration-500 hover:border-champagne">
-                    <span className="font-editorial text-lg text-champagne">{String(i + 1).padStart(2, "0")}</span>
-                    <span className="font-editorial text-2xl transition-transform duration-500 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 sm:text-3xl">
-                      {label}
-                    </span>
-                  </div>
-                </Reveal>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        {/* ---------- Closing ---------- */}
-        <section className="relative px-6 py-36 text-center sm:py-48">
+        {/* ---------- Occasions: statement, then the table pushed right ---------- */}
+        <section id="occasions" aria-labelledby="occasions-title" className="scroll-mt-20 px-safe py-[clamp(7rem,14vw,12rem)]">
           <Reveal>
-            <p className="font-editorial text-4xl font-light sm:text-6xl">{L.closingTitle}</p>
-            <p className="mt-4 font-editorial text-2xl italic text-ink-soft sm:text-3xl rtl:not-italic">{L.closingSub}</p>
-            <Link href={createHref} className={`${btnSolid} mt-12`}>
-              {L.create} <ArrowRight size={15} className="rtl:rotate-180" />
-            </Link>
+            <h2 id="occasions-title" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em] md:ps-[3vw]">
+              {L.occasionsTitle}
+            </h2>
           </Reveal>
+          <div className="mt-16 grid gap-x-6 gap-y-14 md:mt-24 md:grid-cols-12">
+            <Reveal className="order-2 self-end md:order-1 md:col-span-4">
+              <Photo src="/landing/henna-hands.jpg" alt={L.photos.henna} ratio="aspect-[4/5]" sizes="(min-width: 768px) 30vw, 70vw" className="ms-auto w-[70%] md:ms-0 md:w-full" />
+            </Reveal>
+            <p className="order-1 hidden text-[0.875rem] text-ink-soft md:order-2 md:col-span-2 md:col-start-6 md:block md:text-end">{L.occasionsTable}</p>
+            <Reveal delay={0.08} as="div" className="order-1 md:order-3 md:col-span-5 md:col-start-8">
+              <ul className="text-[1.0625rem]">
+                {OCCASIONS.map((o, i) => (
+                  <li key={o.id} className={`flex items-baseline justify-between gap-6 py-[0.8rem] ${i > 0 && i % 4 === 0 ? "mt-6" : ""}`}>
+                    <span className="text-ink-deep">{o.label[locale]}</span>
+                    <span className="text-end text-ink-soft">{o.cardLine[locale]}</span>
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ---------- Closing: the sentence has a blank, and the blank is the form ---------- */}
+        <section aria-labelledby="begin-title" className="bg-bone px-safe py-[clamp(7rem,14vw,12rem)]">
+          <form action="/events/new" method="get" className="font-editorial text-[clamp(2.5rem,6vw,6.25rem)] font-medium leading-[1.15] tracking-[-0.02em] rtl:tracking-normal">
+            <h2 id="begin-title" className="flex flex-wrap items-baseline gap-x-[0.3em] gap-y-[0.15em]">
+              <label htmlFor="occasion-name">{L.closingLead}</label>
+              <input
+                id="occasion-name"
+                name="name"
+                maxLength={120}
+                autoComplete="off"
+                enterKeyHint="go"
+                placeholder={L.closingPlaceholder}
+                className="h-[1.15em] w-full min-w-0 bg-ivory px-[0.25em] text-[1em] tracking-[inherit] text-ink-deep outline-none placeholder:text-ink-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-deep sm:w-[7.5em]"
+              />
+              <span>{L.closingAnd}</span>
+              <button type="submit" className="press tap-control bg-ink-deep px-[0.25em] leading-[1.15] text-ivory hover:bg-olive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-deep">
+                {L.closingButton}
+              </button>
+            </h2>
+          </form>
+          <p className="mt-8 max-w-[40rem] text-[1.0625rem] leading-[1.6] text-ink-soft">{L.closingNote}</p>
         </section>
       </main>
 
-      {/* ---------- Footer / contact ---------- */}
-      <footer id="contact" className="relative scroll-mt-20 border-t border-hair px-6 pb-10 pt-20">
-        <div className="mx-auto grid max-w-6xl gap-12 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-          <div className="max-w-sm">
-            <Wordmark size="lg" />
-            <p className="mt-5 leading-7 text-ink-soft">{L.footerLine}</p>
+      {/* ---------- Footer: the way to get in touch is the headline ---------- */}
+      <footer id="contact" className="flex min-h-[90svh] scroll-mt-[4.5rem] flex-col justify-between gap-16 bg-olive px-safe pb-[max(2rem,env(safe-area-inset-bottom,0px))] pt-10 text-ivory">
+        <div className="flex flex-wrap items-start justify-between gap-8 text-[0.875rem] leading-6">
+          <div className="grid gap-x-12 gap-y-2 sm:grid-cols-[auto_auto]">
+            <Wordmark className="[&_span:last-child]:text-ivory" />
+            <p className="max-w-[28rem]">{L.footerLine}</p>
+            <p className="sm:col-start-2">{L.locationValue}</p>
           </div>
-          <dl className="grid gap-5 text-[0.9rem] sm:grid-cols-3 md:grid-cols-1 lg:grid-cols-3">
-            <div>
-              <dt className="flex items-center gap-2 text-[0.7rem] text-olive tracked">
-                <Mail size={13} /> {L.email}
-              </dt>
-              <dd className="mt-2">
-                <a href={`mailto:${CONTACT.email}`} dir="ltr" className="hover:text-olive">
-                  {CONTACT.email}
-                </a>
-              </dd>
-            </div>
-            <div>
-              <dt className="flex items-center gap-2 text-[0.7rem] text-olive tracked">
-                <Phone size={13} /> {L.phone}
-              </dt>
-              <dd className="mt-2">
-                <a href={`tel:${CONTACT.tel}`} dir="ltr" className="hover:text-olive">
-                  {CONTACT.phone}
-                </a>
-              </dd>
-            </div>
-            <div>
-              <dt className="flex items-center gap-2 text-[0.7rem] text-olive tracked">
-                <MapPin size={13} /> {L.location}
-              </dt>
-              <dd className="mt-2">{L.locationValue}</dd>
-            </div>
-          </dl>
+          <a href="#home" className="tap-control underline underline-offset-4 hover:no-underline">
+            {L.backToTop}
+          </a>
         </div>
-        <div className="mx-auto mt-16 flex max-w-6xl flex-col gap-4 border-t border-hair pt-6 text-[0.75rem] text-ink-soft/80 sm:flex-row sm:items-center sm:justify-between">
-          <p>{L.rights(new Date().getFullYear())}</p>
+
+        <div>
+          <h2 className="sr-only">{L.nav.contact}</h2>
+          <a
+            href={`mailto:${CONTACT.email}`}
+            dir="ltr"
+            className="block font-editorial text-[13vw] font-medium rtl:text-right leading-[0.95] tracking-[-0.03em] hover:text-bone md:text-[11.5vw]"
+          >
+            hikayati<wbr />@gmail.com
+          </a>
+          <a href={`tel:${CONTACT.tel}`} dir="ltr" className="mt-6 inline-block text-[1.25rem] underline underline-offset-4 hover:no-underline">
+            {CONTACT.phone}
+          </a>
+        </div>
+
+        <div className="grid gap-6 text-[0.875rem] leading-6 md:grid-cols-[auto_1fr_auto] md:items-end md:gap-12">
           <nav className="flex gap-6">
-            {(["home", "occasions", "how", "about"] as const).map((id) => (
-              <a key={id} href={`#${id}`} className="hover:text-ink-deep">
-                {L.nav[id]}
+            {nav.slice(0, 2).map((n) => (
+              <a key={n.href} href={n.href} className="tap-control underline-offset-4 hover:underline">
+                {n.label}
               </a>
             ))}
-            <Link href={user ? "/events" : "/login"} className="hover:text-ink-deep">
+            <Link href={user ? "/events" : "/login"} className="tap-control underline-offset-4 hover:underline">
               {user ? L.myEvents : L.signIn}
             </Link>
           </nav>
+          <p className="max-w-[60rem]">
+            {L.picturesCredit}:{" "}
+            {CREDITS.map((c, i) => (
+              <span key={c.page}>
+                <a href={c.page} className="underline underline-offset-2 hover:no-underline">
+                  <bdi>{c.title}</bdi>
+                </a>{" "}
+                <bdi>{c.by}</bdi>, {c.licence}
+                {i < CREDITS.length - 1 ? "; " : "."}
+              </span>
+            ))}
+          </p>
+          <p>{L.rights(new Date().getFullYear())}</p>
         </div>
       </footer>
     </>

@@ -38,7 +38,7 @@ function Skeleton() {
       <div className="h-10 w-2/3 rounded-lg bg-line" />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-28 rounded-2xl bg-line/70" />
+          <div key={i} className="h-35 rounded-2xl bg-line/70" />
         ))}
       </div>
       <div className="h-64 rounded-2xl bg-line/60" />

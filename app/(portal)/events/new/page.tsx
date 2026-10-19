@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { CardTemplate, Event } from "@/lib/types";
 import TemplatePicker from "@/components/TemplatePicker";
@@ -31,7 +31,9 @@ export default function NewEventPage() {
   const t = useT();
   const locale = useLocale();
   const [templates, setTemplates] = useState<CardTemplate[]>([]);
-  const [name, setName] = useState("");
+  const params = useSearchParams();
+  // The landing page's closing form passes the occasion's name along as ?name=.
+  const [name, setName] = useState(() => params.get("name")?.slice(0, 120) ?? "");
   const [occasionType, setOccasionType] = useState<OccasionType>("wedding");
   const [eventDate, setEventDate] = useState("");
   const [venue, setVenue] = useState("");

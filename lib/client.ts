@@ -29,8 +29,13 @@ export async function requestJson<T = Record<string, unknown>>(
   }
 }
 
+// Titles people put before a name; "Dr. Mohammed Ali" should read "MA", not "DA".
+const TITLES = new Set(["dr", "mr", "mrs", "ms", "eng", "prof", "sheikh", "د", "أ", "م", "معالي", "سعادة", "سمو", "الدكتور", "الدكتورة", "الشيخ", "الشيخة", "المهندس", "الأستاذ", "الأستاذة"]);
+
 export function initials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  const named = words.filter((w) => !TITLES.has(w.replace(/[./]/g, "").toLowerCase()));
+  const parts = named.length ? named : words;
   // Arabic letters change shape when joined, so Arabic names get a single initial.
   if (/[\u0600-\u06FF]/.test(name)) return parts[0]?.[0] ?? "?";
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase() || "?";

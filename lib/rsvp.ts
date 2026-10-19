@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from "crypto";
 import QRCode from "qrcode";
 import { db, DuplicatePhoneError, GuestPatch } from "./db";
 import { normalizePhone } from "./phone";
+import { clip, MAX_NAME_LENGTH, MAX_PHONE_LENGTH } from "./guest-import";
 import { daysUntil, DEFAULT_TIMEZONE } from "./dates";
 import { occasion } from "./occasions";
 import { Event, Guest, GuestStatus, Stats } from "./types";
@@ -55,13 +56,13 @@ export async function inviteGuests(event: Event, rows: { name: string; phone: st
 
   for (const row of rows) {
     const normalized = normalizePhone(row.phone);
-    const phone = normalized ?? row.phone.trim();
+    const phone = normalized ?? clip(row.phone, MAX_PHONE_LENGTH);
     if (seen.has(phone)) continue;
     seen.add(phone);
     candidates.push({
       id: randomUUID(),
       eventId: event.id,
-      name: row.name.trim(),
+      name: clip(row.name, MAX_NAME_LENGTH),
       phone,
       status: normalized ? "pending" : "invalid",
       inviteSentAt: null,
@@ -135,7 +136,7 @@ export async function editGuest(event: Event, guest: Guest, changes: { name?: st
   const patch: GuestPatch = {};
 
   if (changes.name !== undefined) {
-    const name = changes.name.trim();
+    const name = clip(changes.name, MAX_NAME_LENGTH);
     if (!name) return { ok: false, error: "invalid_name" };
     patch.name = name;
   }

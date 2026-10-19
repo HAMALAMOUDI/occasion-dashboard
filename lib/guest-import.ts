@@ -10,6 +10,18 @@ export interface GuestRow {
   phone: string;
 }
 
+// Generous for any real name (a full nasab with a title is ~90 characters), but
+// stops a pasted paragraph from becoming a guest name in a WhatsApp message.
+export const MAX_NAME_LENGTH = 100;
+// A cell holding two or three numbers is still kept so it can be fixed later.
+export const MAX_PHONE_LENGTH = 40;
+
+// Cuts by characters, not UTF-16 units, so an emoji is never split in half.
+export function clip(s: string, max: number) {
+  const chars = Array.from(s.trim());
+  return chars.length > max ? chars.slice(0, max).join("").trim() : s.trim();
+}
+
 type Cell = string | number | boolean | Date | null | undefined | object;
 
 const NAME_HEADERS = ["name", "guest", "guest name", "full name", "الاسم", "اسم", "اسم الضيف", "الاسم الكامل"];
