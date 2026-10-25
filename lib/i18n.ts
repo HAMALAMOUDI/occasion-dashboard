@@ -50,6 +50,11 @@ export function formatNumber(n: number, locale: Locale) {
   return n.toLocaleString(INTL[locale]);
 }
 
+// Whole percent (0–100): "40%" in English, "40٪" in Arabic.
+export function formatPercent(n: number, locale: Locale) {
+  return (n / 100).toLocaleString(INTL[locale], { style: "percent" });
+}
+
 export function formatSar(amount: number, locale: Locale) {
   const value = amount.toLocaleString(INTL[locale], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return locale === "ar" ? `${value} ر.س` : `${value} SAR`;

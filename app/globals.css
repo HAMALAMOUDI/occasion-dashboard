@@ -29,6 +29,7 @@
   --ink-deep: #24241f;
   --ink-soft: #55554b;
   --hair: #24241f24;
+  --gold-ink: #7d6029; /* champagne deepened to read as text (5.2:1 on ivory) */
   --chat-bg: #efeae2;
 }
 
@@ -61,6 +62,7 @@
   --color-ink-deep: var(--ink-deep);
   --color-ink-soft: var(--ink-soft);
   --color-hair: var(--hair);
+  --color-gold-ink: var(--gold-ink);
   --font-editorial: var(--font-cormorant), var(--font-display-ar), Georgia, serif;
   --font-clean: var(--font-jost), var(--font-body-ar), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-display), var(--font-display-ar), Georgia, serif;
@@ -139,25 +141,6 @@ body {
 
 /* ---------- Landing page ---------- */
 
-.hairline {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--champagne), transparent);
-}
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.rise {
-  animation: rise 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) var(--rise-delay, 0s) both;
-}
-
 /* Fades sections in as they scroll into view (see components/landing/Reveal.tsx). */
 .reveal {
   opacity: 0;
@@ -171,38 +154,163 @@ body {
   transform: none;
 }
 
-@keyframes draw-line {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-.draw-line {
-  transform-origin: center;
-  animation: draw-line 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) 0.4s both;
-}
-
-/* Small spaced capitals — but never letter-space Arabic. */
-.tracked {
-  text-transform: uppercase;
-  letter-spacing: 0.28em;
-}
-:lang(ar) .tracked {
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: 0.95rem;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .rise,
-  .draw-line {
-    animation: none;
-  }
   .reveal {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+}
+
+/* ---------- Landing on phones ---------- */
+
+/* Side gutters that clear the notch in landscape (viewport-fit=cover is set in app/(site)/layout.tsx). */
+@utility px-safe {
+  padding-left: max(clamp(1.25rem, 2.4vw, 2rem), env(safe-area-inset-left, 0px));
+  padding-right: max(clamp(1.25rem, 2.4vw, 2rem), env(safe-area-inset-right, 0px));
+}
+
+/* No gray flash on tap: every control below has its own press state instead. */
+.site {
+  -webkit-tap-highlight-color: transparent;
+}
+/* Links and buttons never double-tap-zoom, so taps fire without the delay. */
+.site :is(a, button) {
+  touch-action: manipulation;
+}
+/* Controls, not content: long-press neither selects the label nor opens the link callout.
+   Contact links stay selectable so the address and number can be copied. */
+.tap-control {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+/* Press feedback lands on touch-down and lets go fast; colours keep their slow hover fade. */
+.press {
+  transition:
+    color 0.5s,
+    background-color 0.5s,
+    border-color 0.5s,
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.press:active {
+  transform: scale(0.98);
+}
+/* iOS shows the body in the rubber-band area above and below the page; match the landing's ivory. */
+body:has(.site) {
+  background-color: var(--ivory);
+}
+
+/* ---------- Landing composition ---------- */
+
+/* The animated invitation sits inside the hero sentence, one cap-height tall, on the baseline.
+   On a phone it drops to its own line between the two halves of the sentence. */
+.hero-slot {
+  display: inline-block;
+  width: 2.3em;
+  height: 0.74em;
+  margin-inline: 0.18em;
+  overflow: hidden;
+  vertical-align: baseline;
+  background: var(--bone);
+}
+@media (max-width: 639px) {
+  .hero-slot {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 7;
+    margin: 0.12em 0 0.16em;
+  }
+}
+
+/* Signature move: the slot opens from its leading edge while the picture settles. */
+@keyframes shutter-open {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes shutter-settle {
+  from { transform: scale(1.12); }
+  to { transform: none; }
+}
+.shutter {
+  animation: shutter-open 1.1s cubic-bezier(0.77, 0, 0.175, 1) 0.25s both;
+}
+[dir="rtl"] .shutter {
+  animation-name: shutter-open-rtl;
+}
+@keyframes shutter-open-rtl {
+  from { clip-path: inset(0 0 0 100%); }
+  to { clip-path: inset(0 0 0 0); }
+}
+.shutter > * {
+  animation: shutter-settle 1.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.25s both;
+}
+
+/* The printed card leans slightly, as if set down on the table. */
+.card-tilt {
+  transform: rotate(-3deg);
+}
+[dir="rtl"] .card-tilt {
+  transform: rotate(3deg);
+}
+
+/* The journey slider: a solid 8px track, the passed part in ink, a square thumb. */
+.journey-range {
+  appearance: none;
+  height: 2.75rem;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.journey-range::-webkit-slider-runnable-track {
+  height: 8px;
+  background: linear-gradient(to var(--range-end, right), var(--ink-deep) var(--fill), var(--bone) var(--fill)); /* taste-skill-ignore: a two-stop fill, not a gradient look */
+}
+.journey-range::-moz-range-track {
+  height: 8px;
+  background: var(--bone);
+}
+.journey-range::-moz-range-progress {
+  height: 8px;
+  background: var(--ink-deep);
+}
+.journey-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 32px;
+  height: 32px;
+  margin-top: -12px;
+  background: var(--ink-deep);
+  transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.journey-range::-moz-range-thumb {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 0;
+  background: var(--ink-deep);
+}
+.journey-range:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+.journey-range:focus-visible {
+  outline: 2px solid var(--ink-deep);
+  outline-offset: 4px;
+}
+[dir="rtl"] .journey-range {
+  --range-end: left;
+}
+@media (pointer: coarse) {
+  .journey-range::-webkit-slider-thumb {
+    width: 40px;
+    height: 40px;
+    margin-top: -16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shutter,
+  .shutter > * {
+    animation: none;
   }
 }
