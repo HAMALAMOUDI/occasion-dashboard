@@ -35,8 +35,20 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: `Hikayati · حكايتي — ${t.landing.heroLine1} ${t.landing.heroLine2}`, description: t.landing.heroSub };
 }
 
-const btnSolid =
-  "press tap-control min-h-12 items-center justify-center gap-3 bg-ink-deep px-7 text-[1.0625rem] font-medium text-ivory hover:bg-olive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-deep";
+const btnInvite =
+  "btn-invite press tap-control min-h-12 text-[1.0625rem] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-deep";
+
+// The "Create invitation" button: label, then a gold tab with the arrow.
+function InviteButton({ href, children, className = "" }: { href: string; children: React.ReactNode; className?: string }) {
+  return (
+    <Link href={href} className={`${btnInvite} ${className}`}>
+      <span className="btn-invite-label">{children}</span>
+      <span className="btn-invite-tab" aria-hidden="true">
+        <ArrowRight size={18} className="rtl:rotate-180" />
+      </span>
+    </Link>
+  );
+}
 
 function Wordmark({ className = "" }: { className?: string }) {
   return (
@@ -95,9 +107,9 @@ export default async function LandingPage() {
             <Link href={user ? "/events" : "/login"} className="tap-control hidden text-[1.0625rem] text-ink-soft hover:text-ink-deep active:text-ink-deep md:inline">
               {user ? L.myEvents : L.signIn}
             </Link>
-            <Link href={createHref} className={`${btnSolid} hidden min-h-10 px-5 sm:inline-flex`}>
+            <InviteButton href={createHref} className="btn-invite-sm hidden min-h-11 sm:inline-flex">
               {L.headerCta}
-            </Link>
+            </InviteButton>
           </div>
         </div>
       </header>
@@ -117,9 +129,9 @@ export default async function LandingPage() {
           <div className="mt-10 grid items-end gap-8 md:mt-12 md:grid-cols-12">
             <p className="text-[1.25rem] leading-[1.55] text-ink-deep md:col-span-7 lg:col-span-6">{L.heroSub}</p>
             <div className="md:col-span-5 md:justify-self-end lg:col-span-6">
-              <Link href={createHref} className={`${btnSolid} flex w-full sm:inline-flex sm:w-auto`}>
-                {L.create} <ArrowRight size={18} className="rtl:rotate-180" />
-              </Link>
+              <InviteButton href={createHref} className="flex min-h-14 w-full sm:inline-flex sm:w-auto">
+                {L.create}
+              </InviteButton>
             </div>
           </div>
         </section>

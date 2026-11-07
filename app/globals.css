@@ -196,6 +196,91 @@ body {
 .press:active {
   transform: scale(0.98);
 }
+/* In the components layer, so utilities such as `hidden` still win. */
+@layer components {
+  /* "Create invitation": an ink card with a gold inner frame, a gold arrow tab
+     that nudges forward on hover, and a slow gold sheen across the face. */
+  .btn-invite {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: stretch;
+    overflow: hidden;
+    background-color: var(--ink-deep);
+    color: var(--ivory);
+    font-weight: 500;
+    box-shadow: 0 1px 0 rgb(36 36 31 / 0.08), 0 10px 24px -14px rgb(36 36 31 / 0.55);
+  }
+  .btn-invite:hover {
+    background-color: var(--olive);
+  }
+  .btn-invite::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    z-index: 2;
+    border: 1px solid color-mix(in oklab, var(--champagne) 60%, transparent);
+    pointer-events: none;
+  }
+  .btn-invite::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(105deg, transparent 35%, rgb(240 222 170 / 0.28) 50%, transparent 65%);
+    transform: translateX(-110%);
+    pointer-events: none;
+  }
+  .btn-invite:hover::after {
+    transform: translateX(110%);
+    transition: transform 0.9s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  [dir="rtl"] .btn-invite::after {
+    transform: translateX(110%);
+  }
+  [dir="rtl"] .btn-invite:hover::after {
+    transform: translateX(-110%);
+  }
+  .btn-invite-label {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1.75rem;
+  }
+  .btn-invite-tab {
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    background-color: var(--champagne);
+    color: var(--ink-deep);
+  }
+  .btn-invite-tab svg {
+    transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .btn-invite:hover .btn-invite-tab svg {
+    transform: translateX(3px);
+  }
+  [dir="rtl"] .btn-invite:hover .btn-invite-tab svg {
+    transform: translateX(-3px) rotate(180deg);
+  }
+  /* compact size for the header */
+  .btn-invite-sm .btn-invite-label {
+    padding-inline: 1.25rem;
+  }
+  .btn-invite-sm .btn-invite-tab {
+    width: 2.5rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn-invite::after {
+      display: none;
+    }
+    .btn-invite-tab svg {
+      transition: none;
+    }
+  }
+}
+
 /* iOS shows the body in the rubber-band area above and below the page; match the landing's ivory. */
 body:has(.site) {
   background-color: var(--ivory);
