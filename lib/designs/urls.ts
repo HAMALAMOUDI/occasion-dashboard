@@ -18,9 +18,9 @@ export function galleryPath(style: string, category: string, layout: number) {
   return `/gallery/${style}/${category}/${layout}`;
 }
 
-// Opens one design in the portal's gallery, ready to apply to an event; visitors sign in first.
+// Starts a new invitation with one design already chosen; visitors sign in first.
 export function pickDesignHref(signedIn: boolean, params: { style: string; category: string; layout: number; palette?: number | null }) {
-  const portal = `/designs?${new URLSearchParams(
+  const portal = `/events/new?${new URLSearchParams(
     Object.entries(params).flatMap(([k, v]) => (v === null || v === undefined ? [] : [[k, String(v)]]))
   )}`;
   return signedIn ? portal : `/login?next=${encodeURIComponent(portal)}`;

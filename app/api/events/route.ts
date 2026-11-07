@@ -4,7 +4,9 @@ import { db } from "@/lib/db";
 import { eventsFor, requireUser } from "@/lib/auth";
 import { badRequest, readJson } from "@/lib/http";
 import { isLocale } from "@/lib/i18n";
-import { isOccasionType } from "@/lib/occasions";
+import { isOccasionType, occasion } from "@/lib/occasions";
+import { sampleFields } from "@/lib/designs/catalog";
+import { parseDesignChoice } from "@/lib/designs/validate";
 import { Event } from "@/lib/types";
 import { randomUUID } from "crypto";
 
@@ -36,6 +38,14 @@ export async function POST(req: NextRequest) {
     if (!template || template.occasionType !== occasionType) return badRequest(err.templateMismatch);
   }
 
+  // A library design chosen on the create page, checked as an edit would be.
+  let design: Event["design"] = null;
+  if (body.design) {
+    design = parseDesignChoice(body.design, sampleFields("wedding"));
+    if (!design) return badRequest(err.invalidDesign);
+    if ((design.category === "condolence") !== !occasion(occasionType).rsvp) return badRequest(err.noDesignForOccasion);
+  }
+
   const event: Event = {
     id: randomUUID(),
     name,
@@ -47,7 +57,7 @@ export async function POST(req: NextRequest) {
     ownerPhone: user.phone,
     // Invitations default to the organizer's own language.
     language: isLocale(body.language) ? body.language : await getLocale(),
-    design: null,
+    design,
     clip: null,
     details: null,
     reminderWeekSentAt: null,

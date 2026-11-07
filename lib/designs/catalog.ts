@@ -46,6 +46,12 @@ export const CATEGORIES_FOR_OCCASION: Record<OccasionType, DesignCategory[]> = {
   other: ["gathering", "birthday", "corporate"],
 };
 
+// The occasion a design was made for: the first whose own set starts with it, else any that offers it.
+export function occasionForCategory(category: DesignCategory): OccasionType {
+  const entries = Object.entries(CATEGORIES_FOR_OCCASION) as [OccasionType, DesignCategory[]][];
+  return (entries.find(([, cats]) => cats[0] === category) ?? entries.find(([, cats]) => cats.includes(category)))![0];
+}
+
 export const LAYOUT_NAMES: Record<DesignStyle, { en: string; ar: string }[]> = {
   classic: [
     ["Classic double frame", "إطار كلاسيكي"], ["Arch", "قوس"], ["Poster headline", "عنوان ملصق"], ["Split block", "مقسوم"],
