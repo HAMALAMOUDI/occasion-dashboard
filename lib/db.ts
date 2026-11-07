@@ -1,4 +1,4 @@
-import { BillingRecord, CardTemplate, Event, Guest, GuestStatus, LoginCode, Session } from "./types";
+import { BillingRecord, CardTemplate, Counters, Event, Guest, GuestStatus, LoginCode, Review, Session } from "./types";
 import { jsonStore } from "./db-json";
 import { postgresStore } from "./db-postgres";
 
@@ -14,10 +14,11 @@ import { postgresStore } from "./db-postgres";
 // operations here rather than read-then-write in the callers.
 
 export type ReminderField = "reminderWeekSentAt" | "reminderDaySentAt";
-export type EventPatch = Partial<Pick<Event, "name" | "eventDate" | "venue" | "inviterName" | "templateId" | "language" | "design" | "clip">>;
-export type GuestPatch = Partial<Pick<Guest, "name" | "phone" | "status" | "inviteSentAt" | "respondedAt" | "barcodeValue" | "checkedInAt" | "lastError">>;
-// Apply the patch only if the guest's current status is one of these.
-export type GuestGuard = { ifStatusIn?: GuestStatus[] };
+export type EventPatch = Partial<Pick<Event, "name" | "eventDate" | "venue" | "inviterName" | "templateId" | "language" | "design" | "clip" | "details">>;
+export type GuestPatch = Partial<Pick<Guest, "name" | "phone" | "status" | "inviteSentAt" | "respondedAt" | "barcodeValue" | "checkedInAt" | "lastError" | "seats" | "attending" | "token">>;
+// Apply the patch only if the guest's current status is one of these, and
+// (with ifNotCheckedIn) only if they haven't been scanned in at the door yet.
+export type GuestGuard = { ifStatusIn?: GuestStatus[]; ifNotCheckedIn?: boolean };
 
 // Thrown when a guest's phone would duplicate another guest on the same event.
 export class DuplicatePhoneError extends Error {
@@ -38,6 +39,7 @@ export interface Store {
 
   getGuests(eventId: string): Promise<Guest[]>;
   getGuest(id: string): Promise<Guest | undefined>;
+  getGuestByToken(token: string): Promise<Guest | undefined>;
   // Inserts guests, skipping any whose phone is already on the event. Returns the inserted rows.
   addGuests(guests: Guest[]): Promise<Guest[]>;
   updateGuest(id: string, patch: GuestPatch, guard?: GuestGuard): Promise<Guest | undefined>;
@@ -61,6 +63,16 @@ export interface Store {
   countLoginAttempt(phone: string, maxAttempts: number): Promise<LoginCode | undefined>;
   // Deletes the code if it still matches — so each code can be used once.
   consumeLoginCode(phone: string, codeHash: string): Promise<boolean>;
+
+  addReview(review: Review): Promise<Review>;
+  // The review left for one event, if any.
+  getReviewForEvent(eventId: string): Promise<Review | undefined>;
+  // Newest first; all of them, or only those with one status.
+  getReviews(status?: Review["status"]): Promise<Review[]>;
+  setReviewStatus(id: string, status: Review["status"]): Promise<Review | undefined>;
+
+  // Totals across every event, for the landing page.
+  getCounters(): Promise<Counters>;
 
   createSession(session: Session): Promise<void>;
   getSession(tokenHash: string): Promise<Session | undefined>;

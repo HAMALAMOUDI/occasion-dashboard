@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { requireEvent } from "@/lib/auth";
 import { badRequest, readJson } from "@/lib/http";
 import { extractGuestRows, GuestRow } from "@/lib/guest-import";
-import { inviteGuests } from "@/lib/rsvp";
+import { inviteGuests, readSeats } from "@/lib/rsvp";
 
 const MAX_ROWS = 5000;
 
@@ -17,7 +17,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 // Adds guests and sends their invites. Accepts either
-//   { rows: [{ name, phone }] }  — from the Excel upload or the "Add guest" form
+//   { rows: [{ name, phone, seats? }] }  — from the Excel upload or the "Add guest" form
 //   { csv: "..." }               — raw CSV text
 // Phone numbers are normalized to E.164 and de-duplicated against the existing
 // guest list, so re-uploading the same file never double-invites (or double-bills).
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (Array.isArray(body?.rows)) {
     rows = body.rows
       .filter((r): r is GuestRow => typeof r?.name === "string" && typeof r?.phone === "string")
-      .map((r) => ({ name: r.name.trim(), phone: r.phone.trim() }))
+      .map((r) => ({ name: r.name.trim(), phone: r.phone.trim(), seats: readSeats(r.seats) }))
       .filter((r) => r.name && r.phone);
   } else if (typeof body?.csv === "string" && body.csv.trim()) {
     const parsed = Papa.parse<string[]>(body.csv.replace(/^﻿/, ""), { skipEmptyLines: "greedy" });

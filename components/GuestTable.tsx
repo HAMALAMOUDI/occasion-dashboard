@@ -6,7 +6,7 @@ import Avatar from "./Avatar";
 import { useMemo, useState } from "react";
 import { postJson, requestJson } from "@/lib/client";
 import type { Messages } from "@/lib/messages";
-import { Check, Pencil, QrCode, Search, Trash2, TriangleAlert, X } from "lucide-react";
+import { Check, DoorOpen, Link2, Pencil, QrCode, Search, Trash2, TriangleAlert, Users, X } from "lucide-react";
 import { useT } from "./I18nProvider";
 
 type Filter = "all" | "accepted" | "declined" | "waiting" | "invalid";
@@ -41,7 +41,15 @@ export default function GuestTable({ guests, rsvp = true, onChange }: { guests: 
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
-  const [editing, setEditing] = useState<{ id: string; name: string; phone: string } | null>(null);
+  const [editing, setEditing] = useState<{ id: string; name: string; phone: string; seats: number } | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  // The guest's own invitation page, for sending by hand or checking what they see.
+  async function copyLink(g: Guest) {
+    await navigator.clipboard.writeText(`${window.location.origin}/i/${g.token}`).catch(() => undefined);
+    setCopied(g.id);
+    setTimeout(() => setCopied((c) => (c === g.id ? null : c)), 2000);
+  }
 
   const visible = useMemo(() => {
     const f = FILTERS.find((x) => x.id === filter)!;
@@ -68,6 +76,7 @@ export default function GuestTable({ guests, rsvp = true, onChange }: { guests: 
     setError(null);
     const result = await requestJson("PATCH", `/api/guests/${g.id}`, {
       name: editing.name,
+      ...(editing.seats !== g.seats ? { seats: editing.seats } : {}),
       ...(phoneChanged ? { phone: editing.phone } : {}),
     });
     setBusyId(null);
@@ -101,7 +110,7 @@ export default function GuestTable({ guests, rsvp = true, onChange }: { guests: 
   const actions = (g: Guest) =>
     g.status === "invalid" ? (
       <button
-        onClick={() => setEditing({ id: g.id, name: g.name, phone: g.phone })}
+        onClick={() => setEditing({ id: g.id, name: g.name, phone: g.phone, seats: g.seats })}
         className="btn btn-sm whitespace-nowrap border border-line bg-surface hover:border-pine hover:bg-pine-soft hover:text-pine"
       >
         <Pencil size={13} /> {t.guests.fixNumber}
@@ -123,6 +132,10 @@ export default function GuestTable({ guests, rsvp = true, onChange }: { guests: 
           <X size={13} /> {t.guests.markNotComing}
         </button>
       </div>
+    ) : g.status === "accepted" && g.checkedInAt ? (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-accept-bg px-2.5 py-1 text-xs font-medium text-accept">
+        <DoorOpen size={13} /> {t.guests.checkedIn}
+      </span>
     ) : g.status === "accepted" && g.barcodeValue ? (
       <span className="inline-flex items-center gap-1.5 text-xs text-muted font-mono" title={t.guests.entryPass} dir="ltr">
         <QrCode size={13} /> {g.barcodeValue}
@@ -177,7 +190,7 @@ export default function GuestTable({ guests, rsvp = true, onChange }: { guests: 
                   }}
                   className="flex flex-col gap-3 sm:flex-row sm:items-end"
                 >
-                  <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                  <div className="grid flex-1 gap-3 sm:grid-cols-[1fr_1fr_5.5rem]">
                     <label className="block">
                       <span className="label">{t.guests.name}</span>
                       <input autoFocus value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} className="input" />
@@ -191,6 +204,18 @@ export default function GuestTable({ guests, rsvp = true, onChange }: { guests: 
                         value={editing.phone}
                         onChange={(e) => setEditing({ ...editing, phone: e.target.value })}
                         className="input tabular-nums rtl:text-end"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="label">{t.guests.seats}</span>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        min={1}
+                        max={20}
+                        value={editing.seats}
+                        onChange={(e) => setEditing({ ...editing, seats: Math.min(20, Math.max(1, Math.round(Number(e.target.value) || 1))) })}
+                        className="input tabular-nums"
                       />
                     </label>
                   </div>
@@ -211,8 +236,14 @@ export default function GuestTable({ guests, rsvp = true, onChange }: { guests: 
                   <Avatar name={g.name} seed={g.id} />
                   <div className="min-w-0">
                     <p className="font-medium truncate">{g.name}</p>
-                    <p className="text-xs text-muted tabular-nums">
+                    <p className="flex flex-wrap items-center gap-x-2 text-xs text-muted tabular-nums">
                       <span dir="ltr">{g.phone}</span>
+                      {(g.seats > 1 || (g.attending !== null && g.attending < g.seats)) && (
+                        <span className="inline-flex items-center gap-1">
+                          <Users size={11} />
+                          {g.status === "accepted" && g.attending !== null ? t.guests.seatsComing(g.attending, g.seats) : t.guests.seatsCount(g.seats)}
+                        </span>
+                      )}
                     </p>
                     {g.lastError && (
                       <p className="mt-0.5 flex items-start gap-1 text-[11px] text-decline">
@@ -226,7 +257,15 @@ export default function GuestTable({ guests, rsvp = true, onChange }: { guests: 
                   <div className="@2xl:w-52 @2xl:flex @2xl:justify-end">{actions(g)}</div>
                   <div className="ms-auto flex gap-0.5 @2xl:ms-0">
                     <button
-                      onClick={() => setEditing({ id: g.id, name: g.name, phone: g.phone })}
+                      onClick={() => copyLink(g)}
+                      className="grid h-8 w-8 place-items-center rounded-full text-muted hover:bg-paper hover:text-ink"
+                      aria-label={copied === g.id ? t.guests.linkCopied : t.guests.copyLink}
+                      title={copied === g.id ? t.guests.linkCopied : t.guests.copyLink}
+                    >
+                      {copied === g.id ? <Check size={15} className="text-accept" /> : <Link2 size={15} />}
+                    </button>
+                    <button
+                      onClick={() => setEditing({ id: g.id, name: g.name, phone: g.phone, seats: g.seats })}
                       disabled={busyId === g.id}
                       className="grid h-8 w-8 place-items-center rounded-full text-muted hover:bg-paper hover:text-ink"
                       aria-label={t.guests.edit(g.name)}

@@ -8,6 +8,8 @@
 export interface GuestRow {
   name: string;
   phone: string;
+  // Seats on the invitation (a household or plus-ones); absent means one.
+  seats?: number;
 }
 
 type Cell = string | number | boolean | Date | null | undefined | object;
@@ -30,6 +32,8 @@ const PHONE_HEADERS = [
   "رقم الواتساب",
 ];
 
+const SEATS_HEADERS = ["seats", "guests", "party size", "people", "count", "plus ones", "المقاعد", "عدد المقاعد", "العدد", "عدد الأشخاص", "عدد الضيوف"];
+
 const norm = (cell: Cell) => cellText(cell).toLowerCase().replace(/[_*:]/g, " ").replace(/\s+/g, " ").trim();
 
 function cellText(cell: Cell): string {
@@ -48,6 +52,8 @@ export function extractGuestRows(table: Cell[][]): { rows: GuestRow[]; skipped: 
   let nameCol = header.findIndex((h) => NAME_HEADERS.includes(h));
   let phoneCol = header.findIndex((h) => PHONE_HEADERS.includes(h));
   const hasHeader = nameCol !== -1 || phoneCol !== -1;
+  // Only a labelled column counts as seats, so an unlabelled third column is never misread.
+  const seatsCol = header.findIndex((h) => SEATS_HEADERS.includes(h));
   if (nameCol === -1) nameCol = phoneCol === 0 ? 1 : 0;
   if (phoneCol === -1) phoneCol = nameCol === 1 ? 0 : 1;
 
@@ -56,7 +62,8 @@ export function extractGuestRows(table: Cell[][]): { rows: GuestRow[]; skipped: 
   for (const row of hasHeader ? nonEmpty.slice(1) : nonEmpty) {
     const name = cellText(row[nameCol]);
     const phone = cellText(row[phoneCol]);
-    if (name && phone) rows.push({ name, phone });
+    const seats = seatsCol === -1 ? NaN : Number(cellText(row[seatsCol]));
+    if (name && phone) rows.push(Number.isInteger(seats) && seats >= 1 ? { name, phone, seats } : { name, phone });
     else skipped++;
   }
   return { rows, skipped };

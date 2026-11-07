@@ -11,6 +11,12 @@ export interface Guest {
   barcodeValue: string | null;
   checkedInAt: string | null;
   lastError: string | null;
+  // Seats on this invitation: 1 for one person, more for a household or plus-ones.
+  seats: number;
+  // Seats the guest confirmed when accepting; null until they accept.
+  attending: number | null;
+  // Unguessable key for the guest's own invitation page (/i/<token>).
+  token: string;
 }
 
 import type { Lang, OccasionType } from "./occasions";
@@ -27,6 +33,16 @@ export interface ClipNames {
 export interface ClipChoice {
   style: ClipStyle;
   names?: ClipNames;
+}
+
+// What guests find on their invitation page, beyond the card. All optional.
+export interface InviteDetails {
+  mapUrl: string;
+  dressCode: string;
+  gifts: string;
+  note: string;
+  // The running order: arrivals, dinner, and so on.
+  schedule: { time: string; title: string }[];
 }
 
 export interface CardTemplate {
@@ -47,6 +63,8 @@ export interface Event {
   design: DesignChoice | null;
   // An animated invitation (lib/clips), or null for none.
   clip: ClipChoice | null;
+  // Extra details for the guest's invitation page, or null for none.
+  details: InviteDetails | null;
   eventDate: string;
   venue: string;
   inviterName: string;
@@ -76,6 +94,30 @@ export interface Stats {
   // Of `pending`, guests whose invite hasn't gone out yet.
   notSent: number;
   invalid: number;
+  // Seats across all invitations, and seats confirmed by guests who accepted.
+  seats: number;
+  seatsComing: number;
+  // Accepted guests already scanned in at the door.
+  checkedIn: number;
+}
+
+// An organizer's review of Hikayati, shown on the landing page once an admin approves it.
+export interface Review {
+  id: string;
+  eventId: string;
+  ownerPhone: string;
+  // How the review is signed, e.g. "Nouf & Fahad".
+  author: string;
+  rating: number; // 1–5
+  body: string;
+  status: "pending" | "approved" | "hidden";
+  createdAt: string;
+}
+
+// Real totals for the landing page.
+export interface Counters {
+  invitationsSent: number;
+  events: number;
 }
 
 // One-time sign-in code sent to an organizer's WhatsApp. Only a hash is stored.

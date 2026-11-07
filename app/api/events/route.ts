@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
     language: isLocale(body.language) ? body.language : await getLocale(),
     design: null,
     clip: null,
+    details: null,
     reminderWeekSentAt: null,
     reminderDaySentAt: null,
     createdAt: new Date().toISOString(),

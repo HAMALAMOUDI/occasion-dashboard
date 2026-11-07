@@ -10,6 +10,7 @@
     "designs:import": "node scripts/import-designs.mjs"
   },
   "dependencies": {
+    "jsqr": "^1.4.0",
     "lucide-react": "^1.52.0",
     "next": "16.3.5",
     "papaparse": "^5.7.0",

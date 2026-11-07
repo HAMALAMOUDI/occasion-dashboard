@@ -13,7 +13,9 @@ import { occasion, type Lang } from "./occasions";
 // Required Meta-side setup (WhatsApp Manager → Message templates):
 //   - WHATSAPP_INVITE_TEMPLATE   (default "occasion_invite")
 //       body: {{1}} guest name, {{2}} event name, {{3}} inviter, {{4}} date, {{5}} venue
-//       buttons: two quick replies, "Accept" and "Decline"
+//       buttons: two quick replies, "Accept" and "Decline". Optionally a third,
+//       a "Visit website" URL button to {APP_URL}/i/{{1}}; then set
+//       WHATSAPP_INVITE_LINK_BUTTON=true and each guest's page token fills it in.
 //   - WHATSAPP_ANNOUNCE_TEMPLATE (default "occasion_announcement") — condolences
 //       body: same 5 parameters as the invite, no buttons (nobody is asked to reply)
 //   - WHATSAPP_REMINDER_TEMPLATE (default "occasion_reminder")
@@ -41,6 +43,8 @@ const INVITE_TEMPLATE = process.env.WHATSAPP_INVITE_TEMPLATE || "occasion_invite
 const ANNOUNCE_TEMPLATE = process.env.WHATSAPP_ANNOUNCE_TEMPLATE || "occasion_announcement";
 const REMINDER_TEMPLATE = process.env.WHATSAPP_REMINDER_TEMPLATE || "occasion_reminder";
 const LOGIN_TEMPLATE = process.env.WHATSAPP_LOGIN_TEMPLATE || "occasion_login_code";
+// The invite template has the URL button to the guest's invitation page (see above).
+const INVITE_LINK_BUTTON = process.env.WHATSAPP_INVITE_LINK_BUTTON === "true";
 
 export type SendResult = { ok: true; messageId?: string } | { ok: false; error: string };
 export type RsvpDecision = "accept" | "decline";
@@ -134,6 +138,9 @@ export async function sendInvite(guest: Guest, event: Event, cardImageUrl?: stri
       { type: "button", sub_type: "quick_reply", index: "0", parameters: [{ type: "payload", payload: rsvpPayload("accept", guest.id) }] },
       { type: "button", sub_type: "quick_reply", index: "1", parameters: [{ type: "payload", payload: rsvpPayload("decline", guest.id) }] }
     );
+  }
+  if (INVITE_LINK_BUTTON) {
+    components.push({ type: "button", sub_type: "url", index: asksForReply ? "2" : "0", parameters: [{ type: "text", text: guest.token }] });
   }
   if (cardImageUrl) components.unshift({ type: "header", parameters: [{ type: "image", image: { link: cardImageUrl } }] });
 

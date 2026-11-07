@@ -12,6 +12,7 @@ export default function AddGuestForm({ eventId, festive, onAdded }: { eventId: s
   const t = useT();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [seats, setSeats] = useState(1);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ text: string; tone: "ok" | "warn" | "error" } | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -24,7 +25,7 @@ export default function AddGuestForm({ eventId, festive, onAdded }: { eventId: s
     }
     setBusy(true);
     setMessage(null);
-    const res = await postJson<InviteSummary>(`/api/events/${eventId}/guests`, { rows: [{ name, phone }] });
+    const res = await postJson<InviteSummary>(`/api/events/${eventId}/guests`, { rows: [{ name, phone, seats }] });
     setBusy(false);
 
     if (!res.ok) {
@@ -43,6 +44,7 @@ export default function AddGuestForm({ eventId, festive, onAdded }: { eventId: s
 
     setName("");
     setPhone("");
+    setSeats(1);
     nameRef.current?.focus();
     onAdded();
   }
@@ -51,7 +53,7 @@ export default function AddGuestForm({ eventId, festive, onAdded }: { eventId: s
 
   return (
     <form onSubmit={submit} className="card p-4" noValidate>
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_5.5rem_auto] sm:items-end">
         <div>
           <label htmlFor="guest-name" className="label">
             {t.addGuest.name}
@@ -80,10 +82,29 @@ export default function AddGuestForm({ eventId, festive, onAdded }: { eventId: s
             className="input rtl:text-end"
           />
         </div>
+        <div>
+          <label htmlFor="guest-seats" className="label" title={t.guests.seatsHint}>
+            {t.guests.seats}
+          </label>
+          <input
+            id="guest-seats"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={20}
+            value={seats}
+            onChange={(e) => setSeats(Math.min(20, Math.max(1, Math.round(Number(e.target.value) || 1))))}
+            aria-describedby="guest-seats-hint"
+            className="input tabular-nums"
+          />
+        </div>
         <button type="submit" disabled={busy} className="btn-primary px-5 py-2.5 text-sm">
           <UserPlus size={16} /> {busy ? t.addGuest.adding : t.addGuest.submit}
         </button>
       </div>
+      <p id="guest-seats-hint" className="mt-2 text-xs text-muted">
+        {t.guests.seatsHint}
+      </p>
       {message && <p className={`mt-3 text-sm ${tone[message.tone]}`}>{message.text}</p>}
     </form>
   );

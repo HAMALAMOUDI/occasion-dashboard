@@ -1,6 +1,7 @@
+import { randomBytes } from "crypto";
 import fs from "fs";
 import path from "path";
-import { Event, Guest, BillingRecord, CardTemplate, LoginCode, Session } from "./types";
+import { Event, Guest, BillingRecord, CardTemplate, LoginCode, Review, Session } from "./types";
 import { DuplicatePhoneError, type GuestGuard, type GuestPatch, type Store } from "./db";
 import { DEFAULT_TEMPLATES } from "./templates";
 
@@ -18,6 +19,7 @@ interface DbShape {
   templates: CardTemplate[];
   loginCodes?: LoginCode[];
   sessions?: Session[];
+  reviews?: Review[];
 }
 
 function readDb(): DbShape {
@@ -32,13 +34,27 @@ function readDb(): DbShape {
   parsed.templates = DEFAULT_TEMPLATES;
   parsed.loginCodes ??= [];
   parsed.sessions ??= [];
+  parsed.reviews ??= [];
   // Events created before sign-in existed have no owner.
   for (const e of parsed.events) {
     e.ownerPhone ??= null;
     e.language ??= "en";
     e.design ??= null;
     e.clip ??= null;
+    e.details ??= null;
   }
+  // Guests from before households and invitation pages: one seat, and a
+  // page link of their own (saved straight away so the link never changes).
+  let backfilled = false;
+  for (const g of parsed.guests) {
+    g.seats ??= 1;
+    g.attending ??= null;
+    if (!g.token) {
+      g.token = randomBytes(18).toString("base64url");
+      backfilled = true;
+    }
+  }
+  if (backfilled) writeDb(parsed);
   return parsed;
 }
 
@@ -51,6 +67,7 @@ function writeDb(data: DbShape) {
 }
 
 function passesGuard(guest: Guest, guard?: GuestGuard) {
+  if (guard?.ifNotCheckedIn && guest.checkedInAt) return false;
   return !guard?.ifStatusIn || guard.ifStatusIn.includes(guest.status);
 }
 
@@ -106,6 +123,9 @@ export const jsonStore: Store = {
   },
   async getGuest(id) {
     return readDb().guests.find((g) => g.id === id);
+  },
+  async getGuestByToken(token) {
+    return readDb().guests.find((g) => g.token === token);
   },
   async addGuests(guests) {
     const data = readDb();
@@ -202,6 +222,34 @@ export const jsonStore: Store = {
     if (data.loginCodes.length === before) return false;
     writeDb(data);
     return true;
+  },
+
+  async addReview(review) {
+    const data = readDb();
+    data.reviews!.push(review);
+    writeDb(data);
+    return review;
+  },
+  async getReviewForEvent(eventId) {
+    return readDb().reviews!.find((r) => r.eventId === eventId);
+  },
+  async getReviews(status) {
+    return readDb()
+      .reviews!.filter((r) => !status || r.status === status)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+  async setReviewStatus(id, status) {
+    const data = readDb();
+    const review = data.reviews!.find((r) => r.id === id);
+    if (!review) return undefined;
+    review.status = status;
+    writeDb(data);
+    return review;
+  },
+
+  async getCounters() {
+    const data = readDb();
+    return { invitationsSent: data.guests.filter((g) => g.inviteSentAt).length, events: data.events.length };
   },
 
   async createSession(session) {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/site";
 import { Amiri, Aref_Ruqaa, Fraunces, Great_Vibes, IBM_Plex_Sans_Arabic, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/components/I18nProvider";
@@ -16,9 +17,10 @@ const script = Great_Vibes({ subsets: ["latin"], weight: "400", variable: "--fon
 const scriptAr = Aref_Ruqaa({ subsets: ["arabic"], weight: ["400", "700"], variable: "--font-script-ar", display: "swap", preload: false });
 
 export async function generateMetadata(): Promise<Metadata> {
+  const base = { metadataBase: new URL(SITE_URL) };
   return (await getLocale()) === "ar"
-    ? { title: "حكايتي — لوحة المنظم", description: "أدر دعوات واتساب والردود والتذكيرات لمناسباتك" }
-    : { title: "Hikayati — organizer dashboard", description: "Manage WhatsApp invitations, RSVPs, and reminders for your events" };
+    ? { ...base, title: "حكايتي — لوحة المنظم", description: "أدر دعوات واتساب والردود والتذكيرات لمناسباتك" }
+    : { ...base, title: "Hikayati — organizer dashboard", description: "Manage WhatsApp invitations, RSVPs, and reminders for your events" };
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

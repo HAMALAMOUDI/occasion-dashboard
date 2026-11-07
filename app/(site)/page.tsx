@@ -9,17 +9,20 @@ import Reveal from "@/components/landing/Reveal";
 import { Invitation } from "@/components/landing/fragments";
 import DesignFrame from "@/components/DesignFrame";
 import PhoneFrame from "@/components/PhoneFrame";
-import { InviteButton, SiteHeader, Wordmark, createHref as createLink, siteLinks } from "@/components/landing/SiteChrome";
+import { FooterGroups, InviteButton, SiteHeader, Wordmark, createHref as createLink, siteLinks } from "@/components/landing/SiteChrome";
+import { Check, Star } from "lucide-react";
 import { currentUser } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { CLIP_STYLES } from "@/lib/clips/themes";
 import { DESIGN_COUNT, LAYOUT_NAMES, type DesignCategory, type DesignStyle } from "@/lib/designs/catalog";
 import { designSrc, galleryPath } from "@/lib/designs/urls";
 import { getLocale, getMessages } from "@/lib/i18n-server";
 import { OCCASIONS } from "@/lib/occasions";
+import { CONTACT_EMAIL, PLANS } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
-const CONTACT = { email: "hikayati@gmail.com", phone: "+966 55 123 4567", tel: "+966551234567" };
+const CONTACT = { email: CONTACT_EMAIL, phone: "+966 55 123 4567", tel: "+966551234567" };
 // Found pictures of the world around the occasions (credited in the footer).
 // They show Saudi celebration and hospitality, never Hikayati's own customers.
 const CREDITS = [
@@ -29,6 +32,9 @@ const CREDITS = [
   { title: "رجل يحصد الورد الطائفي في السعودية سنة 2026م", by: "وكالة الأنباء السعودية", licence: "CC BY-SA 4.0", page: "https://commons.wikimedia.org/w/index.php?curid=192752187" },
   { title: "Henna hands", by: "Izzah Zainab", licence: "CC BY 2.0", page: "https://commons.wikimedia.org/w/index.php?curid=74800224" },
 ];
+
+// The live count of invitations shows only once it says something.
+const SENT_THRESHOLD = 100;
 
 // One card from each style, across occasions, for the landing's design strip.
 const FEATURED: { style: DesignStyle; category: DesignCategory; layout: number }[] = [
@@ -56,10 +62,29 @@ function Photo({ src, alt, ratio, sizes, className = "" }: { src: string; alt: s
 }
 
 export default async function LandingPage() {
-  const [t, locale, user] = await Promise.all([getMessages(), getLocale(), currentUser()]);
+  const [t, locale, user, counters, reviews] = await Promise.all([
+    getMessages(),
+    getLocale(),
+    currentUser(),
+    // The landing never fails over a number or a quote.
+    db.getCounters().catch(() => null),
+    db.getReviews("approved").catch(() => []),
+  ]);
   const L = t.landing;
   const createHref = createLink(!!user);
   // A real, scannable QR for the sample guest pass.
+  const nf = new Intl.NumberFormat(locale === "ar" ? "ar-SA" : "en-US");
+  const stats = [
+    { value: DESIGN_COUNT, label: L.counters.designs },
+    { value: OCCASIONS.length, label: L.counters.occasions },
+    { value: 2, label: L.counters.languages },
+    { value: 1, label: L.counters.payment },
+    ...(counters && counters.invitationsSent >= SENT_THRESHOLD ? [{ value: counters.invitationsSent, label: L.counters.sent }] : []),
+  ];
+  const plans = [
+    { ...PLANS.standard, copy: L.pricing.plans[0], href: createHref, primary: true },
+    { ...PLANS.custom, copy: L.pricing.plans[1], href: `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(L.pricing.plans[1].name)}`, primary: false },
+  ];
   const qr = await QRCode.toString("HIKAYATI-SAMPLE-PASS", { type: "svg", margin: 0, color: { dark: "#24241f", light: "#0000" } });
 
   return (
@@ -86,6 +111,18 @@ export default async function LandingPage() {
               </InviteButton>
             </div>
           </div>
+        </section>
+
+        {/* ---------- Counters: what Hikayati is, in numbers ---------- */}
+        <section aria-label={L.counters.label} className="border-y border-ink-deep/15 px-safe py-10">
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:flex lg:justify-between">
+            {stats.map((s) => (
+              <div key={s.label} className="flex flex-col-reverse">
+                <dt className="mt-1 text-[0.9375rem] text-ink-soft">{s.label}</dt>
+                <dd className="font-editorial text-[clamp(2.5rem,5vw,4rem)] font-medium leading-none tabular-nums">{nf.format(s.value)}</dd>
+              </div>
+            ))}
+          </dl>
         </section>
 
         {/* ---------- About: the statement holds still on the left while its world passes on the right ---------- */}
@@ -204,6 +241,88 @@ export default async function LandingPage() {
           />
         </section>
 
+        {/* ---------- Pricing: one payment per occasion ---------- */}
+        <section id="pricing" aria-labelledby="pricing-title" className="scroll-mt-20 bg-bone px-safe py-[clamp(7rem,14vw,12rem)]">
+          <div className="grid gap-8 md:grid-cols-12 md:items-end">
+            <Reveal className="md:col-span-6">
+              <h2 id="pricing-title" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em]">
+                {L.pricing.title}
+              </h2>
+            </Reveal>
+            <Reveal delay={0.08} className="md:col-span-5 md:col-start-8">
+              <p className="text-[1.25rem] leading-[1.6] text-ink-deep">{L.pricing.body}</p>
+            </Reveal>
+          </div>
+          <div className="mt-16 grid gap-6 md:grid-cols-2">
+            {plans.map((p, i) => (
+              <Reveal key={p.id} delay={i * 0.08} className="h-full">
+                <article className={`flex h-full flex-col p-8 sm:p-10 ${p.primary ? "bg-ink-deep text-ivory" : "bg-ivory text-ink-deep ring-1 ring-ink-deep/15"}`}>
+                  <h3 className="font-editorial text-[2rem] font-medium leading-none">{p.copy.name}</h3>
+                  <p className={`mt-3 text-[1.0625rem] ${p.primary ? "text-ivory/80" : "text-ink-soft"}`}>{p.copy.line}</p>
+                  <p className="mt-8 flex items-baseline gap-2">
+                    <span className="font-editorial text-[clamp(3.5rem,7vw,5rem)] font-medium leading-none tabular-nums">{nf.format(p.price)}</span>
+                    <span className="text-[1.125rem]">{L.pricing.currency}</span>
+                  </p>
+                  <p className={`mt-1 text-[0.9375rem] ${p.primary ? "text-ivory/80" : "text-ink-soft"}`}>{L.pricing.once}</p>
+                  <ul className="mt-8 space-y-3 text-[1.0625rem]">
+                    {p.copy.features.map((f) => (
+                      <li key={f} className="flex gap-3">
+                        <Check size={20} aria-hidden="true" className={`mt-0.5 shrink-0 ${p.primary ? "text-champagne" : "text-gold-ink"}`} />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-auto pt-10">
+                    {p.primary ? (
+                      <InviteButton href={p.href} className="flex w-full">
+                        {p.copy.cta}
+                      </InviteButton>
+                    ) : (
+                      <a href={p.href} className="press tap-control flex min-h-12 items-center justify-center border border-ink-deep px-6 text-[1.0625rem] hover:bg-ink-deep hover:text-ivory">
+                        {p.copy.cta}
+                      </a>
+                    )}
+                  </div>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+          <p className="mt-8 text-[0.9375rem] text-ink-soft">
+            {L.pricing.note}{" "}
+            <Link href="/refund" className="tap-control underline underline-offset-4 hover:no-underline">
+              {L.pricing.refundLink}
+            </Link>
+          </p>
+        </section>
+
+        {/* ---------- Reviews: only what families wrote, and only once approved ---------- */}
+        {reviews.length > 0 && (
+          <section aria-labelledby="reviews-title" className="px-safe py-[clamp(7rem,14vw,12rem)]">
+            <Reveal>
+              <h2 id="reviews-title" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em]">
+                {L.reviewsTitle}
+              </h2>
+            </Reveal>
+            <ul className="mt-16 grid gap-x-6 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
+              {reviews.slice(0, 6).map((r, i) => (
+                <li key={r.id}>
+                  <Reveal delay={(i % 3) * 0.06}>
+                    <figure className="border-t border-ink-deep/15 pt-6">
+                      <p className="flex gap-0.5 text-gold-ink" role="img" aria-label={t.review.stars(r.rating)}>
+                        {Array.from({ length: 5 }, (_, k) => (
+                          <Star key={k} size={16} aria-hidden="true" fill={k < r.rating ? "currentColor" : "none"} />
+                        ))}
+                      </p>
+                      <blockquote className="mt-4 whitespace-pre-line text-[1.1875rem] leading-[1.6] text-ink-deep">{r.body}</blockquote>
+                      <figcaption className="mt-4 text-[0.9375rem] text-ink-soft">{r.author}</figcaption>
+                    </figure>
+                  </Reveal>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {/* ---------- Questions: the ones people ask before they begin ---------- */}
         <section id="faq" aria-labelledby="faq-title" className="scroll-mt-20 px-safe py-[clamp(7rem,14vw,12rem)]">
           <div className="grid gap-12 lg:grid-cols-12">
@@ -278,6 +397,8 @@ export default async function LandingPage() {
             {CONTACT.phone}
           </a>
         </div>
+
+        <FooterGroups L={L} />
 
         <div className="grid gap-6 text-[0.875rem] leading-6 md:grid-cols-[auto_1fr_auto] md:items-end md:gap-12">
           <nav className="flex flex-wrap gap-x-6 gap-y-2">

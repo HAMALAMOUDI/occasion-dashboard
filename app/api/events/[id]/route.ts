@@ -9,11 +9,12 @@ import { isLocale } from "@/lib/i18n";
 import { occasion } from "@/lib/occasions";
 import { SAMPLE } from "@/lib/designs/catalog";
 import { parseDesignChoice } from "@/lib/designs/validate";
+import { parseInviteDetails } from "@/lib/invite";
 import { CLIP_STYLES, type ClipStyle } from "@/lib/clips/themes";
 
 // Fields an organizer may edit. Ids, timestamps, and reminder state are
 // managed by the server.
-const EDITABLE_FIELDS = ["name", "eventDate", "venue", "inviterName", "templateId", "language", "design", "clip"] as const;
+const EDITABLE_FIELDS = ["name", "eventDate", "venue", "inviterName", "templateId", "language", "design", "clip", "details"] as const;
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -60,6 +61,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const solemn = !occasion(access.event.occasionType).rsvp;
     if ((design.category === "condolence") !== solemn) return badRequest(err.noDesignForOccasion);
     patch.design = design;
+  }
+  if (patch.details !== undefined && patch.details !== null) {
+    const details = parseInviteDetails(patch.details);
+    if (!details) return badRequest(err.invalidDetails);
+    patch.details = details;
   }
   if (patch.eventDate !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(patch.eventDate)) {
     return badRequest(err.invalidDate);

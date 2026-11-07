@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CalendarHeart, CircleHelp, Globe, LogOut, Palette, Plus, ReceiptText, ShieldCheck } from "lucide-react";
+import { CalendarHeart, CircleHelp, Globe, LogOut, MessageSquareHeart, Palette, Plus, ReceiptText, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useT } from "./I18nProvider";
 import LanguageToggle from "./LanguageToggle";
@@ -86,6 +86,15 @@ export default function Nav({ phone, isAdmin }: { phone: string; isAdmin: boolea
           <Link href="/#faq" className="flex items-center gap-2.5 rounded-lg px-1 py-1 text-muted hover:text-ink">
             <CircleHelp size={15} /> {t.nav.help}
           </Link>
+          {isAdmin && (
+            <Link
+              href="/admin/reviews"
+              aria-current={pathname.startsWith("/admin/reviews") ? "page" : undefined}
+              className="flex items-center gap-2.5 rounded-lg px-1 py-1 text-muted hover:text-ink aria-[current=page]:text-pine"
+            >
+              <MessageSquareHeart size={15} /> {t.nav.reviews}
+            </Link>
+          )}
         </div>
         <LanguageToggle className="mt-4 self-start" />
         <div className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-4">

@@ -37,8 +37,56 @@ export function siteLinks(L: Messages["landing"]) {
     { href: "/gallery", label: L.nav.designs },
     { href: "/#how", label: L.nav.how },
     { href: "/#occasions", label: L.nav.occasions },
+    { href: "/#pricing", label: L.nav.pricing },
     { href: "/#faq", label: L.nav.faq },
   ];
+}
+
+// Policies and the longer pages, listed in every footer.
+export function footerGroups(L: Messages["landing"]) {
+  const F = L.footer;
+  return [
+    {
+      title: F.explore,
+      links: [
+        { href: "/about", label: F.about },
+        { href: "/digital-invitations", label: F.digital },
+        { href: "/guest-list-management", label: F.guestList },
+        { href: "/invitations-riyadh", label: F.riyadh },
+        { href: "/invitations-jeddah", label: F.jeddah },
+        { href: "/guides", label: F.guides },
+      ],
+    },
+    {
+      title: F.policies,
+      links: [
+        { href: "/privacy", label: F.privacy },
+        { href: "/terms", label: F.terms },
+        { href: "/refund", label: F.refund },
+      ],
+    },
+  ];
+}
+
+export function FooterGroups({ L }: { L: Messages["landing"] }) {
+  return (
+    <div className="grid grid-cols-2 gap-8 text-[0.9375rem] leading-7 sm:flex sm:gap-16">
+      {footerGroups(L).map((g) => (
+        <nav key={g.title} aria-label={g.title}>
+          <h2 className="text-[0.8125rem] uppercase tracking-[0.14em] text-ivory/70 rtl:tracking-normal">{g.title}</h2>
+          <ul className="mt-2">
+            {g.links.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="tap-control underline-offset-4 hover:underline">
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+    </div>
+  );
 }
 
 export function createHref(signedIn: boolean) {
@@ -109,6 +157,9 @@ export function SiteFooter({ L, signedIn }: { L: Messages["landing"]; signedIn: 
             {signedIn ? L.myEvents : L.signIn}
           </Link>
         </nav>
+      </div>
+      <div className="mt-10">
+        <FooterGroups L={L} />
       </div>
       <p className="mt-10 text-[0.875rem]">{L.rights(new Date().getFullYear())}</p>
     </footer>

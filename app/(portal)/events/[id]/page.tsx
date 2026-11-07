@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, Clapperboard, Info, Languages, MapPin, Palette, RefreshCw, UserRound } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clapperboard, DoorOpen, Info, Languages, MapPin, Palette, RefreshCw, ScanLine, UserRound, Users } from "lucide-react";
 import { Event, Guest, Stats, BillingRecord, CardTemplate } from "@/lib/types";
 import StatsGrid from "@/components/StatsGrid";
 import GuestTable from "@/components/GuestTable";
@@ -13,6 +13,8 @@ import ReminderPanel from "@/components/ReminderPanel";
 import BillingPanel from "@/components/BillingPanel";
 import InvitePreview from "@/components/InvitePreview";
 import ClipPanel from "@/components/ClipPanel";
+import InviteDetailsPanel from "@/components/InviteDetailsPanel";
+import ReviewPanel from "@/components/ReviewPanel";
 import { versionOf } from "@/lib/designs/urls";
 import RsvpBar from "@/components/RsvpBar";
 import SceneCanvas from "@/components/SceneCanvas";
@@ -168,6 +170,23 @@ export default function EventDetailPage() {
               <p className="font-serif text-2xl text-pine">{progressPct}%</p>
             </div>
             <RsvpBar stats={o.rsvp ? stats : { ...stats, accepted: notified, pending: stats.notSent }} label={progressLabel} className="mt-3 h-2.5" />
+            {o.rsvp && (
+              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
+                <span className="inline-flex items-center gap-1.5">
+                  <Users size={15} /> {t.stats.seats(stats.seatsComing, stats.seats)}
+                </span>
+                {stats.checkedIn > 0 && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <DoorOpen size={15} /> {t.stats.checkedIn(stats.checkedIn, stats.accepted)}
+                  </span>
+                )}
+                {stats.accepted > 0 && (
+                  <Link href={`/events/${event.id}/check-in`} className="btn-secondary btn-sm ms-auto">
+                    <ScanLine size={14} /> {t.checkIn.open}
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -229,9 +248,18 @@ export default function EventDetailPage() {
             </div>
             {!o.rsvp && <p className="mt-2 text-xs text-muted">{t.designs.notForCondolence}</p>}
           </section>
+          <InviteDetailsPanel
+            // Fresh fields after a save elsewhere (e.g. venue) without losing typing in progress.
+            key={versionOf(event.details)}
+            event={event}
+            sampleToken={guests.find((g) => g.status !== "invalid")?.token}
+            onChange={refresh}
+          />
           <ClipPanel event={event} onChange={refresh} />
           {o.rsvp && <ReminderPanel event={event} comingCount={stats.accepted} onChange={refresh} />}
           {billing && <BillingPanel billing={billing} onChange={refresh} />}
+          {/* Once the occasion has happened, ask how Hikayati did. */}
+          {days <= 0 && <ReviewPanel eventId={event.id} />}
         </aside>
       </div>
     </div>

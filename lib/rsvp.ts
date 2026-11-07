@@ -13,7 +13,22 @@ import { RsvpDecision, sendBarcode, sendInvite, sendReminder } from "./whatsapp"
 const SEND_CONCURRENCY = 5;
 const EVENT_TIMEZONE = process.env.EVENT_TIMEZONE || DEFAULT_TIMEZONE;
 
+// Most seats one invitation can carry (a household with its plus-ones).
+export const MAX_SEATS = 20;
+
+// Seats from untrusted input: a whole number from 1 to MAX_SEATS, else the fallback.
+export function readSeats(value: unknown, fallback = 1): number {
+  const n = typeof value === "string" ? Number(value.trim()) : value;
+  return typeof n === "number" && Number.isInteger(n) && n >= 1 && n <= MAX_SEATS ? n : fallback;
+}
+
+// A new invitation-page token: 144 random bits, URL-safe.
+export function newGuestToken() {
+  return randomBytes(18).toString("base64url");
+}
+
 export function computeStats(guests: Guest[]): Stats {
+  const accepted = guests.filter((g) => g.status === "accepted");
   return {
     total: guests.length,
     accepted: guests.filter((g) => g.status === "accepted").length,
@@ -21,6 +36,9 @@ export function computeStats(guests: Guest[]): Stats {
     pending: guests.filter((g) => g.status === "pending" || g.status === "no_response").length,
     notSent: guests.filter((g) => g.status === "pending").length,
     invalid: guests.filter((g) => g.status === "invalid").length,
+    seats: guests.reduce((n, g) => n + g.seats, 0),
+    seatsComing: accepted.reduce((n, g) => n + (g.attending ?? g.seats), 0),
+    checkedIn: accepted.filter((g) => g.checkedInAt).length,
   };
 }
 
@@ -49,7 +67,7 @@ export interface InviteSummary {
   duplicates: number;
 }
 
-export async function inviteGuests(event: Event, rows: { name: string; phone: string }[]): Promise<InviteSummary> {
+export async function inviteGuests(event: Event, rows: { name: string; phone: string; seats?: number }[]): Promise<InviteSummary> {
   const seen = new Set<string>();
   const candidates: Guest[] = [];
 
@@ -69,6 +87,9 @@ export async function inviteGuests(event: Event, rows: { name: string; phone: st
       barcodeValue: null,
       checkedInAt: null,
       lastError: normalized ? null : "invalid_number",
+      seats: readSeats(row.seats),
+      attending: null,
+      token: newGuestToken(),
     });
   }
 
@@ -131,8 +152,14 @@ export type EditGuestResult =
 // Updates a guest's name and/or phone. A new phone number means the invite
 // went to the wrong place (or never went out), so the guest is reset and
 // invited again at the new number. A name-only change just saves.
-export async function editGuest(event: Event, guest: Guest, changes: { name?: string; phone?: string }): Promise<EditGuestResult> {
+export async function editGuest(event: Event, guest: Guest, changes: { name?: string; phone?: string; seats?: number }): Promise<EditGuestResult> {
   const patch: GuestPatch = {};
+
+  if (changes.seats !== undefined) {
+    patch.seats = readSeats(changes.seats, guest.seats);
+    // Fewer seats than were confirmed: the confirmation shrinks with them.
+    if (guest.attending !== null && guest.attending > patch.seats) patch.attending = patch.seats;
+  }
 
   if (changes.name !== undefined) {
     const name = changes.name.trim();
@@ -152,6 +179,7 @@ export async function editGuest(event: Event, guest: Guest, changes: { name?: st
         inviteSentAt: null,
         respondedAt: null,
         barcodeValue: null,
+        attending: null,
         lastError: null,
       } satisfies GuestPatch);
     }
@@ -182,7 +210,9 @@ function newBarcodeValue() {
   return `INV-${randomBytes(8).toString("hex").toUpperCase()}`;
 }
 
-export async function recordResponse(guestId: string, decision: RsvpDecision): Promise<RespondResult> {
+// `attending` is how many of the invitation's seats are coming; without it
+// (a WhatsApp button tap) an acceptance counts every seat.
+export async function recordResponse(guestId: string, decision: RsvpDecision, attending?: number): Promise<RespondResult> {
   const guest = await db.getGuest(guestId);
   if (!guest) return { ok: false, error: "guest_not_found" };
   if (guest.status === "invalid") return { ok: false, error: "guest_not_invitable" };
@@ -190,6 +220,14 @@ export async function recordResponse(guestId: string, decision: RsvpDecision): P
   if (!event) return { ok: false, error: "event_not_found" };
   // Announcements (condolences) don't collect replies.
   if (!occasion(event.occasionType).rsvp) return { ok: false, error: "no_rsvp" };
+  const seats = Math.min(Math.max(1, attending ?? guest.seats), guest.seats);
+
+  // Already coming, now with a different number: update the count, keep the pass.
+  if (decision === "accept" && guest.status === "accepted") {
+    if (attending === undefined || guest.attending === seats) return { ok: true, guest, changed: false };
+    const updated = await db.updateGuest(guestId, { attending: seats }, { ifStatusIn: ["accepted"] });
+    return { ok: true, guest: updated ?? (await db.getGuest(guestId))!, changed: Boolean(updated) };
+  }
 
   const target: GuestStatus = decision === "accept" ? "accepted" : "declined";
   // Only transition from a different, answerable status. This makes repeats
@@ -199,12 +237,12 @@ export async function recordResponse(guestId: string, decision: RsvpDecision): P
   const now = new Date().toISOString();
 
   if (decision === "decline") {
-    const updated = await db.updateGuest(guestId, { status: "declined", respondedAt: now, barcodeValue: null }, guard);
+    const updated = await db.updateGuest(guestId, { status: "declined", respondedAt: now, barcodeValue: null, attending: null }, guard);
     return { ok: true, guest: updated ?? (await db.getGuest(guestId))!, changed: Boolean(updated) };
   }
 
   const barcodeValue = newBarcodeValue();
-  const updated = await db.updateGuest(guestId, { status: "accepted", respondedAt: now, barcodeValue, lastError: null }, guard);
+  const updated = await db.updateGuest(guestId, { status: "accepted", respondedAt: now, barcodeValue, attending: seats, lastError: null }, guard);
   if (!updated) return { ok: true, guest: (await db.getGuest(guestId))!, changed: false };
 
   const png = await QRCode.toBuffer(barcodeValue, { margin: 1, width: 480 });
@@ -214,6 +252,26 @@ export async function recordResponse(guestId: string, decision: RsvpDecision): P
     : ((await db.updateGuest(guestId, { lastError: `barcode_send_failed: ${sendResult.error}` })) ?? updated);
 
   return { ok: true, guest: final, barcodeDataUrl: `data:image/png;base64,${png.toString("base64")}`, changed: true };
+}
+
+// ---------------------------------------------------------------- door check-in
+
+export type CheckInResult =
+  | { ok: true; guest: Guest; already: boolean }
+  | { ok: false; error: "unknown_code" | "not_coming"; guest?: Guest };
+
+// Scans a guest pass at the door. Each pass checks in once; a second scan
+// reports when it was first used, so a shared screenshot can't let two people in.
+export async function checkIn(event: Event, code: string): Promise<CheckInResult> {
+  const value = code.trim().toUpperCase();
+  const guest = value ? (await db.getGuests(event.id)).find((g) => g.barcodeValue === value) : undefined;
+  if (!guest) return { ok: false, error: "unknown_code" };
+  if (guest.status !== "accepted") return { ok: false, error: "not_coming", guest };
+  if (guest.checkedInAt) return { ok: true, guest, already: true };
+  const updated = await db.updateGuest(guest.id, { checkedInAt: new Date().toISOString() }, { ifStatusIn: ["accepted"], ifNotCheckedIn: true });
+  // Lost a race with another scanner: report the scan that won.
+  if (!updated) return { ok: true, guest: (await db.getGuest(guest.id)) ?? guest, already: true };
+  return { ok: true, guest: updated, already: false };
 }
 
 // ---------------------------------------------------------------- reminders

@@ -1,5 +1,5 @@
 import { Pool, PoolClient } from "pg";
-import { BillingRecord, CardTemplate, Event, Guest, LoginCode, Session } from "./types";
+import { BillingRecord, CardTemplate, Event, Guest, LoginCode, Review, Session } from "./types";
 import { DuplicatePhoneError, type GuestGuard, type GuestPatch, type ReminderField, type Store } from "./db";
 import { DEFAULT_TEMPLATES } from "./templates";
 
@@ -65,6 +65,26 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS design jsonb;
 -- Added with animated invitations.
 ALTER TABLE events ADD COLUMN IF NOT EXISTS clip jsonb;
 
+-- Added with households, invitation pages and door check-in. Existing guests
+-- get one seat and a random page token (gen_random_uuid is cryptographically random).
+ALTER TABLE events ADD COLUMN IF NOT EXISTS details jsonb;
+ALTER TABLE guests ADD COLUMN IF NOT EXISTS seats integer NOT NULL DEFAULT 1;
+ALTER TABLE guests ADD COLUMN IF NOT EXISTS attending integer;
+ALTER TABLE guests ADD COLUMN IF NOT EXISTS token text;
+UPDATE guests SET token = replace(gen_random_uuid()::text, '-', '') || replace(gen_random_uuid()::text, '-', '') WHERE token IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS guests_token_idx ON guests (token);
+
+CREATE TABLE IF NOT EXISTS reviews (
+  id          text PRIMARY KEY,
+  event_id    text NOT NULL UNIQUE REFERENCES events(id) ON DELETE CASCADE,
+  owner_phone text NOT NULL,
+  author      text NOT NULL,
+  rating      integer NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  body        text NOT NULL,
+  status      text NOT NULL DEFAULT 'pending',
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS login_codes (
   phone      text PRIMARY KEY,
   code_hash  text NOT NULL,
@@ -99,6 +119,7 @@ const toEvent = (r: Row): Event => ({
   language: r.language === "ar" ? "ar" : "en",
   design: (r.design as Event["design"]) ?? null,
   clip: (r.clip as Event["clip"]) ?? null,
+  details: (r.details as Event["details"]) ?? null,
   reminderWeekSentAt: iso(r.reminder_week_sent_at),
   reminderDaySentAt: iso(r.reminder_day_sent_at),
   createdAt: iso(r.created_at)!,
@@ -115,6 +136,20 @@ const toGuest = (r: Row): Guest => ({
   barcodeValue: (r.barcode_value as string | null) ?? null,
   checkedInAt: iso(r.checked_in_at),
   lastError: (r.last_error as string | null) ?? null,
+  seats: Number(r.seats ?? 1),
+  attending: r.attending === null || r.attending === undefined ? null : Number(r.attending),
+  token: r.token as string,
+});
+
+const toReview = (r: Row): Review => ({
+  id: r.id as string,
+  eventId: r.event_id as string,
+  ownerPhone: r.owner_phone as string,
+  author: r.author as string,
+  rating: Number(r.rating),
+  body: r.body as string,
+  status: r.status as Review["status"],
+  createdAt: iso(r.created_at)!,
 });
 
 const toBilling = (r: Row): BillingRecord => ({
@@ -170,6 +205,7 @@ const EVENT_PATCH_SET = patchSet("e", [
   ["language", "language", "text"],
   ["design", "design", "jsonb"],
   ["clip", "clip", "jsonb"],
+  ["details", "details", "jsonb"],
 ]);
 
 const GUEST_PATCH_SET = patchSet("g", [
@@ -181,6 +217,9 @@ const GUEST_PATCH_SET = patchSet("g", [
   ["barcodeValue", "barcode_value", "text"],
   ["checkedInAt", "checked_in_at", "timestamptz"],
   ["lastError", "last_error", "text"],
+  ["seats", "seats", "integer"],
+  ["attending", "attending", "integer"],
+  ["token", "token", "text"],
 ]);
 
 const REMINDER_COLUMNS: Record<ReminderField, string> = {
@@ -251,8 +290,9 @@ export function postgresStore(connectionString: string): Store {
     ${GUEST_PATCH_SET}
        FROM jsonb_array_elements($1::jsonb) AS x(p)
        WHERE g.id = p->>'id' AND ($2::text[] IS NULL OR g.status = ANY($2::text[]))
+         AND (NOT $3::boolean OR g.checked_in_at IS NULL)
        RETURNING g.*`,
-      [JSON.stringify(patches), guard?.ifStatusIn ?? null]
+      [JSON.stringify(patches), guard?.ifStatusIn ?? null, guard?.ifNotCheckedIn === true]
     ).catch((e: { code?: string; constraint?: string }) => {
       // UNIQUE (event_id, phone)
       if (e.code === "23505" && e.constraint?.includes("phone")) throw new DuplicatePhoneError();
@@ -278,12 +318,13 @@ export function postgresStore(connectionString: string): Store {
       try {
         await client.query("BEGIN");
         await client.query(
-          `INSERT INTO events (id, name, occasion_type, event_date, venue, inviter_name, template_id, owner_phone, language, design, clip, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+          `INSERT INTO events (id, name, occasion_type, event_date, venue, inviter_name, template_id, owner_phone, language, design, clip, created_at, details)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
           [
             event.id, event.name, event.occasionType, event.eventDate, event.venue, event.inviterName,
             event.templateId, event.ownerPhone, event.language, event.design ? JSON.stringify(event.design) : null,
             event.clip ? JSON.stringify(event.clip) : null, event.createdAt,
+            event.details ? JSON.stringify(event.details) : null,
           ]
         );
         await client.query(
@@ -327,18 +368,24 @@ export function postgresStore(connectionString: string): Store {
       const [row] = await query("SELECT * FROM guests WHERE id = $1", [id]);
       return row && toGuest(row);
     },
+    async getGuestByToken(token) {
+      const [row] = await query("SELECT * FROM guests WHERE token = $1", [token]);
+      return row && toGuest(row);
+    },
     async addGuests(guests) {
       if (guests.length === 0) return [];
       const col = <K extends keyof Guest>(k: K) => guests.map((g) => g[k]);
       const rows = await query(
-        `INSERT INTO guests (id, event_id, name, phone, status, invite_sent_at, responded_at, barcode_value, checked_in_at, last_error)
+        `INSERT INTO guests (id, event_id, name, phone, status, invite_sent_at, responded_at, barcode_value, checked_in_at, last_error, seats, attending, token)
          SELECT * FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::text[],
-                              $6::timestamptz[], $7::timestamptz[], $8::text[], $9::timestamptz[], $10::text[])
+                              $6::timestamptz[], $7::timestamptz[], $8::text[], $9::timestamptz[], $10::text[],
+                              $11::integer[], $12::integer[], $13::text[])
          ON CONFLICT (event_id, phone) DO NOTHING
          RETURNING *`,
         [
           col("id"), col("eventId"), col("name"), col("phone"), col("status"),
           col("inviteSentAt"), col("respondedAt"), col("barcodeValue"), col("checkedInAt"), col("lastError"),
+          col("seats"), col("attending"), col("token"),
         ]
       );
       // Preserve the caller's (CSV) order.
@@ -408,6 +455,35 @@ export function postgresStore(connectionString: string): Store {
     async consumeLoginCode(phone, codeHash) {
       const rows = await query("DELETE FROM login_codes WHERE phone = $1 AND code_hash = $2 RETURNING phone", [phone, codeHash]);
       return rows.length > 0;
+    },
+
+    async addReview(review) {
+      const [row] = await query(
+        `INSERT INTO reviews (id, event_id, owner_phone, author, rating, body, status, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+        [review.id, review.eventId, review.ownerPhone, review.author, review.rating, review.body, review.status, review.createdAt]
+      );
+      return toReview(row);
+    },
+    async getReviewForEvent(eventId) {
+      const [row] = await query("SELECT * FROM reviews WHERE event_id = $1", [eventId]);
+      return row && toReview(row);
+    },
+    async getReviews(status) {
+      return (
+        await query("SELECT * FROM reviews WHERE $1::text IS NULL OR status = $1 ORDER BY created_at DESC", [status ?? null])
+      ).map(toReview);
+    },
+    async setReviewStatus(id, status) {
+      const [row] = await query("UPDATE reviews SET status = $2 WHERE id = $1 RETURNING *", [id, status]);
+      return row && toReview(row);
+    },
+
+    async getCounters() {
+      const [row] = await query(
+        "SELECT (SELECT count(*) FROM guests WHERE invite_sent_at IS NOT NULL) AS sent, (SELECT count(*) FROM events) AS events"
+      );
+      return { invitationsSent: Number(row.sent), events: Number(row.events) };
     },
 
     async createSession(session) {
