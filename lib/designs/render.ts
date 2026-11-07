@@ -1,5 +1,6 @@
 import { MARKUP } from "./markup.generated";
 import { renderTemplate, escapeHtml } from "./engine";
+import { ATELIER_FONTS_HREF, atelierMarkup } from "./atelier";
 import {
   CLASSIC_FONTS,
   MODERN_FONTS,
@@ -175,11 +176,20 @@ const VALUES = { classic: classicValues, modern: modernValues, signature: signat
 // A complete standalone HTML page for one card (420×760). Served to a
 // sandboxed iframe, so it carries its own fonts and never runs scripts.
 export function renderDesignHtml(choice: DesignChoice, venue: string, eventDate: string, title = "Invitation") {
-  const src = MARKUP[choice.style];
-  const layout = src.layouts[choice.layout - 1];
-  const values: Record<string, unknown> = VALUES[choice.style](choice, venue, eventDate);
-  for (let j = 1; j <= src.layouts.length; j++) values[`L${j}`] = j === choice.layout;
-  const card = renderTemplate(`${src.root}${src.shared}${layout.markup}</div>`, values);
+  let card: string;
+  let fontsHref: string;
+  if (choice.style === "atelier") {
+    const { t } = textValues(choice.fields, venue, eventDate);
+    card = atelierMarkup(choice.layout, t, choice.category !== "condolence" && Boolean(choice.fields.cta.trim()));
+    fontsHref = ATELIER_FONTS_HREF;
+  } else {
+    const src = MARKUP[choice.style];
+    const layout = src.layouts[choice.layout - 1];
+    const values: Record<string, unknown> = VALUES[choice.style](choice, venue, eventDate);
+    for (let j = 1; j <= src.layouts.length; j++) values[`L${j}`] = j === choice.layout;
+    card = renderTemplate(`${src.root}${src.shared}${layout.markup}</div>`, values);
+    fontsHref = src.fontsHref;
+  }
 
   return `<!doctype html>
 <html lang="ar" dir="rtl">
@@ -187,7 +197,7 @@ export function renderDesignHtml(choice: DesignChoice, venue: string, eventDate:
 <meta charset="utf-8">
 <meta name="viewport" content="width=420">
 <title>${escapeHtml(title)}</title>
-<link rel="stylesheet" href="${escapeHtml(src.fontsHref)}">
+<link rel="stylesheet" href="${escapeHtml(fontsHref)}">
 <style>html,body{margin:0;background:transparent}body{width:420px;height:760px;overflow:hidden}</style>
 </head>
 <body>${card}</body>

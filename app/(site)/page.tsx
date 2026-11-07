@@ -27,25 +27,27 @@ const SENT_THRESHOLD = 100;
 type Design = { style: DesignStyle; category: DesignCategory; layout: number };
 
 // The phone in the hero.
-const HERO_DESIGN: Design = { style: "signature", category: "wedding", layout: 1 };
+const HERO_DESIGN: Design = { style: "atelier", category: "wedding", layout: 1 };
 
 // The moving strip: one card from across the occasions and styles.
 const STRIP: Design[] = [
+  { style: "atelier", category: "wedding", layout: 3 },
   { style: "signature", category: "wedding", layout: 4 },
+  { style: "atelier", category: "engagement", layout: 6 },
   { style: "classic", category: "engagement", layout: 2 },
+  { style: "atelier", category: "ramadan", layout: 9 },
   { style: "modern", category: "birthday", layout: 6 },
-  { style: "signature", category: "ramadan", layout: 7 },
-  { style: "classic", category: "henna", layout: 5 },
-  { style: "modern", category: "graduation", layout: 3 },
+  { style: "atelier", category: "henna", layout: 4 },
   { style: "signature", category: "eid", layout: 2 },
+  { style: "atelier", category: "gathering", layout: 5 },
   { style: "classic", category: "wedding", layout: 8 },
-  { style: "modern", category: "corporate", layout: 1 },
-  { style: "signature", category: "baby", layout: 5 },
+  { style: "atelier", category: "birthday", layout: 10 },
+  { style: "modern", category: "graduation", layout: 3 },
 ];
 
 // Four cards for the library section, one from each corner of it.
 const FEATURED: Design[] = [
-  { style: "signature", category: "wedding", layout: 1 },
+  { style: "atelier", category: "wedding", layout: 2 },
   { style: "classic", category: "engagement", layout: 3 },
   { style: "modern", category: "birthday", layout: 6 },
   { style: "signature", category: "ramadan", layout: 7 },
@@ -151,14 +153,14 @@ export default async function LandingPage() {
               <div className="relative mx-auto w-[min(62%,17rem)] pt-10">
                 <div className="phone-tilt">
                   <PhoneFrame className="shadow-[0_40px_80px_-30px_rgb(20_58_46/0.55)]">
-                    <DesignFrame src={designSrc(HERO_DESIGN)} title={LAYOUT_NAMES.signature[0][locale]} />
+                    <DesignFrame src={designSrc(HERO_DESIGN)} title={LAYOUT_NAMES[HERO_DESIGN.style][HERO_DESIGN.layout - 1][locale]} />
                   </PhoneFrame>
                 </div>
               </div>
 
               <div className="float absolute end-0 top-[14%] hidden w-[11.5rem] sm:block rounded-2xl bg-white/95 p-4 shadow-[0_18px_40px_-20px_rgb(36_36_31/0.45)] ring-1 ring-ink-deep/5 backdrop-blur">
                 <p className="text-[0.6875rem] uppercase tracking-[0.16em] text-pine rtl:tracking-normal">{H.chipDesign}</p>
-                <p className="mt-1 font-editorial text-[1.375rem] leading-tight">{LAYOUT_NAMES.signature[0][locale]}</p>
+                <p className="mt-1 font-editorial text-[1.375rem] leading-tight">{LAYOUT_NAMES[HERO_DESIGN.style][HERO_DESIGN.layout - 1][locale]}</p>
                 <p className="text-[0.8125rem] text-ink-soft">{H.chipDesignNote}</p>
               </div>
 

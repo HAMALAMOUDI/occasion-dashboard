@@ -47,7 +47,7 @@ function Gallery() {
   const category: DesignCategory = picked ?? (target && CATEGORIES_FOR_OCCASION[target.occasionType][0]) ?? "wedding";
   const [chosenStyle, setStyle] = useState<DesignStyle>(() => {
     const s = params.get("style") as DesignStyle;
-    return DESIGN_STYLES.includes(s) ? s : "classic";
+    return DESIGN_STYLES.includes(s) ? s : DESIGN_STYLES[0];
   });
   // Not every style serves every occasion (condolences: signature only).
   const styles = stylesFor(category);

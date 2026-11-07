@@ -1,4 +1,5 @@
 import type { Lang, OccasionType } from "../occasions";
+import { ATELIER_ART, atelierPalette } from "./atelier";
 
 // The Hikayati card catalog: classic and modern (20 layouts each, for every
 // celebration) and signature (8 layouts with a drawn emblem per occasion, the
@@ -6,8 +7,9 @@ import type { Lang, OccasionType } from "../occasions";
 // the "Hikayati Invitation Cards" design canvas (designs/hikayati/*.dc.html);
 // the layout markup itself is in markup.generated.ts.
 
-export type DesignStyle = "classic" | "modern" | "signature";
-export const DESIGN_STYLES: DesignStyle[] = ["classic", "modern", "signature"];
+export type DesignStyle = "atelier" | "classic" | "modern" | "signature";
+// Atelier first: artwork-led cards are where a new invitation starts.
+export const DESIGN_STYLES: DesignStyle[] = ["atelier", "classic", "modern", "signature"];
 
 export const DESIGN_CATEGORIES = ["wedding", "engagement", "henna", "birthday", "graduation", "baby", "gathering", "corporate", "eid", "ramadan", "condolence"] as const;
 export type DesignCategory = (typeof DESIGN_CATEGORIES)[number];
@@ -53,6 +55,7 @@ export function occasionForCategory(category: DesignCategory): OccasionType {
 }
 
 export const LAYOUT_NAMES: Record<DesignStyle, { en: string; ar: string }[]> = {
+  atelier: ATELIER_ART.map((a) => a.name),
   classic: [
     ["Classic double frame", "إطار كلاسيكي"], ["Arch", "قوس"], ["Poster headline", "عنوان ملصق"], ["Split block", "مقسوم"],
     ["Side band", "شريط جانبي"], ["Medallion", "ميدالية"], ["Editorial rows", "تحريري"], ["Ticket", "تذكرة"],
@@ -156,6 +159,7 @@ const CATEGORY_INDEX: Record<DesignCategory, number> = {
 };
 
 export function palettesFor(style: DesignStyle, category: DesignCategory, layout: number): Palette[] {
+  if (style === "atelier") return [atelierPalette(layout)];
   if (style === "signature") return SIGNATURE_PALETTES[category];
   if (category === "condolence") return [];
   if (style === "classic") return CLASSIC_PALETTES[category];
@@ -164,6 +168,7 @@ export function palettesFor(style: DesignStyle, category: DesignCategory, layout
 
 // The palette a layout uses when none is chosen — matches the canvas's "auto".
 export function defaultPaletteIndex(style: DesignStyle, category: DesignCategory, layout: number): number {
+  if (style === "atelier") return 0;
   if (style === "signature") return (layout - 1) % 4;
   if (style === "classic") return (layout - 1) % 5;
   return ((layout - 1) % 10 + CATEGORY_INDEX[category] * 3) % 10;
