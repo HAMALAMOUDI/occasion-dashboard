@@ -7,7 +7,10 @@ import { CardTemplate, Event } from "@/lib/types";
 import TemplatePicker from "@/components/TemplatePicker";
 import InvitePreview from "@/components/InvitePreview";
 import { useLocale, useT } from "@/components/I18nProvider";
-import { postJson } from "@/lib/client";
+import ClipPlayer from "@/components/ClipPlayer";
+import { postJson, requestJson } from "@/lib/client";
+import { clipTextForEvent } from "@/lib/clips/content";
+import { RECOMMENDED_STYLES, type ClipStyle } from "@/lib/clips/themes";
 import type { Locale } from "@/lib/i18n";
 import { OCCASIONS, occasion, type OccasionType } from "@/lib/occasions";
 
@@ -38,6 +41,9 @@ export default function NewEventPage() {
   const [inviterName, setInviterName] = useState("");
   const [language, setLanguage] = useState<Locale>(locale);
   const [templateId, setTemplateId] = useState<string | null>(null);
+  // The animated invitation previewed beside the form: null = the occasion's best match.
+  const [clipStyle, setClipStyle] = useState<ClipStyle | null>(null);
+  const [useClip, setUseClip] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -74,10 +80,23 @@ export default function NewEventPage() {
       setError(res.error);
       return;
     }
+    // Keep the animation they watched; the event page lets them change or remove it.
+    if (useClip) await requestJson("PATCH", `/api/events/${res.data.id}`, { clip: { style: previewStyle } });
     router.push(`/events/${res.data.id}`);
   }
 
   const today = new Date().toISOString().slice(0, 10);
+  const styleChoices = RECOMMENDED_STYLES[occasionType].slice(0, 3);
+  const previewStyle = clipStyle ?? styleChoices[0];
+  // The preview fills blanks with the placeholders the form shows, so it's never empty.
+  const previewText = clipTextForEvent({
+    occasionType,
+    language,
+    name: name.trim() || o.namePlaceholder[language],
+    inviterName: inviterName.trim() || o.hostPlaceholder[language],
+    eventDate: eventDate || today,
+    venue,
+  });
 
   return (
     <div className="animate-fade-up">
@@ -97,6 +116,7 @@ export default function NewEventPage() {
                   onClick={() => {
                     setOccasionType(item.id);
                     setTemplateId(null);
+                    setClipStyle(null);
                   }}
                   className={`rounded-xl border px-2 py-3 text-sm font-medium leading-tight transition ${
                     occasionType === item.id ? "border-pine bg-pine-soft text-pine" : "border-line hover:border-ink/25"
@@ -182,6 +202,39 @@ export default function NewEventPage() {
         <aside className="lg:sticky lg:top-10 self-start">
           <p className="eyebrow mb-3">{t.newEvent.preview}</p>
           <InvitePreview event={{ name, occasionType, inviterName, eventDate, venue, language }} template={selectedTemplate} />
+
+          <div className="mt-6">
+            <p className="eyebrow mb-3">{t.newEvent.animatedTitle}</p>
+            <div className="card overflow-hidden">
+              <ClipPlayer
+                spec={{ style: previewStyle, occasion: occasionType, text: previewText }}
+                label={`${t.clips.styles[previewStyle]} — ${previewText.title}`}
+              />
+              <div className="space-y-3 p-4">
+                <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t.newEvent.animatedTitle}>
+                  {styleChoices.map((st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      role="radio"
+                      aria-checked={previewStyle === st}
+                      onClick={() => setClipStyle(st)}
+                      className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                        previewStyle === st ? "border-pine bg-pine-soft text-pine" : "border-line text-muted hover:border-ink/25 hover:text-ink"
+                      }`}
+                    >
+                      {t.clips.styles[st]}
+                    </button>
+                  ))}
+                </div>
+                <label className="flex items-start gap-2 text-sm">
+                  <input type="checkbox" checked={useClip} onChange={(e) => setUseClip(e.target.checked)} className="mt-0.5 accent-[var(--pine)]" />
+                  <span>{t.newEvent.animatedUse}</span>
+                </label>
+                <p className="text-xs text-muted">{t.newEvent.animatedHint}</p>
+              </div>
+            </div>
+          </div>
         </aside>
       </div>
     </div>

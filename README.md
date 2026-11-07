@@ -89,7 +89,7 @@ The frames are drawn by `lib/clips/engine.ts` (collage, threads, text) and
 Canvas 2D, so the same code can render sample MP4s offline. The rendered
 samples live in `exports/`, which is git-ignored.
 
-## Canvas visuals in the portal
+## Canvas visuals across the site
 
 The clip engine also draws the portal itself, so each event looks like its
 invitation:
@@ -101,6 +101,13 @@ invitation:
   alive while the pointer (or keyboard focus) is on the card.
 - **Event page:** a banner with the event's scene, linking to the animation
   library.
+- **New event:** beside the form, the occasion's best-match animated
+  invitation plays with the details as they're typed (blanks show the form's
+  placeholders). Three style choices; the one picked is saved with the new
+  event unless "Add this animation to the event" is unticked.
+- **Sign-in page:** the Grand palace castle drifts behind the form.
+- **Landing page:** pointing at (or tapping) an occasion in the occasions list
+  plays its scene over the photo; leaving the list brings the photo back.
 - **Replies over time:** a chart of running totals of guests coming and not
   coming since the invitations went out, with a crosshair tooltip (hover or
   arrow keys), a legend, direct end labels and a table view.

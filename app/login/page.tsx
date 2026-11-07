@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, MessageCircle } from "lucide-react";
 import { postJson } from "@/lib/client";
 import { useT } from "@/components/I18nProvider";
 import LanguageToggle from "@/components/LanguageToggle";
+import SceneCanvas from "@/components/SceneCanvas";
 
 // Only allow redirects back into this site after signing in.
 function safeNext(next: string | null) {
@@ -169,10 +170,17 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--pine-soft),transparent_60%)] px-4 py-10">
-      <Suspense>
-        <LoginForm />
-      </Suspense>
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-paper px-4 py-10">
+      {/* the castle from the Grand palace invitation, drifting gently behind the form */}
+      <div className="fixed inset-0">
+        <SceneCanvas style="palace" occasion="wedding" />
+      </div>
+      <div className="fixed inset-0 bg-paper/45" />
+      <div className="relative w-full max-w-md shadow-xl shadow-ink/10 rounded-2xl">
+        <Suspense>
+          <LoginForm />
+        </Suspense>
+      </div>
     </main>
   );
 }

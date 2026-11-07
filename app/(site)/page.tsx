@@ -5,6 +5,7 @@ import QRCode from "qrcode";
 import { ArrowRight } from "lucide-react";
 import GuestJourney from "@/components/landing/GuestJourney";
 import HeroClip from "@/components/landing/HeroClip";
+import OccasionShowcase from "@/components/landing/OccasionShowcase";
 import Reveal from "@/components/landing/Reveal";
 import { Invitation } from "@/components/landing/fragments";
 import LanguageToggle from "@/components/LanguageToggle";
@@ -191,22 +192,15 @@ export default async function LandingPage() {
               {L.occasionsTitle}
             </h2>
           </Reveal>
-          <div className="mt-16 grid gap-x-6 gap-y-14 md:mt-24 md:grid-cols-12">
-            <Reveal className="order-2 self-end md:order-1 md:col-span-4">
-              <Photo src="/landing/henna-hands.jpg" alt={L.photos.henna} ratio="aspect-[4/5]" sizes="(min-width: 768px) 30vw, 70vw" className="ms-auto w-[70%] md:ms-0 md:w-full" />
-            </Reveal>
-            <p className="order-1 hidden text-[0.875rem] text-ink-soft md:order-2 md:col-span-2 md:col-start-6 md:block md:text-end">{L.occasionsTable}</p>
-            <Reveal delay={0.08} as="div" className="order-1 md:order-3 md:col-span-5 md:col-start-8">
-              <ul className="text-[1.0625rem]">
-                {OCCASIONS.map((o, i) => (
-                  <li key={o.id} className={`flex items-baseline justify-between gap-6 py-[0.8rem] ${i > 0 && i % 4 === 0 ? "mt-6" : ""}`}>
-                    <span className="text-ink-deep">{o.label[locale]}</span>
-                    <span className="text-end text-ink-soft">{o.cardLine[locale]}</span>
-                  </li>
-                ))}
-              </ul>
-            </Reveal>
-          </div>
+          <OccasionShowcase
+            rows={OCCASIONS.map((o) => ({ id: o.id, label: o.label[locale], line: o.cardLine[locale] }))}
+            tableNote={L.occasionsTable}
+            photo={
+              <Reveal>
+                <Photo src="/landing/henna-hands.jpg" alt={L.photos.henna} ratio="aspect-[4/5]" sizes="(min-width: 768px) 30vw, 70vw" className="ms-auto w-[70%] md:ms-0 md:w-full" />
+              </Reveal>
+            }
+          />
         </section>
 
         {/* ---------- Closing: the sentence has a blank, and the blank is the form ---------- */}
