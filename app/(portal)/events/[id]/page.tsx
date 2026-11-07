@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, Info, Languages, MapPin, Palette, RefreshCw, UserRound } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clapperboard, Info, Languages, MapPin, Palette, RefreshCw, UserRound } from "lucide-react";
 import { Event, Guest, Stats, BillingRecord, CardTemplate } from "@/lib/types";
 import StatsGrid from "@/components/StatsGrid";
 import GuestTable from "@/components/GuestTable";
@@ -15,6 +15,9 @@ import InvitePreview from "@/components/InvitePreview";
 import ClipPanel from "@/components/ClipPanel";
 import { versionOf } from "@/lib/designs/urls";
 import RsvpBar from "@/components/RsvpBar";
+import SceneCanvas from "@/components/SceneCanvas";
+import ReplyTimeline from "@/components/ReplyTimeline";
+import { sceneStyleFor } from "@/lib/clips/themes";
 import { useLocale, useT } from "@/components/I18nProvider";
 import { postJson } from "@/lib/client";
 import { daysUntil } from "@/lib/dates";
@@ -116,7 +119,18 @@ export default function EventDetailPage() {
           <ArrowLeft size={15} className="rtl:rotate-180" /> {t.event.allEvents}
         </Link>
 
-        <div className="mt-4 min-w-0">
+        {/* the event's animated scene, as a banner */}
+        <div className="relative mt-4 h-32 overflow-hidden rounded-2xl border border-line sm:h-44">
+          <SceneCanvas style={sceneStyleFor(event.occasionType, event.clip?.style)} occasion={event.occasionType} />
+          <Link
+            href={`/designs/animated?event=${event.id}`}
+            className="absolute bottom-2.5 end-2.5 inline-flex items-center gap-1.5 rounded-full bg-surface/85 px-3 py-1 text-xs text-ink backdrop-blur hover:bg-surface"
+          >
+            <Clapperboard size={13} className="text-brass" /> {t.clips.styles[sceneStyleFor(event.occasionType, event.clip?.style)]}
+          </Link>
+        </div>
+
+        <div className="mt-5 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="eyebrow">
               {o.emoji} {o.label[locale]}
@@ -161,6 +175,8 @@ export default function EventDetailPage() {
       </div>
 
       <StatsGrid stats={stats} rsvp={o.rsvp} />
+
+      {o.rsvp && stats.total > 0 && <ReplyTimeline guests={guests} />}
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-8 min-w-0">

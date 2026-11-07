@@ -323,3 +323,6 @@ export const RECOMMENDED_STYLES: Record<OccasionType, ClipStyle[]> = {
   condolence: ["dunes", "sea", "bloom", "collage", "threads", "oasis", "royal", "palace"],
   other: ["oasis", "bloom", "royal", "palace", "sea", "dunes", "collage", "threads"],
 };
+
+// The style an event shows: its chosen clip, else the best match for its occasion.
+export const sceneStyleFor = (occ: OccasionType, chosen?: ClipStyle | null): ClipStyle => chosen ?? RECOMMENDED_STYLES[occ]?.[0] ?? "oasis";

@@ -83,6 +83,19 @@ const en = {
 
   stats: { notified: "Notified", notSent: "Not sent yet", numberIssue: "Number issue" },
 
+  timeline: {
+    title: "Replies over time",
+    subtitle: (invited: string) => `Since invitations went out · ${invited} invited`,
+    coming: "Coming",
+    notComing: "Not coming",
+    invited: "Invited",
+    date: "Date",
+    showTable: "Show as table",
+    noInvites: "The chart appears once invitations go out.",
+    summary: (coming: string, notComing: string, invited: string) =>
+      `Replies over time: ${coming} coming and ${notComing} not coming, of ${invited} invited.`,
+  },
+
   guests: {
     everyone: "Everyone",
     waiting: "Waiting",
@@ -516,6 +529,19 @@ const ar: Messages = {
   },
 
   stats: { notified: "تم الإبلاغ", notSent: "لم تُرسل بعد", numberIssue: "مشكلة في الرقم" },
+
+  timeline: {
+    title: "الردود عبر الوقت",
+    subtitle: (invited: string) => `منذ إرسال الدعوات · عدد المدعوين: ${invited}`,
+    coming: "سيحضر",
+    notComing: "لن يحضر",
+    invited: "المدعوون",
+    date: "التاريخ",
+    showTable: "عرض كجدول",
+    noInvites: "يظهر الرسم بعد إرسال الدعوات.",
+    summary: (coming: string, notComing: string, invited: string) =>
+      `الردود عبر الوقت: ${coming} سيحضرون و${notComing} لن يحضروا، من أصل ${invited} مدعوًا.`,
+  },
 
   guests: {
     everyone: "الجميع",

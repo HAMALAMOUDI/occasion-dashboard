@@ -10,6 +10,8 @@ import { getLocale, getMessages } from "@/lib/i18n-server";
 import type { Messages } from "@/lib/messages";
 import { occasion } from "@/lib/occasions";
 import RsvpBar from "@/components/RsvpBar";
+import SceneCanvas from "@/components/SceneCanvas";
+import { sceneStyleFor } from "@/lib/clips/themes";
 import { Event, Stats } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -42,24 +44,35 @@ export default async function DashboardPage() {
 
   return (
     <div className="animate-fade-up">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8">
-        <div>
-          <p className="text-muted">{t.greeting[partOfDay(TIMEZONE)]} 👋</p>
-          <h1 className="font-serif text-3xl sm:text-4xl mt-1">
-            {!next ? (
-              t.dashboard.empty
-            ) : next.days === 0 ? (
-              t.dashboard.today
-            ) : (
-              <>
-                {t.dashboard.nextIn} <span className="text-pine">{t.countdown(next.days)}</span>
-              </>
-            )}
-          </h1>
+      {/* Hero: the next event's animated scene behind the greeting. */}
+      <div className="relative mb-8 overflow-hidden rounded-3xl border border-line bg-surface">
+        <div className="absolute inset-0">
+          <SceneCanvas
+            style={sceneStyleFor(next?.event.occasionType ?? "wedding", next?.event.clip?.style)}
+            occasion={next?.event.occasionType ?? "wedding"}
+          />
         </div>
-        <Link href="/events/new" className="btn-primary btn-md self-start sm:self-auto">
-          <Plus size={16} /> {t.dashboard.newEvent}
-        </Link>
+        {/* a wash of paper on the reading side keeps the text legible over any scene */}
+        <div className="absolute inset-0 bg-linear-to-r from-paper via-paper/85 to-paper/10 rtl:bg-linear-to-l" />
+        <div className="relative flex min-h-56 flex-col gap-4 px-6 py-8 sm:min-h-64 sm:flex-row sm:items-end sm:justify-between sm:px-8">
+          <div className="max-w-md">
+            <p className="text-muted">{t.greeting[partOfDay(TIMEZONE)]} 👋</p>
+            <h1 className="font-serif text-3xl sm:text-4xl mt-1">
+              {!next ? (
+                t.dashboard.empty
+              ) : next.days === 0 ? (
+                t.dashboard.today
+              ) : (
+                <>
+                  {t.dashboard.nextIn} <span className="text-pine">{t.countdown(next.days)}</span>
+                </>
+              )}
+            </h1>
+          </div>
+          <Link href="/events/new" className="btn-primary btn-md self-start sm:self-auto">
+            <Plus size={16} /> {t.dashboard.newEvent}
+          </Link>
+        </div>
       </div>
 
       {rows.length === 0 ? (
@@ -117,9 +130,13 @@ function EventSection({ title, rows, t, locale, muted = false }: { title: string
             <Link
               key={event.id}
               href={`/events/${event.id}`}
+              data-scene-host
               className={`card group overflow-hidden transition hover:-translate-y-0.5 hover:shadow-md ${muted ? "opacity-75 hover:opacity-100" : ""}`}
             >
-              <div className="h-1.5" style={{ backgroundColor: color ?? "var(--pine)" }} />
+              {/* the event's scene: a still that comes alive on hover */}
+              <div className="relative h-24 overflow-hidden border-b border-line sm:h-28" style={{ backgroundColor: color ?? "var(--pine-soft)" }}>
+                <SceneCanvas style={sceneStyleFor(event.occasionType, event.clip?.style)} occasion={event.occasionType} motion="hover" />
+              </div>
               <div className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">

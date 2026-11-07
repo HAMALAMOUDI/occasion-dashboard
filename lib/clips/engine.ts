@@ -49,7 +49,7 @@ export interface ClipSpec {
 import { clamp01, easeInOut, easeOutBack, easeOutCubic, hash, mix, progress, rgba, rng } from "./util";
 import { drawNature, NATURE_STYLES, type NatureStyle } from "./nature";
 import { drawRoyal } from "./royal";
-import { drawPalace, PALACE_DURATION } from "./palace";
+import { drawPalace, drawPalaceBackdrop, PALACE_DURATION } from "./palace";
 
 // ------------------------------------------------------------ motifs (centred at 0,0, size s)
 
@@ -654,5 +654,19 @@ export function renderClipFrame(ctx: Ctx, t: number, spec: ClipSpec) {
     ctx.fillStyle = ground;
     ctx.fillRect(0, 0, CLIP_W, CLIP_H);
   }
+  ctx.restore();
+}
+
+// The scene alone, without the invitation's words, for decorative backdrops in
+// the portal (dashboard hero, event cards). Same artwork as the clip.
+export function renderClipScene(ctx: Ctx, t: number, style: ClipStyle, occasion: OccasionType) {
+  const theme = CLIP_THEMES[occasion] ?? CLIP_THEMES.other;
+  const key = `${style}:${occasion}`;
+  ctx.save();
+  if (style === "palace") drawPalaceBackdrop(ctx, t, occasion);
+  else if (style === "royal") drawRoyal(ctx, t, occasion, null, null);
+  else if ((NATURE_STYLES as string[]).includes(style)) drawNature(ctx, t, style as NatureStyle, occasion);
+  else if (style === "collage") drawCollage(ctx, t, key, theme.collage);
+  else drawThreads(ctx, t, key, theme.threads);
   ctx.restore();
 }

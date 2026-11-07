@@ -38,6 +38,11 @@ export function formatDate(ymd: string, locale: Locale, style: "medium" | "long"
   return new Date(ymd).toLocaleDateString(INTL[locale], { ...opts, timeZone: "UTC" });
 }
 
+// Compact day label for chart axes, e.g. "12 Mar".
+export function formatShortDate(ymd: string, locale: Locale) {
+  return new Date(ymd).toLocaleDateString(INTL[locale], { day: "numeric", month: "short", timeZone: "UTC" });
+}
+
 export function formatHijri(ymd: string, locale: Locale) {
   return new Date(ymd).toLocaleDateString(HIJRI[locale], { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 }

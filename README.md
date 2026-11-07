@@ -89,6 +89,27 @@ The frames are drawn by `lib/clips/engine.ts` (collage, threads, text) and
 Canvas 2D, so the same code can render sample MP4s offline. The rendered
 samples live in `exports/`, which is git-ignored.
 
+## Canvas visuals in the portal
+
+The clip engine also draws the portal itself, so each event looks like its
+invitation:
+
+- **Dashboard hero:** the next event's scene drifts gently behind the
+  greeting (its chosen animation, else the best match for its occasion). A
+  paper-coloured wash on the reading side keeps the text legible.
+- **Event cards:** each card shows its event's scene as a still, which comes
+  alive while the pointer (or keyboard focus) is on the card.
+- **Event page:** a banner with the event's scene, linking to the animation
+  library.
+- **Replies over time:** a chart of running totals of guests coming and not
+  coming since the invitations went out, with a crosshair tooltip (hover or
+  arrow keys), a legend, direct end labels and a table view.
+
+Scenes are drawn without words (`renderClipScene` in `lib/clips/engine.ts`),
+cropped to fill their box, at 30 fps only while on screen, and held still for
+visitors who prefer reduced motion. `components/SceneCanvas.tsx` draws them;
+`lib/timeline.ts` builds the chart data.
+
 ## Managing guests
 
 - **Excel upload:** `.xlsx` files with a Name and a Mobile number column.

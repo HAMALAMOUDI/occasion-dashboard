@@ -311,9 +311,10 @@ function tree(ctx: Ctx, x: number, y: number, size: number, flip: number, r: () 
   ctx.restore();
 }
 
-function castleStage(ctx: Ctx, t: number, key: string, tint: string) {
-  if (t > 7.6) return;
-  const push = easeIn(progress(t, 2.6, 4.6));
+// `still` holds the camera at the garden gate (portal backdrops); clouds and trees keep moving.
+function castleStage(ctx: Ctx, t: number, key: string, tint: string, still = false) {
+  if (t > 7.6 && !still) return;
+  const push = still ? 0 : easeIn(progress(t, 2.6, 4.6));
   const z = 1 + push * 2.6;
   const r = rng(hash(key + "castle"));
   ctx.save();
@@ -903,7 +904,14 @@ function hallStage(ctx: Ctx, t: number, key: string, tint: string) {
 
 // ------------------------------------------------------------ entry
 
-export function drawPalace(ctx: Ctx, t: number, occ: OccasionType, tx: ClipText, fonts: ClipFonts) {
+// The castle and its garden on their own, for portal backdrops.
+export function drawPalaceBackdrop(ctx: Ctx, t: number, occ: OccasionType) {
+  const tint = (CLIP_THEMES[occ] ?? CLIP_THEMES.other).collage.accent;
+  castleStage(ctx, t, `palace:${occ}`, tint, true);
+}
+
+// `tx` null draws the scene alone (portal backdrops).
+export function drawPalace(ctx: Ctx, t: number, occ: OccasionType, tx: ClipText | null, fonts: ClipFonts | null) {
   const key = `palace:${occ}`;
   const calm = occ === "condolence";
   const tint = (CLIP_THEMES[occ] ?? CLIP_THEMES.other).collage.accent;
@@ -960,6 +968,6 @@ export function drawPalace(ctx: Ctx, t: number, occ: OccasionType, tx: ClipText,
     ctx.fillRect(x - 14, y - 14, 28, 28);
   }
 
-  drawNames(ctx, t, tx, fonts, 5.4);
+  if (tx && fonts) drawNames(ctx, t, tx, fonts, 5.4);
   return { ground: IVORY, gold: GOLD };
 }

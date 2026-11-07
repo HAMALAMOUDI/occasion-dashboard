@@ -462,7 +462,8 @@ export function drawNames(ctx: Ctx, t: number, tx: ClipText, fonts: ClipFonts, s
 
 // ------------------------------------------------------------ entry
 
-export function drawRoyal(ctx: Ctx, t: number, occ: OccasionType, tx: ClipText, fonts: ClipFonts) {
+// `tx` null draws the scene alone (portal backdrops).
+export function drawRoyal(ctx: Ctx, t: number, occ: OccasionType, tx: ClipText | null, fonts: ClipFonts | null) {
   const key = `royal:${occ}`;
   const calm = occ === "condolence";
   const tint = (CLIP_THEMES[occ] ?? CLIP_THEMES.other).collage.accent;
@@ -549,6 +550,6 @@ export function drawRoyal(ctx: Ctx, t: number, occ: OccasionType, tx: ClipText, 
     }
   }
 
-  drawNames(ctx, t, tx, fonts);
+  if (tx && fonts) drawNames(ctx, t, tx, fonts);
   return { ground: IVORY };
 }
