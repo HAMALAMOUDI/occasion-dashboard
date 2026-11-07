@@ -19,6 +19,8 @@ const en = {
     admin: "Admin — sees all events",
     promoTitle: "Invites go out on WhatsApp",
     promoBody: "Guests reply with one tap, and get their entry pass instantly.",
+    website: "Hikayati website",
+    help: "Questions",
   },
   demoBanner: {
     strong: "Demo sign-in is on.",
@@ -293,10 +295,15 @@ const en = {
     builtIn: "Using the simple built-in card.",
     chosen: (name: string) => `Design: ${name}`,
     notForCondolence: "Condolence cards come from the calm Condolences set, with no reply buttons.",
+    position: (i: number, n: number) => `${i} of ${n}`,
+    prev: "Previous design",
+    next: "Next design",
+    bismillah: "Open with the Bismillah",
+    bismillahOn: "Opens with the Bismillah",
   },
 
   landing: {
-    nav: { how: "How it works", occasions: "Occasions", contact: "Contact" },
+    nav: { designs: "Designs", how: "How it works", occasions: "Occasions", faq: "Questions", contact: "Contact" },
     headerCta: "Create invitation",
     signIn: "Sign in",
     myEvents: "My events",
@@ -339,8 +346,45 @@ const en = {
     backToTop: "Back to top",
     picturesCredit: "Pictures",
     rights: (year: number) => `© ${year} Hikayati · حكايتي`,
+    designsTitle: "Find your card.",
+    designsBody: (n: number) => `${n} Arabic designs for eleven occasions, in three styles. Browse them all before you sign in, and try each one in its colours.`,
+    designsCta: "See all designs",
+    faqTitle: "Questions, answered.",
+    faq: [
+      { q: "Do my guests need an app?", a: "No. Each guest gets the invitation on WhatsApp, addressed to them by name, and replies with one tap on Accept or Decline." },
+      { q: "Which occasions is it for?", a: "Weddings, engagements, henna nights, birthdays, graduations, new babies, gatherings, corporate events, Eid and Ramadan. Condolence notices go out too, calmly and without reply buttons." },
+      { q: "How do I see who’s coming?", a: "Replies arrive live on your event page: who accepted, who declined and who hasn’t answered yet. You can send a reminder to the ones still waiting." },
+      { q: "Can I bring my guest list from Excel?", a: "Yes. Upload a spreadsheet of names and WhatsApp numbers, or add guests one at a time." },
+      { q: "Can I change the design?", a: "Yes. Pick another design, change its colours or rewrite the wording whenever you like, from the event page." },
+      { q: "Is it in Arabic and English?", a: "The whole site works in both. Each event is sent in Arabic or English, and the design library’s cards are written in Arabic." },
+      { q: "How do guests get in on the day?", a: "Everyone who accepts receives a personal QR code to show at the door." },
+    ],
   },
 
+
+  gallery: {
+    eyebrow: "The design library",
+    title: "A card for every occasion.",
+    body: (n: number) => `${n} Arabic invitation designs in three styles. Open any one to see it full size and try its colours.`,
+    count: (n: number) => `${n} designs`,
+    styles: {
+      classic: "Ornament, arches and calligraphy, with five colourways each.",
+      modern: "Bold type and graphic shapes, from Bauhaus to neon.",
+      signature: "Built around a drawn emblem for each occasion, with a calm set for condolences.",
+    },
+    all: "All designs",
+    colours: "Colours",
+    use: "Use this design",
+    useHint: "You sign in with your WhatsApp number, then add your names, date and place.",
+    more: "More for this occasion",
+    steps: [
+      { title: "Choose a design", body: "Pick the card for your occasion and the colours you like." },
+      { title: "Make it yours", body: "Add the names, the wording, the date and the place. The card fills itself in." },
+      { title: "Send it on WhatsApp", body: "Every guest gets their own invitation and replies with one tap." },
+    ],
+    stepsTitle: "How it works",
+    metaTitle: "Invitation designs",
+  },
 
   clips: {
     tabCards: "Cards",
@@ -464,6 +508,8 @@ const ar: Messages = {
     admin: "مشرف — يرى جميع المناسبات",
     promoTitle: "الدعوات تصل عبر واتساب",
     promoBody: "يرد الضيوف بلمسة واحدة، ويستلمون بطاقة الدخول فوراً.",
+    website: "موقع حكايتي",
+    help: "أسئلة شائعة",
   },
   demoBanner: {
     strong: "وضع التجربة مفعّل.",
@@ -747,10 +793,15 @@ const ar: Messages = {
     builtIn: "تستخدم البطاقة البسيطة المدمجة.",
     chosen: (name: string) => `التصميم: ${name}`,
     notForCondolence: "بطاقات العزاء من مجموعة العزاء الهادئة، ومن دون أزرار للرد.",
+    position: (i: number, n: number) => `${i} من ${n}`,
+    prev: "التصميم السابق",
+    next: "التصميم التالي",
+    bismillah: "افتتحها بالبسملة",
+    bismillahOn: "تبدأ بالبسملة",
   },
 
   landing: {
-    nav: { how: "كيف تعمل", occasions: "المناسبات", contact: "تواصل" },
+    nav: { designs: "التصاميم", how: "كيف تعمل", occasions: "المناسبات", faq: "أسئلة", contact: "تواصل" },
     headerCta: "ابدأ دعوتك",
     signIn: "تسجيل الدخول",
     myEvents: "مناسباتي",
@@ -791,8 +842,45 @@ const ar: Messages = {
     backToTop: "إلى الأعلى",
     picturesCredit: "الصور",
     rights: (year: number) => `© ${year} حكايتي · Hikayati`,
+    designsTitle: "اختر بطاقتك.",
+    designsBody: (n: number) => `${n} تصميماً عربياً لإحدى عشرة مناسبة، بثلاثة أساليب. تصفّحها كلها قبل تسجيل الدخول، وجرّب ألوان كل تصميم.`,
+    designsCta: "شاهد كل التصاميم",
+    faqTitle: "أسئلة وأجوبة.",
+    faq: [
+      { q: "هل يحتاج ضيوفي إلى تطبيق؟", a: "لا. تصل الدعوة لكل ضيف عبر واتساب باسمه، ويردّ بلمسة واحدة على «قبول» أو «اعتذار»." },
+      { q: "لأي المناسبات تصلح؟", a: "الزواج والملكة وليلة الحناء وأعياد الميلاد والتخرج والمواليد والجمعات والمناسبات الرسمية والعيد ورمضان. ونرسل كذلك إشعارات العزاء بهدوء ومن دون أزرار للرد." },
+      { q: "كيف أعرف من سيحضر؟", a: "تصل الردود مباشرة إلى صفحة مناسبتك: من قبل، ومن اعتذر، ومن لم يرد بعد. ويمكنك إرسال تذكير لمن لم يرد." },
+      { q: "هل أستطيع رفع قائمة الضيوف من Excel؟", a: "نعم. ارفع جدولاً بالأسماء وأرقام واتساب، أو أضف الضيوف واحداً واحداً." },
+      { q: "هل أستطيع تغيير التصميم؟", a: "نعم. اختر تصميماً آخر أو غيّر ألوانه أو أعد صياغة النص متى شئت، من صفحة المناسبة." },
+      { q: "هل الموقع بالعربية والإنجليزية؟", a: "الموقع كله باللغتين. تُرسل كل مناسبة بالعربية أو الإنجليزية، وبطاقات مكتبة التصاميم مكتوبة بالعربية." },
+      { q: "كيف يدخل الضيوف يوم المناسبة؟", a: "كل من يقبل الدعوة يستلم رمز QR خاصاً به يعرضه عند الباب." },
+    ],
   },
 
+
+  gallery: {
+    eyebrow: "مكتبة التصاميم",
+    title: "بطاقة لكل مناسبة.",
+    body: (n: number) => `${n} تصميماً عربياً للدعوات بثلاثة أساليب. افتح أي تصميم لتراه بحجمه الكامل وتجرّب ألوانه.`,
+    count: (n: number) => `${n} تصميماً`,
+    styles: {
+      classic: "زخارف وأقواس وخط عربي، ولكل تصميم خمس توليفات لونية.",
+      modern: "خطوط جريئة وأشكال هندسية، من الباوهاوس إلى النيون.",
+      signature: "تصاميم حول رسم خاص بكل مناسبة، مع مجموعة هادئة للعزاء.",
+    },
+    all: "كل التصاميم",
+    colours: "الألوان",
+    use: "استخدم هذا التصميم",
+    useHint: "تسجّل الدخول برقم واتساب، ثم تضيف الأسماء والتاريخ والمكان.",
+    more: "المزيد لهذه المناسبة",
+    steps: [
+      { title: "اختر تصميماً", body: "اختر بطاقة مناسبتك والألوان التي تحبها." },
+      { title: "اجعلها لك", body: "أضف الأسماء والنص والتاريخ والمكان، وتكتمل البطاقة تلقائياً." },
+      { title: "أرسلها عبر واتساب", body: "يستلم كل ضيف دعوته الخاصة ويردّ بلمسة واحدة." },
+    ],
+    stepsTitle: "كيف تعمل",
+    metaTitle: "تصاميم الدعوات",
+  },
 
   clips: {
     tabCards: "البطاقات",

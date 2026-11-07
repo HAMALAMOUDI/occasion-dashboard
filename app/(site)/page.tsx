@@ -2,16 +2,18 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import QRCode from "qrcode";
-import { ArrowRight } from "lucide-react";
 import GuestJourney from "@/components/landing/GuestJourney";
 import HeroClip from "@/components/landing/HeroClip";
 import OccasionShowcase from "@/components/landing/OccasionShowcase";
 import Reveal from "@/components/landing/Reveal";
 import { Invitation } from "@/components/landing/fragments";
-import LanguageToggle from "@/components/LanguageToggle";
+import DesignFrame from "@/components/DesignFrame";
+import PhoneFrame from "@/components/PhoneFrame";
+import { InviteButton, SiteHeader, Wordmark, createHref as createLink, siteLinks } from "@/components/landing/SiteChrome";
 import { currentUser } from "@/lib/auth";
 import { CLIP_STYLES } from "@/lib/clips/themes";
-import { DESIGN_COUNT } from "@/lib/designs/catalog";
+import { DESIGN_COUNT, LAYOUT_NAMES, type DesignCategory, type DesignStyle } from "@/lib/designs/catalog";
+import { designSrc, galleryPath } from "@/lib/designs/urls";
 import { getLocale, getMessages } from "@/lib/i18n-server";
 import { OCCASIONS } from "@/lib/occasions";
 
@@ -28,37 +30,17 @@ const CREDITS = [
   { title: "Henna hands", by: "Izzah Zainab", licence: "CC BY 2.0", page: "https://commons.wikimedia.org/w/index.php?curid=74800224" },
 ];
 
+// One card from each style, across occasions, for the landing's design strip.
+const FEATURED: { style: DesignStyle; category: DesignCategory; layout: number }[] = [
+  { style: "signature", category: "wedding", layout: 1 },
+  { style: "classic", category: "engagement", layout: 3 },
+  { style: "modern", category: "birthday", layout: 6 },
+  { style: "signature", category: "ramadan", layout: 7 },
+];
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getMessages();
   return { title: `Hikayati · حكايتي — ${t.landing.heroLine1} ${t.landing.heroLine2}`, description: t.landing.heroSub };
-}
-
-const btnInvite =
-  "btn-invite press tap-control min-h-12 text-[1.0625rem] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-deep";
-
-// The "Create invitation" button: label, then a gold tab with the arrow.
-function InviteButton({ href, children, className = "" }: { href: string; children: React.ReactNode; className?: string }) {
-  return (
-    <Link href={href} className={`${btnInvite} ${className}`}>
-      <span className="btn-invite-label">{children}</span>
-      <span className="btn-invite-tab" aria-hidden="true">
-        <ArrowRight size={18} className="rtl:rotate-180" />
-      </span>
-    </Link>
-  );
-}
-
-function Wordmark({ className = "" }: { className?: string }) {
-  return (
-    <span className={`flex items-baseline gap-2.5 ${className}`}>
-      <span className="font-editorial text-xl font-medium tracking-[0.2em]" lang="en">
-        HIKAYATI
-      </span>
-      <span className="font-[family-name:var(--font-ruqaa)] text-lg text-gold-ink" lang="ar">
-        حكايتي
-      </span>
-    </span>
-  );
 }
 
 // A captioned photograph; every picture on the page is cropped by its frame, never stretched.
@@ -76,41 +58,13 @@ function Photo({ src, alt, ratio, sizes, className = "" }: { src: string; alt: s
 export default async function LandingPage() {
   const [t, locale, user] = await Promise.all([getMessages(), getLocale(), currentUser()]);
   const L = t.landing;
-  const createHref = user ? "/events/new" : "/login?next=/events/new";
+  const createHref = createLink(!!user);
   // A real, scannable QR for the sample guest pass.
   const qr = await QRCode.toString("HIKAYATI-SAMPLE-PASS", { type: "svg", margin: 0, color: { dark: "#24241f", light: "#0000" } });
-  const nav = [
-    { href: "#how", label: L.nav.how },
-    { href: "#occasions", label: L.nav.occasions },
-    { href: "#contact", label: L.nav.contact },
-  ];
 
   return (
     <>
-      {/* ---------- Header: wordmark, three links, one action ---------- */}
-      <header className="sticky top-0 z-40 bg-ivory pt-[env(safe-area-inset-top,0px)]">
-        <div className="flex h-[4.5rem] items-center justify-between gap-6 px-safe">
-          <a href="#home" aria-label="Hikayati · حكايتي" className="tap-control">
-            <Wordmark />
-          </a>
-          <nav className="hidden items-center gap-8 whitespace-nowrap text-[1.0625rem] text-ink-soft lg:flex">
-            {nav.map((n) => (
-              <a key={n.href} href={n.href} className="tap-control transition-colors hover:text-ink-deep active:text-ink-deep">
-                {n.label}
-              </a>
-            ))}
-          </nav>
-          <div className="flex items-center gap-4 whitespace-nowrap">
-            <LanguageToggle className="press tap-control min-h-10 border-transparent bg-bone text-[0.875rem] text-ink-deep active:text-ink" />
-            <Link href={user ? "/events" : "/login"} className="tap-control hidden text-[1.0625rem] text-ink-soft hover:text-ink-deep active:text-ink-deep md:inline">
-              {user ? L.myEvents : L.signIn}
-            </Link>
-            <InviteButton href={createHref} className="btn-invite-sm hidden min-h-11 sm:inline-flex">
-              {L.headerCta}
-            </InviteButton>
-          </div>
-        </div>
-      </header>
+      <SiteHeader L={L} signedIn={!!user} />
 
       <main>
         {/* ---------- Hero: the sentence, with the animated invitation set inside it ---------- */}
@@ -190,6 +144,43 @@ export default async function LandingPage() {
           </div>
         </section>
 
+        {/* ---------- Designs: four cards on phones, and the way into the whole library ---------- */}
+        <section id="designs" aria-labelledby="designs-title" className="scroll-mt-20 px-safe py-[clamp(7rem,14vw,12rem)]">
+          <div className="grid gap-8 md:grid-cols-12 md:items-end">
+            <Reveal className="md:col-span-6">
+              <h2 id="designs-title" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em]">
+                {L.designsTitle}
+              </h2>
+            </Reveal>
+            <Reveal delay={0.08} className="md:col-span-5 md:col-start-8">
+              <p className="text-[1.25rem] leading-[1.6] text-ink-deep">{L.designsBody(DESIGN_COUNT)}</p>
+              <InviteButton href="/gallery" className="mt-8 flex w-full sm:inline-flex sm:w-auto">
+                {L.designsCta}
+              </InviteButton>
+            </Reveal>
+          </div>
+          <ul className="mt-16 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-4 md:gap-x-6">
+            {FEATURED.map((d, i) => {
+              const name = LAYOUT_NAMES[d.style][d.layout - 1][locale];
+              return (
+                <li key={`${d.style}-${d.category}-${d.layout}`} className={i % 2 ? "md:mt-16" : ""}>
+                  <Reveal delay={i * 0.06}>
+                    <Link href={galleryPath(d.style, d.category, d.layout)} className="group block tap-control">
+                      <PhoneFrame className="transition duration-300 group-hover:-translate-y-1">
+                        <DesignFrame src={designSrc(d)} title={name} />
+                      </PhoneFrame>
+                      <span className="mt-4 block text-[1.0625rem] text-ink-deep group-hover:underline group-hover:decoration-champagne group-hover:decoration-2 group-hover:underline-offset-[6px]">
+                        {name}
+                      </span>
+                      <span className="block text-[0.875rem] text-ink-soft">{t.designs[d.style]}</span>
+                    </Link>
+                  </Reveal>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
         {/* ---------- How it works: one invitation's journey, addressed to the name typed in ---------- */}
         <section id="how" aria-labelledby="how-title" className="scroll-mt-[4.5rem]">
           <GuestJourney lang={locale} copy={L.journey} qr={qr} />
@@ -211,6 +202,30 @@ export default async function LandingPage() {
               </Reveal>
             }
           />
+        </section>
+
+        {/* ---------- Questions: the ones people ask before they begin ---------- */}
+        <section id="faq" aria-labelledby="faq-title" className="scroll-mt-20 px-safe py-[clamp(7rem,14vw,12rem)]">
+          <div className="grid gap-12 lg:grid-cols-12">
+            <Reveal className="lg:col-span-4">
+              <h2 id="faq-title" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em] lg:sticky lg:top-28">
+                {L.faqTitle}
+              </h2>
+            </Reveal>
+            <div className="border-t border-ink-deep/15 lg:col-span-7 lg:col-start-6">
+              {L.faq.map((f) => (
+                <details key={f.q} className="group border-b border-ink-deep/15">
+                  <summary className="tap-control flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-[1.1875rem] text-ink-deep [&::-webkit-details-marker]:hidden">
+                    {f.q}
+                    <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-bone text-[1.25rem] leading-none transition-transform group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+                  <p className="max-w-[40rem] pb-6 text-[1.0625rem] leading-[1.7] text-ink-soft">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* ---------- Closing: the sentence has a blank, and the blank is the form ---------- */}
@@ -265,11 +280,11 @@ export default async function LandingPage() {
         </div>
 
         <div className="grid gap-6 text-[0.875rem] leading-6 md:grid-cols-[auto_1fr_auto] md:items-end md:gap-12">
-          <nav className="flex gap-6">
-            {nav.slice(0, 2).map((n) => (
-              <a key={n.href} href={n.href} className="tap-control underline-offset-4 hover:underline">
+          <nav className="flex flex-wrap gap-x-6 gap-y-2">
+            {siteLinks(L).map((n) => (
+              <Link key={n.href} href={n.href} className="tap-control underline-offset-4 hover:underline">
                 {n.label}
-              </a>
+              </Link>
             ))}
             <Link href={user ? "/events" : "/login"} className="tap-control underline-offset-4 hover:underline">
               {user ? L.myEvents : L.signIn}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CalendarHeart, LogOut, Palette, Plus, ReceiptText, ShieldCheck } from "lucide-react";
+import { CalendarHeart, CircleHelp, Globe, LogOut, Palette, Plus, ReceiptText, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useT } from "./I18nProvider";
 import LanguageToggle from "./LanguageToggle";
@@ -78,6 +78,14 @@ export default function Nav({ phone, isAdmin }: { phone: string; isAdmin: boolea
         <div className="mt-auto rounded-2xl bg-brass-soft p-4 text-xs leading-relaxed text-ink/80">
           <p className="font-semibold text-ink mb-1">{t.nav.promoTitle}</p>
           {t.nav.promoBody}
+        </div>
+        <div className="mt-4 flex flex-col gap-1 text-sm">
+          <Link href="/" className="flex items-center gap-2.5 rounded-lg px-1 py-1 text-muted hover:text-ink">
+            <Globe size={15} /> {t.nav.website}
+          </Link>
+          <Link href="/#faq" className="flex items-center gap-2.5 rounded-lg px-1 py-1 text-muted hover:text-ink">
+            <CircleHelp size={15} /> {t.nav.help}
+          </Link>
         </div>
         <LanguageToggle className="mt-4 self-start" />
         <div className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-4">

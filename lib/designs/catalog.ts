@@ -70,7 +70,9 @@ export const LAYOUT_NAMES: Record<DesignStyle, { en: string; ar: string }[]> = {
 export const layoutCount = (style: DesignStyle) => LAYOUT_NAMES[style].length;
 
 // Every design in the library: each style × the categories it serves × its layouts.
-export const DESIGN_COUNT = DESIGN_CATEGORIES.reduce((sum, c) => sum + stylesFor(c).reduce((n, s) => n + layoutCount(s), 0), 0);
+// How many designs one category offers, across the styles that serve it.
+export const designCountFor = (category: DesignCategory) => stylesFor(category).reduce((n, s) => n + layoutCount(s), 0);
+export const DESIGN_COUNT = DESIGN_CATEGORIES.reduce((sum, c) => sum + designCountFor(c), 0);
 
 export interface Palette {
   bg: string;

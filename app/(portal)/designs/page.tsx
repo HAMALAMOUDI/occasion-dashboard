@@ -1,10 +1,12 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, X } from "lucide-react";
 import DesignFrame from "@/components/DesignFrame";
+import PhoneFrame from "@/components/PhoneFrame";
 import DesignTabs from "@/components/designs/DesignTabs";
 import { designSrc } from "@/lib/designs/urls";
 import { useLocale, useT } from "@/components/I18nProvider";
@@ -16,6 +18,7 @@ import {
   DESIGN_STYLES,
   LAYOUT_NAMES,
   defaultPaletteIndex,
+  designCountFor,
   isDesignCategory,
   palettesFor,
   stylesFor,
@@ -49,7 +52,36 @@ function Gallery() {
   // Not every style serves every occasion (condolences: signature only).
   const styles = stylesFor(category);
   const style = styles.includes(chosenStyle) ? chosenStyle : styles[0];
-  const [open, setOpen] = useState<number | null>(null);
+  // ?layout= (and ?palette=) open one design straight away, e.g. from the public gallery.
+  const [open, setOpenState] = useState<number | null>(() => {
+    const n = Number(params.get("layout"));
+    return Number.isInteger(n) && n >= 1 ? n : null;
+  });
+  // The colour a link asked for applies to the design it opened, not to the ones browsed after it.
+  const [linked] = useState(() => {
+    const n = Number(params.get("palette") ?? NaN);
+    return { layout: Number(params.get("layout")), palette: Number.isInteger(n) && n >= 0 ? n : null };
+  });
+  const names = LAYOUT_NAMES[style];
+  const shown = open !== null && open <= names.length ? open : null;
+  // The dialog lives on <body>, so it waits for the browser (a link can open it on the first render).
+  const inBrowser = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+
+  // Keep the address in step with what's on screen, so a design can be shared or reloaded.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    q.set("category", category);
+    q.set("style", style);
+    if (shown) q.set("layout", String(shown));
+    else q.delete("layout");
+    q.delete("palette");
+    window.history.replaceState(null, "", `${window.location.pathname}?${q}`);
+  }, [category, style, shown]);
+  const setOpen = setOpenState;
 
   useEffect(() => {
     fetch("/api/events")
@@ -57,8 +89,6 @@ function Gallery() {
       .then((list: Event[]) => setEvents(list))
       .catch(() => setEvents([]));
   }, []);
-
-  const names = LAYOUT_NAMES[style];
 
   return (
     <div className="animate-fade-up">
@@ -83,12 +113,16 @@ function Gallery() {
               key={c}
               role="tab"
               aria-selected={category === c}
-              onClick={() => setCategory(c)}
+              onClick={() => {
+                setCategory(c);
+                setOpen(null);
+              }}
               className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
                 category === c ? "bg-ink text-white" : "bg-surface border border-line text-muted hover:text-ink"
               }`}
             >
               {CATEGORY_LABELS[c][locale]}
+              <span className="ms-1.5 tabular-nums opacity-60">{designCountFor(c)}</span>
             </button>
           ))}
         </div>
@@ -98,7 +132,10 @@ function Gallery() {
               key={s}
               role="radio"
               aria-checked={style === s}
-              onClick={() => setStyle(s)}
+              onClick={() => {
+                setStyle(s);
+                setOpen(null);
+              }}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${style === s ? "bg-surface text-pine shadow-sm" : "text-muted hover:text-ink"}`}
             >
               {t.designs[s]}
@@ -129,17 +166,21 @@ function Gallery() {
         })}
       </div>
 
-      {open !== null && (
+      {shown !== null && inBrowser && (
         <DesignDialog
+          // A fresh dialog per design, so its colours start from that design's default.
+          key={`${style}-${category}-${shown}`}
           style={style}
           category={category}
-          layout={open}
+          layout={shown}
+          initialPalette={shown === linked.layout ? linked.palette : null}
           events={events}
           target={target}
+          onMove={(n) => setOpen(n)}
           onClose={() => setOpen(null)}
           onUse={(eventId, palette) =>
             router.push(
-              `/events/${eventId}/design?${new URLSearchParams({ style, category, layout: String(open), palette: String(palette) })}`
+              `/events/${eventId}/design?${new URLSearchParams({ style, category, layout: String(shown), palette: String(palette) })}`
             )
           }
         />
@@ -152,24 +193,35 @@ function DesignDialog({
   style,
   category,
   layout,
+  initialPalette,
   events,
   target,
+  onMove,
   onClose,
   onUse,
 }: {
   style: DesignStyle;
   category: DesignCategory;
   layout: number;
+  initialPalette: number | null;
   events: Event[];
   target: Event | null;
+  onMove: (layout: number) => void;
   onClose: () => void;
   onUse: (eventId: string, palette: number) => void;
 }) {
   const t = useT();
   const locale = useLocale();
   const palettes = palettesFor(style, category, layout);
-  const [palette, setPalette] = useState(defaultPaletteIndex(style, category, layout));
+  const [palette, setPalette] = useState(
+    initialPalette !== null && initialPalette < palettes.length ? initialPalette : defaultPaletteIndex(style, category, layout)
+  );
+  const total = LAYOUT_NAMES[style].length;
   const label = layoutLabel(layout, LAYOUT_NAMES[style][layout - 1][locale]);
+  const step = (by: number) => onMove(((layout - 1 + by + total) % total) + 1);
+  // Arrow keys follow reading direction: in Arabic, left is "next".
+  const forward = locale === "ar" ? "ArrowLeft" : "ArrowRight";
+  const back = locale === "ar" ? "ArrowRight" : "ArrowLeft";
 
   const [recommended, others] = useMemo(() => {
     // Condolence designs go on condolences only, and celebration designs never do.
@@ -184,12 +236,19 @@ function DesignDialog({
   const chosen = usable.find((e) => e.id === eventId);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      // Leave arrow keys alone while a form control (the event picker) has focus.
+      if (e.target instanceof HTMLSelectElement || e.target instanceof HTMLInputElement) return;
+      if (e.key === forward) step(1);
+      if (e.key === back) step(-1);
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  });
 
-  return (
+  // On <body>: the page's entrance animation leaves a transform that would trap a fixed overlay.
+  return createPortal(
     <div className="fixed inset-0 z-40 flex items-end justify-center bg-ink/40 p-0 sm:items-center sm:p-6" onClick={onClose}>
       <div
         role="dialog"
@@ -201,17 +260,27 @@ function DesignDialog({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="eyebrow">
-              {CATEGORY_LABELS[category][locale]} · {t.designs[style]}
+              {CATEGORY_LABELS[category][locale]} · {t.designs[style]} · <span className="tabular-nums">{t.designs.position(layout, total)}</span>
             </p>
             <h2 className="font-serif text-2xl mt-1">{label}</h2>
           </div>
-          <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-paper" aria-label={t.designs.close}>
-            <X size={18} />
-          </button>
+          <div className="flex shrink-0 items-center gap-1">
+            <button onClick={() => step(-1)} className="grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-paper hover:text-ink" aria-label={t.designs.prev}>
+              <ArrowLeft size={18} className="rtl:rotate-180" />
+            </button>
+            <button onClick={() => step(1)} className="grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-paper hover:text-ink" aria-label={t.designs.next}>
+              <ArrowRight size={18} className="rtl:rotate-180" />
+            </button>
+            <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-paper" aria-label={t.designs.close}>
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         <div className="mt-5 grid gap-6 sm:grid-cols-[minmax(0,17rem)_minmax(0,1fr)]">
-          <DesignFrame src={designSrc({ style, category, layout, palette })} title={label} className="rounded-xl ring-1 ring-line" />
+          <PhoneFrame className="mx-auto w-full max-w-[17rem]">
+            <DesignFrame src={designSrc({ style, category, layout, palette })} title={label} />
+          </PhoneFrame>
 
           <div className="flex flex-col gap-5">
             <div>
@@ -283,7 +352,8 @@ function DesignDialog({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

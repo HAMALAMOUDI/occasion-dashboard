@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Check } from "lucide-react";
 import DesignFrame from "@/components/DesignFrame";
+import PhoneFrame from "@/components/PhoneFrame";
 import { designSrc } from "@/lib/designs/urls";
 import { useLocale, useT } from "@/components/I18nProvider";
 import { requestJson } from "@/lib/client";
@@ -29,6 +30,9 @@ import type { Event } from "@/lib/types";
 
 // Wording starts from the category's sample text; names, time and city start
 // empty (the sample shows as a placeholder) so nobody ships "فهد و نوف" by accident.
+// The opening line many families put at the top of an invitation.
+const BISMILLAH = "بسم الله الرحمن الرحيم";
+
 function startingFields(category: DesignChoice["category"], previous?: DesignFields): DesignFields {
   return previous ?? { ...sampleFields(category), nameA: "", nameB: "", time: "", city: "" };
 }
@@ -195,7 +199,21 @@ function Editor() {
           </section>
 
           <section className="card p-5 sm:p-6 space-y-4">
-            <h2 className="font-medium">{t.designs.wording}</h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-medium">{t.designs.wording}</h2>
+              {/* One tap puts the Bismillah in the opening line; a second puts the sample wording back. */}
+              <button
+                type="button"
+                aria-pressed={choice.fields.kicker === BISMILLAH}
+                onClick={() => setField("kicker", choice.fields.kicker === BISMILLAH ? sample.kicker : BISMILLAH)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  choice.fields.kicker === BISMILLAH ? "border-pine bg-pine-soft text-pine" : "border-line text-muted hover:text-ink"
+                }`}
+              >
+                {choice.fields.kicker === BISMILLAH && <Check size={13} strokeWidth={2.5} />}
+                {choice.fields.kicker === BISMILLAH ? t.designs.bismillahOn : t.designs.bismillah}
+              </button>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {field("title", t.designs.titleField)}
               {field("kicker", t.designs.kicker)}
@@ -260,9 +278,9 @@ function Editor() {
 
         <aside className="lg:sticky lg:top-10 self-start">
           <p className="eyebrow mb-3">{t.newEvent.preview}</p>
-          <div className="mx-auto max-w-[20rem]">
-            {preview && <DesignFrame src={preview} title={layoutName} className="rounded-xl shadow-lg ring-1 ring-line" />}
-          </div>
+          <PhoneFrame className="mx-auto max-w-[18.5rem]">
+            {preview ? <DesignFrame src={preview} title={layoutName} /> : <div className="aspect-[420/760] bg-line/40" />}
+          </PhoneFrame>
           {!o.rsvp && <p className="mt-3 text-xs text-muted">{t.designs.notForCondolence}</p>}
         </aside>
       </div>
