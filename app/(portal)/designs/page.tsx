@@ -12,18 +12,19 @@ import {
   CATEGORIES_FOR_OCCASION,
   CATEGORY_LABELS,
   DESIGN_CATEGORIES,
+  DESIGN_COUNT,
   DESIGN_STYLES,
   LAYOUT_NAMES,
   defaultPaletteIndex,
   isDesignCategory,
   palettesFor,
+  stylesFor,
   type DesignCategory,
   type DesignStyle,
 } from "@/lib/designs/catalog";
 import { occasion } from "@/lib/occasions";
 import type { Event } from "@/lib/types";
 
-const TOTAL = DESIGN_STYLES.length * DESIGN_CATEGORIES.length * 20;
 const layoutLabel = (n: number, name: string) => `${String(n).padStart(2, "0")} · ${name}`;
 
 function Gallery() {
@@ -41,13 +42,19 @@ function Gallery() {
     return isDesignCategory(c) ? c : null;
   });
   const category: DesignCategory = picked ?? (target && CATEGORIES_FOR_OCCASION[target.occasionType][0]) ?? "wedding";
-  const [style, setStyle] = useState<DesignStyle>(params.get("style") === "modern" ? "modern" : "classic");
+  const [chosenStyle, setStyle] = useState<DesignStyle>(() => {
+    const s = params.get("style") as DesignStyle;
+    return DESIGN_STYLES.includes(s) ? s : "classic";
+  });
+  // Not every style serves every occasion (condolences: signature only).
+  const styles = stylesFor(category);
+  const style = styles.includes(chosenStyle) ? chosenStyle : styles[0];
   const [open, setOpen] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("/api/events")
       .then((r) => (r.ok ? r.json() : []))
-      .then((list: Event[]) => setEvents(list.filter((e) => occasion(e.occasionType).rsvp)))
+      .then((list: Event[]) => setEvents(list))
       .catch(() => setEvents([]));
   }, []);
 
@@ -67,7 +74,7 @@ function Gallery() {
       <DesignTabs />
       <p className="text-muted">{t.designs.eyebrow}</p>
       <h1 className="font-serif text-3xl sm:text-4xl mt-1">{t.designs.title}</h1>
-      <p className="text-muted mt-2 mb-6 max-w-2xl">{t.designs.subtitle(TOTAL)}</p>
+      <p className="text-muted mt-2 mb-6 max-w-2xl">{t.designs.subtitle(DESIGN_COUNT)}</p>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 [scrollbar-width:none]" role="tablist">
@@ -86,7 +93,7 @@ function Gallery() {
           ))}
         </div>
         <div className="inline-flex shrink-0 self-start rounded-full border border-line bg-paper p-1" role="radiogroup">
-          {DESIGN_STYLES.map((s) => (
+          {styles.map((s) => (
             <button
               key={s}
               role="radio"
@@ -165,11 +172,16 @@ function DesignDialog({
   const label = layoutLabel(layout, LAYOUT_NAMES[style][layout - 1][locale]);
 
   const [recommended, others] = useMemo(() => {
+    // Condolence designs go on condolences only, and celebration designs never do.
+    const usable = events.filter((e) => !occasion(e.occasionType).rsvp === (category === "condolence"));
     const fits = (e: Event) => CATEGORIES_FOR_OCCASION[e.occasionType].includes(category);
-    return [events.filter(fits), events.filter((e) => !fits(e))];
+    return [usable.filter(fits), usable.filter((e) => !fits(e))];
   }, [events, category]);
-  const [eventId, setEventId] = useState(target?.id ?? recommended[0]?.id ?? others[0]?.id ?? "");
-  const chosen = events.find((e) => e.id === eventId);
+  const usable = [...recommended, ...others];
+  const [eventId, setEventId] = useState(
+    (target && usable.some((e) => e.id === target.id) ? target.id : null) ?? recommended[0]?.id ?? others[0]?.id ?? ""
+  );
+  const chosen = usable.find((e) => e.id === eventId);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -223,7 +235,7 @@ function DesignDialog({
               </div>
             </div>
 
-            {events.length === 0 ? (
+            {usable.length === 0 ? (
               <p className="rounded-xl bg-paper px-4 py-3 text-sm text-muted">
                 {t.designs.noEvents}{" "}
                 <Link href="/events/new" className="font-medium text-pine underline">
@@ -261,7 +273,7 @@ function DesignDialog({
             )}
 
             <div className="mt-auto flex gap-2">
-              <button disabled={!eventId} onClick={() => onUse(eventId, palette)} className="btn-primary btn-md flex-1">
+              <button disabled={!chosen} onClick={() => onUse(eventId, palette)} className="btn-primary btn-md flex-1">
                 {t.designs.use}
               </button>
               <button onClick={onClose} className="btn-secondary btn-md">

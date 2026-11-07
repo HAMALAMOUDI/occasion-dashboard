@@ -23,9 +23,7 @@ import { postJson } from "@/lib/client";
 import { daysUntil } from "@/lib/dates";
 import { formatDate, formatHijri } from "@/lib/i18n";
 import { hostLine, occasion } from "@/lib/occasions";
-import { DESIGN_CATEGORIES, DESIGN_STYLES, LAYOUT_NAMES } from "@/lib/designs/catalog";
-
-const DESIGN_COUNT = DESIGN_STYLES.length * DESIGN_CATEGORIES.length * 20;
+import { DESIGN_COUNT, LAYOUT_NAMES, layoutCount } from "@/lib/designs/catalog";
 
 interface EventDetail {
   event: Event;
@@ -216,23 +214,20 @@ export default function EventDetailPage() {
               // ?v= changes whenever the design or event details change, so the card reloads after an edit.
               cardSrc={event.design ? `/api/events/${event.id}/card?v=${versionOf([event.design, event.venue, event.eventDate])}` : undefined}
             />
-            {o.rsvp ? (
-              <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-paper px-3.5 py-2.5">
-                <p className="min-w-0 truncate text-xs text-muted">
-                  {event.design
-                    ? t.designs.chosen(LAYOUT_NAMES[event.design.style][event.design.layout - 1][locale])
-                    : t.designs.builtIn}
-                </p>
-                <Link
-                  href={event.design ? `/events/${event.id}/design` : `/designs?event=${event.id}`}
-                  className="btn-secondary btn-sm shrink-0"
-                >
-                  <Palette size={13} /> {event.design ? t.designs.edit : t.designs.browse(DESIGN_COUNT)}
-                </Link>
-              </div>
-            ) : (
-              <p className="mt-3 text-xs text-muted">{t.designs.notForCondolence}</p>
-            )}
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-paper px-3.5 py-2.5">
+              <p className="min-w-0 truncate text-xs text-muted">
+                {event.design
+                  ? t.designs.chosen(LAYOUT_NAMES[event.design.style][event.design.layout - 1][locale])
+                  : t.designs.builtIn}
+              </p>
+              <Link
+                href={event.design ? `/events/${event.id}/design` : `/designs?event=${event.id}`}
+                className="btn-secondary btn-sm shrink-0"
+              >
+                <Palette size={13} /> {event.design ? t.designs.edit : t.designs.browse(o.rsvp ? DESIGN_COUNT : layoutCount("signature"))}
+              </Link>
+            </div>
+            {!o.rsvp && <p className="mt-2 text-xs text-muted">{t.designs.notForCondolence}</p>}
           </section>
           <ClipPanel event={event} onChange={refresh} />
           {o.rsvp && <ReminderPanel event={event} comingCount={stats.accepted} onChange={refresh} />}

@@ -40,11 +40,18 @@ stats and billing update live.
 
 ## Design library
 
-The **Designs** section has 320 Arabic invitation designs from the Hikayati
-collection: 8 categories × 20 layouts × classic or modern, each with a choice
-of colours. Pick one for an event, fill in the names and wording (the date and
-venue come from the event), and the event uses it in place of the simple
-built-in card. Condolences keep their solemn built-in card.
+The **Designs** section has 488 Arabic invitation designs from the Hikayati
+collection, each with a choice of colours:
+
+- **Classic** and **Modern**: 20 layouts each for 10 categories (the 8 occasion
+  groups plus Eid and Ramadan).
+- **Signature**: 8 layouts with a drawn emblem for each of 11 categories,
+  including a calm Condolences set with no reply button.
+
+Pick one for an event, fill in the names and wording (the date and venue come
+from the event), and the event uses it in place of the simple built-in card.
+Condolence events take only Condolences designs, and those designs fit only
+condolence events.
 
 The sources live in `designs/hikayati/`; see the README there for how they're
 imported and updated (`npm run designs:import`). Cards are rendered on the

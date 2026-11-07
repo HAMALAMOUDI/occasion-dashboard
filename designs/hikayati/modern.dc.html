@@ -13,7 +13,7 @@
 body{margin:0}
 </style>
 </helmet>
-<div dir="rtl" style="width: 420px; height: 760px; overflow: hidden; position: relative; background: {{c.bg}}; color: {{c.ink}}; font-family: {{b}}">
+<div dir="rtl" style="width: 420px; height: 760px; overflow: hidden; position: relative; background: {{c.bg}}; color: {{c.ink}}; font-family: {{b}}; text-wrap: pretty">
 
 <!-- M1 · Bauhaus shapes -->
 <sc-if value="{{L1}}" hint-placeholder-val="{{true}}">
@@ -234,7 +234,7 @@ body{margin:0}
 <svg width="420" height="180" viewBox="0 0 420 180" aria-hidden="true" style="position: absolute; top: 300px; left: 0"><path d="{{grid}}" fill="none" stroke="{{c.a2}}" stroke-width="1.2"/></svg>
 <div style="position: absolute; top: 140px; left: 0; right: 0; text-align: center"><h1 style="margin: 0; font-family: {{d}}; font-weight: 700; font-size: 72px; line-height: 1; color: {{c.ink}}; text-shadow: 0 0 18px {{c.accent}}, 0 0 40px {{c.accent}}">{{t.title}}</h1></div>
 <div style="position: absolute; top: 490px; left: 30px; right: 30px; bottom: 30px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px">
-<span style="font-family: {{d}}; font-weight: 700; font-size: 38px; color: {{c.a2}}; text-shadow: 0 0 14px {{c.a2}}">{{t.nameLine}}</span>
+<span style="font-family: {{d}}; font-weight: 700; font-size: 38px; color: {{c.ink}}; text-shadow: 0 0 14px {{c.a2}}, 0 0 2px {{c.a2}}">{{t.nameLine}}</span>
 <span style="font-size: 15px; font-weight: 500">{{t.dateLine}} · {{t.time}}</span>
 <span style="font-size: 14px; color: {{c.muted}}">{{t.venue}}، {{t.city}}</span>
 <div style="flex-grow: 1"></div>
@@ -302,7 +302,7 @@ body{margin:0}
 <sc-if value="{{L17}}" hint-placeholder-val="{{false}}">
 <div style="width: 420px; height: 760px; position: relative">
 <svg width="420" height="400" viewBox="0 0 420 400" aria-hidden="true" style="position: absolute; top: 0; left: 0"><g fill="none" stroke="{{c.line}}" stroke-width="1.2"><ellipse cx="210" cy="200" rx="190" ry="70" transform="rotate(-20 210 200)"/><ellipse cx="210" cy="200" rx="190" ry="70" transform="rotate(40 210 200)"/><ellipse cx="210" cy="200" rx="150" ry="150"/></g><circle cx="210" cy="200" r="82" fill="{{c.accent}}"/><circle cx="34" cy="246" r="9" fill="{{c.a2}}"/><circle cx="330" cy="58" r="7" fill="{{c.a3}}"/><circle cx="356" cy="250" r="6" fill="{{c.a2}}"/><circle cx="110" cy="70" r="5" fill="{{c.ink}}"/></svg>
-<div style="position: absolute; top: 158px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; color: {{c.on}}; line-height: 1"><span style="font-family: {{d}}; font-weight: 800; font-size: 50px">{{t.mono}}</span><span style="font-family: 'Space Grotesk', sans-serif; font-size: 12px; letter-spacing: 2px; margin-top: 8px; direction: ltr">{{t.dNum}}</span></div>
+<div style="position: absolute; top: 146px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; color: {{c.on}}; line-height: 1"><span style="font-family: 'Space Grotesk', sans-serif; font-size: 12px; letter-spacing: 2px; direction: ltr">{{t.dNum}}</span><span style="font-family: {{d}}; font-weight: 800; font-size: 46px; line-height: 1.5">{{t.mono}}</span></div>
 <div style="position: absolute; top: 420px; left: 30px; right: 30px; bottom: 30px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px">
 <span style="font-size: 14px; color: {{c.muted}}">{{t.title}}</span>
 <h1 style="margin: 0; font-family: {{d}}; font-weight: {{w}}; font-size: 42px; line-height: 1.15">{{t.nameLine}}</h1>
@@ -370,12 +370,12 @@ body{margin:0}
 
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"occ":{"editor":"enum","default":"wedding","options":["wedding","engagement","henna","birthday","graduation","baby","gathering","corporate"]},"layout":{"editor":"int","default":1,"min":1,"max":20},"pal":{"editor":"enum","default":"auto","options":["auto","1","2","3","4","5","6","7","8","9","10"]},"$preview":{"width":420,"height":760}}'>
+<script type="text/x-dc" data-dc-script data-props='{"occ":{"editor":"enum","default":"wedding","options":["wedding","engagement","henna","birthday","graduation","baby","gathering","corporate","eid","ramadan"]},"layout":{"editor":"int","default":1,"min":1,"max":20},"pal":{"editor":"enum","default":"auto","options":["auto","1","2","3","4","5","6","7","8","9","10"]},"$preview":{"width":420,"height":760}}'>
 class Component extends DCLogic {
   renderVals() {
     var P = function (bg, ink, muted, accent, on, soft, line, a2, a3) { return { bg: bg, ink: ink, muted: muted, accent: accent, on: on, soft: soft, line: line, a2: a2, a3: a3 }; };
     var MOD = [
-      P('#f1ece1','#151515','#4d4d4d','#d62f1f','#ffffff','#e6dfcf','#151515','#1f4fa8','#f2b705'),
+      P('#f1ece1','#151515','#4d4d4d','#c92a1b','#ffffff','#e6dfcf','#151515','#1f4fa8','#f2b705'),
       P('#ffffff','#111111','#555555','#e3001b','#ffffff','#f2f2f2','#111111','#111111','#e3001b'),
       P('#0a1ccf','#ffffff','#c5cbff','#ffffff','#0a1ccf','#1b2de0','#4c5cff','#ffd400','#ff6b3d'),
       P('#d9d6d0','#1a1a1a','#545250','#1a1a1a','#d9d6d0','#e8e6e1','#1a1a1a','#ff5a1f','#8f8b84'),
@@ -389,7 +389,7 @@ class Component extends DCLogic {
     var AI = [
       P('#0b0b1a','#f2f2ff','#a6a6c8','#7c5cff','#ffffff','#16163a','#2c2c5a','#00e0c6','#ff4fd8'),
       P('#0e0e0e','#f4f4f4','#a3a3a3','#c6ff3d','#0e0e0e','#1a1a1a','#333333','#3dd9ff','#8a8a8a'),
-      P('#fff1ea','#2a1410','#6b4a40','#d9481c','#ffffff','#ffffff','#f1c9b8','#ff9ccd','#ffd36e'),
+      P('#fff1ea','#2a1410','#6b4a40','#c63f15','#ffffff','#ffffff','#f1c9b8','#ff9ccd','#ffd36e'),
       P('#071a1f','#eafff9','#9cc7bd','#39f2c2','#071a1f','#0e2a31','#1f4a52','#4d7cff','#b14dff'),
       P('#e9e4ff','#1d1640','#574d86','#5b3df5','#ffffff','#f6f3ff','#c9bff5','#ff8fd0','#7fd7ff'),
       P('#121018','#f6f2ff','#b3aac8','#ff7ad9','#121018','#1e1a28','#3a334a','#7af0ff','#c9ff7a'),
@@ -406,7 +406,9 @@ class Component extends DCLogic {
       graduation: { k: 4, kicker: 'أخيرًا… تخرّجنا', title: 'حفل تخرج', a: 'رغد العمودي', b: '', body: 'شاركونا فرحة الإنجاز بتخرجها من جامعة الملك عبدالعزيز', time: '8:00 مساءً', venue: 'مطعم سنابل', city: 'جدة', cta: 'أكّد حضورك', en: 'CLASS OF 2027', note: 'دفعة 2027', date: [2027, 6, 12] },
       baby: { k: 5, kicker: 'وصل نجمنا الصغير', title: 'استقبال مولود', a: 'يوسف', b: '', body: 'يسعد والداه محمد وهند بدعوتكم لمشاركتهم فرحة استقبال مولودهم', time: 'بعد صلاة العصر', venue: 'منزل الجد · حي الروضة', city: 'جدة', cta: 'سنكون معكم', en: 'WELCOME BABY', note: 'حضوركم فرحتنا', date: [2027, 3, 5] },
       gathering: { k: 6, kicker: 'جمعة أحباب', title: 'عشاء خاص', a: 'عائلة العمودي', b: '', body: 'يسعدنا اجتماعكم على مائدة عشاء في أمسية هادئة', time: '9:00 مساءً', venue: 'مزرعة النخيل', city: 'الطائف', cta: 'تأكيد الحضور', en: 'PRIVATE DINNER', note: 'عدد المقاعد محدود', date: [2026, 11, 26] },
-      corporate: { k: 7, kicker: 'دعوة رسمية', title: 'الحفل السنوي', a: 'للشركاء', b: '', body: 'يتشرف مجلس الإدارة بدعوتكم لحضور الحفل السنوي وتكريم شركاء النجاح', time: '7:00 مساءً', venue: 'فندق فيرمونت', city: 'الرياض', cta: 'تسجيل الحضور', en: 'PARTNERS GALA', note: 'اللباس: رسمي', date: [2026, 12, 16] }
+      corporate: { k: 7, kicker: 'دعوة رسمية', title: 'الحفل السنوي', a: 'للشركاء', b: '', body: 'يتشرف مجلس الإدارة بدعوتكم لحضور الحفل السنوي وتكريم شركاء النجاح', time: '7:00 مساءً', venue: 'فندق فيرمونت', city: 'الرياض', cta: 'تسجيل الحضور', en: 'PARTNERS GALA', note: 'اللباس: رسمي', date: [2026, 12, 16] },
+      eid: { k: 8, kicker: 'كل عام وأنتم بخير', title: 'معايدة العيد', a: 'آل العمودي', b: '', body: 'يسعدنا استقبالكم لتبادل التهاني بعيد الفطر المبارك', time: 'بعد صلاة العيد', venue: 'مجلس العائلة', city: 'جدة', cta: 'سنحضر', en: 'EID MUBARAK', note: 'عيدكم مبارك', date: [2027, 3, 10] },
+      ramadan: { k: 9, kicker: 'رمضان كريم', title: 'غبقة رمضانية', a: 'عائلة العمودي', b: '', body: 'يسعدنا اجتماعكم على مائدة الغبقة في ليالي الشهر الفضيل', time: '10:00 مساءً', venue: 'مجلس الحي', city: 'جدة', cta: 'تأكيد الحضور', en: 'RAMADAN GHABGA', note: 'أهلاً بالضيوف', date: [2027, 2, 20] }
     };
     var FONTS = [
       ["'Rubik', sans-serif", 900, "'Rubik', sans-serif"], ["'Cairo', sans-serif", 900, "'Cairo', sans-serif"], ["'Kufam', sans-serif", 800, "'Almarai', sans-serif"], ["'Alexandria', sans-serif", 800, "'Alexandria', sans-serif"], ["'Noto Kufi Arabic', sans-serif", 900, "'IBM Plex Sans Arabic', sans-serif"],

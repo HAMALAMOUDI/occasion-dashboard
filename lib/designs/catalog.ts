@@ -1,14 +1,15 @@
 import type { Lang, OccasionType } from "../occasions";
 
-// The Hikayati card catalog: 2 styles × 8 categories × 20 layouts, each with a
-// choice of palettes. Data copied from the "Hikayati Invitation Cards" design
-// canvas (designs/hikayati/*.dc.html); the layout markup itself is in
-// markup.generated.ts.
+// The Hikayati card catalog: classic and modern (20 layouts each, for every
+// celebration) and signature (8 layouts with a drawn emblem per occasion, the
+// only style for condolences), each with a choice of palettes. Data copied from
+// the "Hikayati Invitation Cards" design canvas (designs/hikayati/*.dc.html);
+// the layout markup itself is in markup.generated.ts.
 
-export type DesignStyle = "classic" | "modern";
-export const DESIGN_STYLES: DesignStyle[] = ["classic", "modern"];
+export type DesignStyle = "classic" | "modern" | "signature";
+export const DESIGN_STYLES: DesignStyle[] = ["classic", "modern", "signature"];
 
-export const DESIGN_CATEGORIES = ["wedding", "engagement", "henna", "birthday", "graduation", "baby", "gathering", "corporate"] as const;
+export const DESIGN_CATEGORIES = ["wedding", "engagement", "henna", "birthday", "graduation", "baby", "gathering", "corporate", "eid", "ramadan", "condolence"] as const;
 export type DesignCategory = (typeof DESIGN_CATEGORIES)[number];
 
 export const CATEGORY_LABELS: Record<DesignCategory, Record<Lang, string>> = {
@@ -20,21 +21,28 @@ export const CATEGORY_LABELS: Record<DesignCategory, Record<Lang, string>> = {
   baby: { en: "Baby celebrations", ar: "استقبال المواليد" },
   gathering: { en: "Private gatherings", ar: "المناسبات الخاصة" },
   corporate: { en: "Corporate events", ar: "الفعاليات الرسمية" },
+  eid: { en: "Eid", ar: "العيد" },
+  ramadan: { en: "Ramadan", ar: "رمضان" },
+  condolence: { en: "Condolences", ar: "العزاء" },
 };
 
-// Which design categories suit each occasion (first = default). Condolences
-// get none: these are celebratory designs.
+// Condolence cards are calm, emblem-led designs; the other styles are celebratory.
+export function stylesFor(category: DesignCategory): DesignStyle[] {
+  return category === "condolence" ? ["signature"] : DESIGN_STYLES;
+}
+
+// Which design categories suit each occasion (first = default).
 export const CATEGORIES_FOR_OCCASION: Record<OccasionType, DesignCategory[]> = {
   wedding: ["wedding", "henna"],
   henna: ["henna", "wedding"],
   engagement: ["engagement", "wedding"],
   graduation: ["graduation"],
-  eid: ["gathering"],
-  ramadan: ["gathering"],
+  eid: ["eid", "gathering"],
+  ramadan: ["ramadan", "gathering"],
   newborn: ["baby"],
   birthday: ["birthday"],
   corporate: ["corporate"],
-  condolence: [],
+  condolence: ["condolence"],
   other: ["gathering", "birthday", "corporate"],
 };
 
@@ -42,7 +50,7 @@ export const LAYOUT_NAMES: Record<DesignStyle, { en: string; ar: string }[]> = {
   classic: [
     ["Classic double frame", "إطار كلاسيكي"], ["Arch", "قوس"], ["Poster headline", "عنوان ملصق"], ["Split block", "مقسوم"],
     ["Side band", "شريط جانبي"], ["Medallion", "ميدالية"], ["Editorial rows", "تحريري"], ["Ticket", "تذكرة"],
-    ["Big numeral", "رقم كبير"], ["Monogram", "مونوغرام"], ["Photo", "صورة"], ["Oval window", "نافذة بيضاوية"],
+    ["Big numeral", "رقم كبير"], ["Monogram", "مونوغرام"], ["Keepsake", "تذكار"], ["Oval window", "نافذة بيضاوية"],
     ["Geometric pattern", "نقوش هندسية"], ["Minimal", "بسيط"], ["Bold poster", "ملصق جريء"], ["Card in card", "بطاقة داخل بطاقة"],
     ["Botanical", "نباتي"], ["Diagonal ribbon", "شريط مائل"], ["Calendar", "تقويم"], ["Envelope", "مغلّف"],
   ].map(([en, ar]) => ({ en, ar })),
@@ -53,7 +61,16 @@ export const LAYOUT_NAMES: Record<DesignStyle, { en: string; ar: string }[]> = {
     ["Neon horizon", "أفق نيون"], ["Holographic", "هولوغرام"], ["Terminal prompt", "موجّه الأوامر"], ["Waveform", "موجة صوتية"],
     ["Orbit", "مدارات"], ["Dot matrix", "مصفوفة نقاط"], ["Stacked glass cards", "بطاقات زجاجية"], ["Organic blob", "شكل عضوي"],
   ].map(([en, ar]) => ({ en, ar })),
+  signature: [
+    ["Mihrab arch", "محراب"], ["Najdi door", "باب نجدي"], ["Mashrabiya", "مشربية"], ["Seal", "ختم"],
+    ["Postcard", "بطاقة بريدية"], ["Star tiles", "نجوم الزليج"], ["Desert night", "ليل الصحراء"], ["Emblem column", "عمود الزخارف"],
+  ].map(([en, ar]) => ({ en, ar })),
 };
+
+export const layoutCount = (style: DesignStyle) => LAYOUT_NAMES[style].length;
+
+// Every design in the library: each style × the categories it serves × its layouts.
+export const DESIGN_COUNT = DESIGN_CATEGORIES.reduce((sum, c) => sum + stylesFor(c).reduce((n, s) => n + layoutCount(s), 0), 0);
 
 export interface Palette {
   bg: string;
@@ -71,8 +88,8 @@ const P = (bg: string, ink: string, muted: string, accent: string, on: string, s
   bg, ink, muted, accent, on, soft, line, ...(a2 ? { a2, a3 } : {}),
 });
 
-// Classic: five palettes per category.
-const CLASSIC_PALETTES: Record<DesignCategory, Palette[]> = {
+// Classic: five palettes per celebration.
+const CLASSIC_PALETTES: Record<Exclude<DesignCategory, "condolence">, Palette[]> = {
   wedding: [P("#f6f0e4", "#2b2418", "#6b5a3c", "#8a6a2f", "#fffaf0", "#fffaf0", "#c9b07c"), P("#0f2a24", "#f3ead6", "#a9c4b8", "#e2c27d", "#0f2a24", "#163a32", "#3f6a5c"), P("#f4e1dc", "#3d1f22", "#7a4c50", "#8c3a46", "#fff4f2", "#fbefec", "#d8a9a9"), P("#18213d", "#f2ead8", "#b3b8cc", "#d6b46a", "#18213d", "#222d52", "#3d4a75"), P("#ecebe7", "#1e1e1e", "#5a5a5a", "#6b5b45", "#ffffff", "#f7f6f3", "#c4c0b6")],
   engagement: [P("#dfe6da", "#1f2a22", "#4b5d4f", "#3f5444", "#f2f5ef", "#eef2eb", "#9fb19f"), P("#e9dde6", "#2e1f2b", "#6a5466", "#6e3b62", "#fbf3f8", "#f5eef3", "#c6aec0"), P("#2a1a2e", "#f3e7ef", "#c3aebd", "#e7b7c8", "#2a1a2e", "#3a2640", "#5c4262"), P("#f3e9d8", "#2d2416", "#6d5e45", "#8a6630", "#fffaf0", "#fbf5ea", "#d6c29b"), P("#dde3ec", "#1c2433", "#4e5a70", "#34507a", "#f5f8fc", "#edf1f6", "#a8b5c9")],
   henna: [P("#f7e3d4", "#4a1f14", "#8a4a35", "#9a3b22", "#fff6ee", "#fbefe5", "#e3b9a3"), P("#4a1414", "#f8e6d6", "#d9b3a0", "#e8b04e", "#4a1414", "#5c1d1b", "#7a3a33"), P("#e8e4cc", "#2e2e16", "#5d5d36", "#55652a", "#fafae8", "#f4f1df", "#b9b48a"), P("#f6d99a", "#3d2208", "#6e4a1e", "#8a3d12", "#fff4dc", "#fae6bb", "#d9a858"), P("#3b1030", "#fbe7f2", "#dbb2c9", "#f2a93b", "#3b1030", "#4d1840", "#6e3360")],
@@ -81,11 +98,29 @@ const CLASSIC_PALETTES: Record<DesignCategory, Palette[]> = {
   baby: [P("#cfe3f2", "#22354a", "#4f657d", "#2f5f86", "#ffffff", "#ffffff", "#a9c6de"), P("#f6d9d6", "#4a2224", "#7d5254", "#a3474e", "#ffffff", "#fff3f1", "#e2aeae"), P("#dcefd9", "#1f3a24", "#4d6a50", "#356d3d", "#ffffff", "#f2faf0", "#a9cfa8"), P("#f4ead0", "#3a2f12", "#6d5f38", "#8a5f12", "#ffffff", "#fbf6e8", "#d9c690"), P("#e4dcf3", "#2a2140", "#5c5076", "#5b46a0", "#ffffff", "#f4f0fb", "#b8aada")],
   gathering: [P("#1f2430", "#f1ebe1", "#b8b2a7", "#e0a96d", "#1f2430", "#2a3040", "#454d60"), P("#efe8dc", "#2a241c", "#665b4b", "#7a4f2a", "#fffaf2", "#f8f3ea", "#cdbfa8"), P("#2c3020", "#f0ecdc", "#bfbb9f", "#cdbb6a", "#2c3020", "#383d29", "#555a40"), P("#e7d2c2", "#3a2318", "#6d4c3c", "#8b4a2b", "#fff6ef", "#f3e6dc", "#c9a48c"), P("#1a2a3a", "#eef2f5", "#aebccb", "#9cc6e8", "#1a2a3a", "#23384d", "#3d5470")],
   corporate: [P("#f4f2ee", "#111111", "#555555", "#8a6d22", "#ffffff", "#ffffff", "#cfcbc2"), P("#111111", "#f4f2ee", "#a8a49c", "#c8a24a", "#111111", "#1c1c1c", "#3a3a3a"), P("#0d2a52", "#f2f6fb", "#b3c3da", "#5fb3ff", "#0d2a52", "#143a6e", "#2c5288"), P("#eef3f2", "#10302c", "#4a625e", "#1d6f62", "#ffffff", "#ffffff", "#b8cbc7"), P("#2a0f17", "#f5ece6", "#c7b0b4", "#d9a35b", "#2a0f17", "#3a1822", "#5a2f3a")],
+  eid: [P("#f7f1e3", "#1d3a2c", "#56695c", "#1f6b47", "#ffffff", "#fffaf0", "#d6c9a6"), P("#0f3b3a", "#f6efdc", "#bfd2c9", "#e9c46a", "#0f3b3a", "#164b49", "#2f6a66"), P("#f7e4e1", "#3d1a24", "#76475a", "#9b2f50", "#fff6f4", "#fdf1ef", "#e0b1b6"), P("#2b1840", "#f7eedd", "#c9b8d6", "#efc56b", "#2b1840", "#3a2354", "#5a4073"), P("#eef0e6", "#22281a", "#566048", "#6b5a1e", "#ffffff", "#f9faf4", "#c9cbb4")],
+  ramadan: [P("#14213d", "#f6efe0", "#b7bfd3", "#f0b955", "#14213d", "#1c2c50", "#33446e"), P("#f3e8d6", "#2e2114", "#6b5841", "#9a5a22", "#fffaf1", "#fbf4e8", "#d9c3a0"), P("#0d2f35", "#eef6f2", "#a8c7c2", "#f2c879", "#0d2f35", "#134047", "#2b5e65"), P("#2e1530", "#f8ebdf", "#ccb3c4", "#e9a85a", "#2e1530", "#3d1d40", "#5e3a60"), P("#f1ece4", "#1f1d2b", "#5a5666", "#4a3f8a", "#ffffff", "#faf7f2", "#cfc8bd")],
+};
+
+// Signature: four palettes per occasion. a2 colours the emblems and the night sky's ornaments.
+const S = (bg: string, ink: string, muted: string, accent: string, on: string, soft: string, line: string, a2: string): Palette => ({ bg, ink, muted, accent, on, soft, line, a2 });
+const SIGNATURE_PALETTES: Record<DesignCategory, Palette[]> = {
+  wedding: [S("#f7f1e6", "#2a2116", "#6b5b43", "#8a6a2f", "#fffaf0", "#fffaf0", "#d8c39a", "#b8924a"), S("#0e2b25", "#f4ecd8", "#b5cbbf", "#e0c07a", "#0e2b25", "#14382f", "#3d6a5b", "#e0c07a"), S("#f6e6e1", "#3b1d22", "#7a4a50", "#8c3446", "#fff5f2", "#fdf1ee", "#dcb0ae", "#c07a85"), S("#141d38", "#f3ebd9", "#b6bbd0", "#d8b56a", "#141d38", "#1e2a4f", "#3b4870", "#d8b56a")],
+  engagement: [S("#e3e9de", "#1f2a21", "#4b5d4e", "#3d5a43", "#f4f7f1", "#f1f5ee", "#a9bba7", "#7f9a7f"), S("#ece2ea", "#2d1f2a", "#664f61", "#6d3a61", "#fcf4fa", "#f7f0f5", "#cbb2c5", "#a77b9b"), S("#2a1a2e", "#f5e9f1", "#c6b1c0", "#e8b9ca", "#2a1a2e", "#38243d", "#5c4262", "#e8b9ca"), S("#f4ebdb", "#2c2316", "#6b5c44", "#87642e", "#fffaf0", "#fbf5ea", "#d8c49c", "#b8924a")],
+  henna: [S("#f6e2d2", "#4a1f14", "#844634", "#9a3b22", "#fff6ee", "#fbeee4", "#e2b8a2", "#c4683f"), S("#4a1414", "#f8e6d6", "#dcb6a3", "#e8b04e", "#4a1414", "#5c1d1b", "#7a3a33", "#e8b04e"), S("#ebe6cf", "#2e2e16", "#5b5b34", "#55652a", "#fafae8", "#f5f2e2", "#bcb68c", "#8a8a4a"), S("#3b1030", "#fbe7f2", "#dcb3ca", "#f2a93b", "#3b1030", "#4d1840", "#6e3360", "#f2a93b")],
+  birthday: [S("#ffe27a", "#2a1a00", "#5c4300", "#b02e0e", "#ffffff", "#fff3b8", "#e6c440", "#e8572e"), S("#ffd6e4", "#3a0f23", "#7a3a55", "#a8155f", "#ffffff", "#ffe9f0", "#f19ec0", "#e0559a"), S("#cdf1e3", "#0e3328", "#2f6152", "#0c6b50", "#ffffff", "#e6f8f1", "#8fd4bb", "#1aa37a"), S("#2b1d5c", "#fff6e0", "#cbc2f0", "#ffcf3f", "#2b1d5c", "#3a2a78", "#5a4aa0", "#ff8fb1")],
+  graduation: [S("#142347", "#f4f1ea", "#c9d1e6", "#f2b544", "#142347", "#1d3166", "#33498a", "#f2b544"), S("#5a1426", "#f7ece2", "#e2c5c8", "#f0c66b", "#5a1426", "#6d1d31", "#8a3a4e", "#f0c66b"), S("#f2f4f8", "#0f1c33", "#4a5670", "#1e4fa3", "#ffffff", "#ffffff", "#c4cede", "#c9a24a"), S("#141414", "#f2ede2", "#b8b09f", "#d9b44a", "#141414", "#1f1f1f", "#3a3a3a", "#d9b44a")],
+  baby: [S("#d6e8f5", "#22354a", "#4b6179", "#2f5f86", "#ffffff", "#f3f8fc", "#a9c6de", "#e6b85c"), S("#f7dedb", "#4a2224", "#7a5052", "#a3474e", "#ffffff", "#fff4f2", "#e2aeae", "#d9a35b"), S("#e0f0dc", "#1f3a24", "#4a674d", "#356d3d", "#ffffff", "#f3faf1", "#a9cfa8", "#d9b45b"), S("#e7e0f4", "#2a2140", "#5a4e74", "#5b46a0", "#ffffff", "#f6f2fc", "#b8aada", "#e2b45a")],
+  gathering: [S("#1f2430", "#f1ebe1", "#bab4a9", "#e0a96d", "#1f2430", "#2a3040", "#454d60", "#e0a96d"), S("#efe8dc", "#2a241c", "#655a4a", "#7a4f2a", "#fffaf2", "#f8f3ea", "#cdbfa8", "#a8783f"), S("#2c3020", "#f0ecdc", "#c1bda1", "#cdbb6a", "#2c3020", "#383d29", "#555a40", "#cdbb6a"), S("#ead7c8", "#3a2318", "#6b4a3a", "#8b4a2b", "#fff6ef", "#f5e9df", "#c9a48c", "#b06a43")],
+  corporate: [S("#f4f2ee", "#111111", "#555555", "#7f6420", "#ffffff", "#ffffff", "#cfcbc2", "#a8863a"), S("#111111", "#f4f2ee", "#a8a49c", "#c8a24a", "#111111", "#1c1c1c", "#3a3a3a", "#c8a24a"), S("#0d2a52", "#f2f6fb", "#b5c5db", "#6cb8ff", "#0d2a52", "#143a6e", "#2c5288", "#6cb8ff"), S("#eef3f2", "#10302c", "#4a625e", "#1d6f62", "#ffffff", "#ffffff", "#b8cbc7", "#3f9d8d")],
+  eid: [S("#0f3b3a", "#f6efdc", "#bfd2c9", "#e9c46a", "#0f3b3a", "#164b49", "#2f6a66", "#e9c46a"), S("#f7f1e3", "#1d3a2c", "#56695c", "#1f6b47", "#ffffff", "#fffaf0", "#d6c9a6", "#c49a3c"), S("#f7e4e1", "#3d1a24", "#76475a", "#9b2f50", "#fff6f4", "#fdf1ef", "#e0b1b6", "#c9973f"), S("#2b1840", "#f7eedd", "#c9b8d6", "#efc56b", "#2b1840", "#3a2354", "#5a4073", "#efc56b")],
+  ramadan: [S("#14213d", "#f6efe0", "#b7bfd3", "#f0b955", "#14213d", "#1c2c50", "#33446e", "#f0b955"), S("#f3e8d6", "#2e2114", "#6b5841", "#9a5a22", "#fffaf1", "#fbf4e8", "#d9c3a0", "#c08a3e"), S("#0d2f35", "#eef6f2", "#a8c7c2", "#f2c879", "#0d2f35", "#134047", "#2b5e65", "#f2c879"), S("#2e1530", "#f8ebdf", "#ccb3c4", "#e9a85a", "#2e1530", "#3d1d40", "#5e3a60", "#e9a85a")],
+  condolence: [S("#f3f1ec", "#22252a", "#595e66", "#3c4955", "#ffffff", "#ffffff", "#cfccc4", "#8a8f96"), S("#1d232b", "#eef0f2", "#aab2bc", "#c9d1da", "#1d232b", "#262e38", "#3c4652", "#9aa6b2"), S("#e6e9e4", "#1f2a24", "#4f5c54", "#3e5a4c", "#ffffff", "#f3f5f1", "#b8c3b9", "#7d8f82"), S("#ece6dc", "#2b2620", "#5f574c", "#5b4a36", "#ffffff", "#f7f3ec", "#cfc4b2", "#9a8a72")],
 };
 
 // Modern: layouts 1–10 use the modernist set, 11–20 the "AI-inspired" set (10 each).
 const MODERNIST: Palette[] = [
-  P("#f1ece1", "#151515", "#4d4d4d", "#d62f1f", "#ffffff", "#e6dfcf", "#151515", "#1f4fa8", "#f2b705"),
+  P("#f1ece1", "#151515", "#4d4d4d", "#c92a1b", "#ffffff", "#e6dfcf", "#151515", "#1f4fa8", "#f2b705"),
   P("#ffffff", "#111111", "#555555", "#e3001b", "#ffffff", "#f2f2f2", "#111111", "#111111", "#e3001b"),
   P("#0a1ccf", "#ffffff", "#c5cbff", "#ffffff", "#0a1ccf", "#1b2de0", "#4c5cff", "#ffd400", "#ff6b3d"),
   P("#d9d6d0", "#1a1a1a", "#545250", "#1a1a1a", "#d9d6d0", "#e8e6e1", "#1a1a1a", "#ff5a1f", "#8f8b84"),
@@ -99,7 +134,7 @@ const MODERNIST: Palette[] = [
 const AI_INSPIRED: Palette[] = [
   P("#0b0b1a", "#f2f2ff", "#a6a6c8", "#7c5cff", "#ffffff", "#16163a", "#2c2c5a", "#00e0c6", "#ff4fd8"),
   P("#0e0e0e", "#f4f4f4", "#a3a3a3", "#c6ff3d", "#0e0e0e", "#1a1a1a", "#333333", "#3dd9ff", "#8a8a8a"),
-  P("#fff1ea", "#2a1410", "#6b4a40", "#d9481c", "#ffffff", "#ffffff", "#f1c9b8", "#ff9ccd", "#ffd36e"),
+  P("#fff1ea", "#2a1410", "#6b4a40", "#c63f15", "#ffffff", "#ffffff", "#f1c9b8", "#ff9ccd", "#ffd36e"),
   P("#071a1f", "#eafff9", "#9cc7bd", "#39f2c2", "#071a1f", "#0e2a31", "#1f4a52", "#4d7cff", "#b14dff"),
   P("#e9e4ff", "#1d1640", "#574d86", "#5b3df5", "#ffffff", "#f6f3ff", "#c9bff5", "#ff8fd0", "#7fd7ff"),
   P("#121018", "#f6f2ff", "#b3aac8", "#ff7ad9", "#121018", "#1e1a28", "#3a334a", "#7af0ff", "#c9ff7a"),
@@ -109,16 +144,19 @@ const AI_INSPIRED: Palette[] = [
   P("#1b1c1f", "#ece7dc", "#a5a094", "#c9a45c", "#1b1c1f", "#26272b", "#3b3c41", "#7ec8c0", "#e6dccb"),
 ];
 const CATEGORY_INDEX: Record<DesignCategory, number> = {
-  wedding: 0, engagement: 1, henna: 2, birthday: 3, graduation: 4, baby: 5, gathering: 6, corporate: 7,
+  wedding: 0, engagement: 1, henna: 2, birthday: 3, graduation: 4, baby: 5, gathering: 6, corporate: 7, eid: 8, ramadan: 9, condolence: 10,
 };
 
 export function palettesFor(style: DesignStyle, category: DesignCategory, layout: number): Palette[] {
+  if (style === "signature") return SIGNATURE_PALETTES[category];
+  if (category === "condolence") return [];
   if (style === "classic") return CLASSIC_PALETTES[category];
   return layout <= 10 ? MODERNIST : AI_INSPIRED;
 }
 
 // The palette a layout uses when none is chosen — matches the canvas's "auto".
 export function defaultPaletteIndex(style: DesignStyle, category: DesignCategory, layout: number): number {
+  if (style === "signature") return (layout - 1) % 4;
   if (style === "classic") return (layout - 1) % 5;
   return ((layout - 1) % 10 + CATEGORY_INDEX[category] * 3) % 10;
 }
@@ -139,6 +177,12 @@ export const MODERN_FONTS: [string, number, string][] = [
   ["'Readex Pro', sans-serif", 700, "'Readex Pro', sans-serif"], ["'Rubik', sans-serif", 900, "'Almarai', sans-serif"], ["'Alexandria', sans-serif", 500, "'IBM Plex Sans Arabic', sans-serif"], ["'Almarai', sans-serif", 800, "'Almarai', sans-serif"], ["'Kufam', sans-serif", 800, "'Readex Pro', sans-serif"],
   ["'Alexandria', sans-serif", 300, "'Readex Pro', sans-serif"], ["'Handjet', sans-serif", 700, "'Readex Pro', sans-serif"], ["'Handjet', sans-serif", 700, "'Alexandria', sans-serif"], ["'Alexandria', sans-serif", 800, "'IBM Plex Sans Arabic', sans-serif"], ["'Readex Pro', sans-serif", 500, "'Readex Pro', sans-serif"],
   ["'Noto Kufi Arabic', sans-serif", 700, "'Readex Pro', sans-serif"], ["'Alexandria', sans-serif", 500, "'Alexandria', sans-serif"], ["'Cairo', sans-serif", 900, "'Cairo', sans-serif"], ["'Readex Pro', sans-serif", 700, "'IBM Plex Sans Arabic', sans-serif"], ["'Rubik', sans-serif", 600, "'Rubik', sans-serif"],
+];
+
+// [display font, body font] per signature layout. Condolences always use Amiri for display.
+export const SIGNATURE_FONTS: [string, string][] = [
+  ["'Aref Ruqaa', serif", "'Amiri', serif"], ["'Reem Kufi', sans-serif", "'Tajawal', sans-serif"], ["'El Messiri', sans-serif", "'IBM Plex Sans Arabic', sans-serif"], ["'Amiri', serif", "'Amiri', serif"],
+  ["'Marhey', sans-serif", "'Tajawal', sans-serif"], ["'Scheherazade New', serif", "'Noto Naskh Arabic', serif"], ["'Aref Ruqaa', serif", "'IBM Plex Sans Arabic', sans-serif"], ["'Noto Kufi Arabic', sans-serif", "'IBM Plex Sans Arabic', sans-serif"],
 ];
 
 // The words on a card. Date and venue come from the event; the rest is editable.
@@ -167,6 +211,10 @@ export const SAMPLE: Record<DesignCategory, DesignFields & { venue: string; date
   baby: { kicker: "وصل نجمنا الصغير", title: "استقبال مولود", nameA: "يوسف", nameB: "", body: "يسعد والداه محمد وهند بدعوتكم لمشاركتهم فرحة استقبال مولودهم", time: "بعد صلاة العصر", venue: "منزل الجد · حي الروضة", city: "جدة", cta: "سنكون معكم", en: "WELCOME BABY", note: "حضوركم فرحتنا", date: "2027-03-05" },
   gathering: { kicker: "جمعة أحباب", title: "عشاء خاص", nameA: "عائلة العمودي", nameB: "", body: "يسعدنا اجتماعكم على مائدة عشاء في أمسية هادئة", time: "9:00 مساءً", venue: "مزرعة النخيل", city: "الطائف", cta: "تأكيد الحضور", en: "PRIVATE DINNER", note: "عدد المقاعد محدود", date: "2026-11-26" },
   corporate: { kicker: "دعوة رسمية", title: "الحفل السنوي", nameA: "للشركاء", nameB: "", body: "يتشرف مجلس الإدارة بدعوتكم لحضور الحفل السنوي وتكريم شركاء النجاح", time: "7:00 مساءً", venue: "فندق فيرمونت", city: "الرياض", cta: "تسجيل الحضور", en: "PARTNERS GALA", note: "اللباس: رسمي", date: "2026-12-16" },
+  eid: { kicker: "كل عام وأنتم بخير", title: "معايدة العيد", nameA: "آل العمودي", nameB: "", body: "يسعدنا استقبالكم لتبادل التهاني بعيد الفطر المبارك", time: "بعد صلاة العيد", venue: "مجلس العائلة", city: "جدة", cta: "سنحضر", en: "EID MUBARAK", note: "عيدكم مبارك", date: "2027-03-10" },
+  ramadan: { kicker: "رمضان كريم", title: "غبقة رمضانية", nameA: "عائلة العمودي", nameB: "", body: "يسعدنا اجتماعكم على مائدة الغبقة في ليالي الشهر الفضيل", time: "10:00 مساءً", venue: "مجلس الحي", city: "جدة", cta: "تأكيد الحضور", en: "RAMADAN GHABGA", note: "أهلاً بالضيوف", date: "2027-02-20" },
+  // No reply button on condolence cards: the closing line takes its place.
+  condolence: { kicker: "إنا لله وإنا إليه راجعون", title: "مجلس عزاء", nameA: "عبدالله بن سعيد العمودي", nameB: "", body: "بقلوب مؤمنة بقضاء الله وقدره، تتقبل أسرة العمودي العزاء في فقيدها", time: "بعد صلاة العصر", venue: "منزل الأسرة · حي الصفا", city: "جدة", cta: "", en: "IN MEMORIAM", note: "رحمه الله وغفر له", date: "2026-11-20" },
 };
 
 // A category's sample wording, without the venue/date (those come from the event).

@@ -1,5 +1,5 @@
 import { FIELD_KEYS, DESIGN_STYLES, isDesignCategory, palettesFor, type DesignFields, type DesignStyle } from "./catalog";
-import { isValidLayout, type DesignChoice } from "./render";
+import { isOffered, isValidLayout, type DesignChoice } from "./render";
 
 const MAX_FIELD = 200;
 
@@ -18,8 +18,9 @@ export function readFields(input: unknown, fallback: DesignFields): DesignFields
 export function parseDesignChoice(input: unknown, fallbackFields: DesignFields): DesignChoice | null {
   if (!input || typeof input !== "object") return null;
   const v = input as Record<string, unknown>;
-  if (!DESIGN_STYLES.includes(v.style as DesignStyle) || !isDesignCategory(v.category) || !isValidLayout(v.layout)) return null;
+  if (!DESIGN_STYLES.includes(v.style as DesignStyle) || !isDesignCategory(v.category)) return null;
   const style = v.style as DesignStyle;
+  if (!isOffered(style, v.category) || !isValidLayout(style, v.layout)) return null;
   const count = palettesFor(style, v.category, v.layout).length;
   const palette = v.palette === null || v.palette === undefined ? null : Number(v.palette);
   if (palette !== null && !(Number.isInteger(palette) && palette >= 0 && palette < count)) return null;

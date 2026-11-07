@@ -17,6 +17,8 @@ import {
   SAMPLE,
   defaultPaletteIndex,
   isDesignCategory,
+  layoutCount,
+  stylesFor,
   palettesFor,
   sampleFields,
   type DesignFields,
@@ -52,7 +54,7 @@ function Editor() {
         const style = q.get("style") as DesignStyle;
         const category = q.get("category");
         const layout = Number(q.get("layout"));
-        if (DESIGN_STYLES.includes(style) && isDesignCategory(category) && layout >= 1 && layout <= 20) {
+        if (DESIGN_STYLES.includes(style) && isDesignCategory(category) && stylesFor(category).includes(style) && layout >= 1 && layout <= layoutCount(style)) {
           const palette = Number(q.get("palette"));
           setChoice({
             style,

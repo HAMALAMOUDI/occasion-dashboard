@@ -11,15 +11,13 @@ import { Invitation } from "@/components/landing/fragments";
 import LanguageToggle from "@/components/LanguageToggle";
 import { currentUser } from "@/lib/auth";
 import { CLIP_STYLES } from "@/lib/clips/themes";
-import { DESIGN_CATEGORIES, DESIGN_STYLES } from "@/lib/designs/catalog";
+import { DESIGN_COUNT } from "@/lib/designs/catalog";
 import { getLocale, getMessages } from "@/lib/i18n-server";
 import { OCCASIONS } from "@/lib/occasions";
 
 export const dynamic = "force-dynamic";
 
 const CONTACT = { email: "hikayati@gmail.com", phone: "+966 55 123 4567", tel: "+966551234567" };
-const DESIGN_COUNT = DESIGN_STYLES.length * DESIGN_CATEGORIES.length * 20;
-
 // Found pictures of the world around the occasions (credited in the footer).
 // They show Saudi celebration and hospitality, never Hikayati's own customers.
 const CREDITS = [

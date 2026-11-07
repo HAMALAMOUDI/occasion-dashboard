@@ -54,10 +54,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
   }
   if (patch.design !== undefined && patch.design !== null) {
-    // Announcements (condolences) keep their solemn built-in card.
-    if (!occasion(access.event.occasionType).rsvp) return badRequest(err.noDesignForOccasion);
     const design = parseDesignChoice(patch.design, SAMPLE.wedding);
     if (!design) return badRequest(err.invalidDesign);
+    // Announcements (condolences) take the calm condolence set, and only they do.
+    const solemn = !occasion(access.event.occasionType).rsvp;
+    if ((design.category === "condolence") !== solemn) return badRequest(err.noDesignForOccasion);
     patch.design = design;
   }
   if (patch.eventDate !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(patch.eventDate)) {

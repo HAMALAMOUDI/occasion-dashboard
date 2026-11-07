@@ -4,9 +4,12 @@ import {
   CLASSIC_FONTS,
   MODERN_FONTS,
   SAMPLE,
+  SIGNATURE_FONTS,
   categoryIndex,
   defaultPaletteIndex,
+  layoutCount,
   palettesFor,
+  stylesFor,
   sampleFields,
   type DesignCategory,
   type DesignFields,
@@ -17,7 +20,7 @@ import {
 export interface DesignChoice {
   style: DesignStyle;
   category: DesignCategory;
-  layout: number; // 1–20
+  layout: number; // 1–layoutCount(style)
   palette: number | null; // index into palettesFor(); null = the layout's default
   fields: DesignFields;
 }
@@ -36,6 +39,7 @@ function textValues(f: DesignFields, venue: string, ymd: string) {
   const wd = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
   const couple = Boolean(f.nameB.trim());
   const first = (s: string) => Array.from(s.trim())[0] ?? "";
+  const dNum = `${String(d).padStart(2, "0")}.${String(m).padStart(2, "0")}.${y}`;
   return {
     couple,
     t: {
@@ -44,7 +48,9 @@ function textValues(f: DesignFields, venue: string, ymd: string) {
       iA: first(f.nameA), mono: couple ? `${first(f.nameA)} & ${first(f.nameB)}` : first(f.nameA),
       second: couple ? f.nameB : f.title.split(" ")[0], word: f.title.split(" ").slice(-1)[0],
       day: DAYS[wd], dnum: String(d), month: MONTHS[m - 1], year: String(y),
-      dNum: `${String(d).padStart(2, "0")}.${String(m).padStart(2, "0")}.${y}`,
+      dNum,
+      // Text around the signature seal (stretched to fill the ring).
+      ring: `${f.en}  ✦  ${dNum}  ✦  `.repeat(2),
       dShort: `${d} ${MONTHS[m - 1]}`, dateLine: `${DAYS[wd]} ${d} ${MONTHS[m - 1]} ${y}`,
     },
     date: { y, m, d },
@@ -134,18 +140,46 @@ function modernValues(choice: DesignChoice, venue: string, ymd: string) {
   return v;
 }
 
-export function isValidLayout(n: unknown): n is number {
-  return Number.isInteger(n) && (n as number) >= 1 && (n as number) <= 20;
+// Relative luminance-ish lightness, 0–1 (enough to tell a dark palette from a light one).
+function lightness(hex: string) {
+  const h = hex.replace("#", "");
+  return (0.2126 * parseInt(h.slice(0, 2), 16) + 0.7152 * parseInt(h.slice(2, 4), 16) + 0.0722 * parseInt(h.slice(4, 6), 16)) / 255;
 }
+
+function signatureValues(choice: DesignChoice, venue: string, ymd: string) {
+  const { layout: n, category } = choice;
+  const palettes = palettesFor("signature", category, n);
+  const c = palettes[choice.palette ?? defaultPaletteIndex("signature", category, n)] ?? palettes[0];
+  const [display, b] = SIGNATURE_FONTS[n - 1];
+  // Condolences keep a calm serif whatever the layout.
+  const d = category === "condolence" ? "'Amiri', serif" : display;
+  const { couple, t } = textValues(choice.fields, venue, ymd);
+  // Condolences have no replies, so never a reply button.
+  const hasCta = category !== "condolence" && Boolean(choice.fields.cta.trim());
+  // The night sky: the palette's darkest tone, with stars in its lightest.
+  const dark = lightness(c.bg) < 0.35;
+  return { c, d, b, t, couple, m: category, hasCta, noCta: !hasCta, sky: dark ? c.bg : c.ink, star: dark ? c.ink : c.bg };
+}
+
+export function isValidLayout(style: DesignStyle, n: unknown): n is number {
+  return Number.isInteger(n) && (n as number) >= 1 && (n as number) <= layoutCount(style);
+}
+
+// Whether a style offers designs for a category (condolences: signature only).
+export function isOffered(style: DesignStyle, category: DesignCategory) {
+  return stylesFor(category).includes(style);
+}
+
+const VALUES = { classic: classicValues, modern: modernValues, signature: signatureValues };
 
 // A complete standalone HTML page for one card (420×760). Served to a
 // sandboxed iframe, so it carries its own fonts and never runs scripts.
 export function renderDesignHtml(choice: DesignChoice, venue: string, eventDate: string, title = "Invitation") {
   const src = MARKUP[choice.style];
   const layout = src.layouts[choice.layout - 1];
-  const values = choice.style === "classic" ? classicValues(choice, venue, eventDate) : modernValues(choice, venue, eventDate);
-  for (let j = 1; j <= 20; j++) (values as Record<string, unknown>)[`L${j}`] = j === choice.layout;
-  const card = renderTemplate(`${src.root}${layout.markup}</div>`, values);
+  const values: Record<string, unknown> = VALUES[choice.style](choice, venue, eventDate);
+  for (let j = 1; j <= src.layouts.length; j++) values[`L${j}`] = j === choice.layout;
+  const card = renderTemplate(`${src.root}${src.shared}${layout.markup}</div>`, values);
 
   return `<!doctype html>
 <html lang="ar" dir="rtl">

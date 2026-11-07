@@ -248,6 +248,7 @@ const en = {
     subtitle: (n: number) => `${n} Arabic invitation designs, by occasion. Pick one and fill in your own details.`,
     classic: "Classic",
     modern: "Modern",
+    signature: "Signature",
     choosingFor: (name: string) => `Choosing a design for “${name}”`,
     cancel: "Cancel",
     preview: (name: string) => `Preview ${name}`,
@@ -291,7 +292,7 @@ const en = {
     edit: "Edit design",
     builtIn: "Using the simple built-in card.",
     chosen: (name: string) => `Design: ${name}`,
-    notForCondolence: "Library designs are celebratory, so condolences keep their respectful built-in card.",
+    notForCondolence: "Condolence cards come from the calm Condolences set, with no reply buttons.",
   },
 
   landing: {
@@ -440,7 +441,7 @@ const en = {
     reminderAlreadySent: "This reminder was already sent.",
     invoiceAlready: (status: string) => `The invoice is already ${status.toLowerCase()}.`,
     invalidDesign: "That design couldn't be saved — please check the main name and try again.",
-    noDesignForOccasion: "Library designs aren't available for condolences.",
+    noDesignForOccasion: "That design doesn't suit this occasion. Condolences use the Condolences designs, and only they do.",
   },
 };
 
@@ -702,6 +703,7 @@ const ar: Messages = {
     subtitle: (n: number) => `${n} تصميماً عربياً للدعوات حسب المناسبة. اختر تصميماً واكتب تفاصيلك.`,
     classic: "كلاسيكي",
     modern: "عصري",
+    signature: "مميّز",
     choosingFor: (name: string) => `تختار تصميماً لـ «${name}»`,
     cancel: "إلغاء",
     preview: (name: string) => `معاينة ${name}`,
@@ -744,7 +746,7 @@ const ar: Messages = {
     edit: "تعديل التصميم",
     builtIn: "تستخدم البطاقة البسيطة المدمجة.",
     chosen: (name: string) => `التصميم: ${name}`,
-    notForCondolence: "تصاميم المكتبة احتفالية، لذلك تحتفظ مناسبات العزاء ببطاقتها الهادئة المدمجة.",
+    notForCondolence: "بطاقات العزاء من مجموعة العزاء الهادئة، ومن دون أزرار للرد.",
   },
 
   landing: {
@@ -890,7 +892,7 @@ const ar: Messages = {
     reminderAlreadySent: "تم إرسال هذا التذكير مسبقاً.",
     invoiceAlready: (status: string) => `الفاتورة ${status} مسبقاً.`,
     invalidDesign: "تعذر حفظ التصميم — تأكد من إدخال الاسم الرئيسي ثم حاول مرة أخرى.",
-    noDesignForOccasion: "تصاميم المكتبة غير متاحة لمناسبات العزاء.",
+    noDesignForOccasion: "هذا التصميم لا يناسب المناسبة. مناسبات العزاء تستخدم تصاميم العزاء وحدها.",
   },
 };
 

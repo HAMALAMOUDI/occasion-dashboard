@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { DESIGN_STYLES, FIELD_KEYS, SAMPLE, isDesignCategory, palettesFor, type DesignStyle } from "@/lib/designs/catalog";
-import { isValidLayout, renderDesignHtml, sampleChoice } from "@/lib/designs/render";
+import { isOffered, isValidLayout, renderDesignHtml, sampleChoice } from "@/lib/designs/render";
 import { readFields } from "@/lib/designs/validate";
 import { cardResponse } from "@/lib/designs/http";
 
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const style = q.get("style") as DesignStyle;
   const category = q.get("category");
   const layout = Number(q.get("layout"));
-  if (!DESIGN_STYLES.includes(style) || !isDesignCategory(category) || !isValidLayout(layout)) {
+  if (!DESIGN_STYLES.includes(style) || !isDesignCategory(category) || !isOffered(style, category) || !isValidLayout(style, layout)) {
     return new Response("Unknown design", { status: 404 });
   }
 
