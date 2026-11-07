@@ -9,7 +9,7 @@ type Copy = { nameLabel: string; defaultName: string; sliderLabel: string; stage
 // One invitation's journey in four stops, driven by a real range input (drag,
 // tap a stage name, or use the arrow keys). The name typed here addresses every
 // fragment, the way each guest's invitation is addressed to them.
-export default function GuestJourney({ lang, copy, qr }: { lang: Lang; copy: Copy; qr: string }) {
+export default function GuestJourney({ lang, copy, qr, eyebrow }: { lang: Lang; copy: Copy; qr: string; eyebrow: string }) {
   const [stage, setStage] = useState(0);
   const [name, setName] = useState("");
   const guest = name.trim() || copy.defaultName;
@@ -23,9 +23,9 @@ export default function GuestJourney({ lang, copy, qr }: { lang: Lang; copy: Cop
   ];
 
   return (
-    <div className="grid lg:min-h-[88svh] lg:grid-cols-2">
+    <div className="grid lg:min-h-[72svh] lg:grid-cols-2">
       {/* The product, in the state the slider names. All four are stacked in one cell and crossfade. */}
-      <div className="order-1 grid place-items-center bg-bone px-safe py-14 lg:order-2 lg:py-20">
+      <div className="order-1 grid place-items-center bg-bone px-safe py-14 lg:order-2 lg:m-4 lg:rounded-[2rem] lg:py-20">
         <div className="grid w-full place-items-center [&>*]:[grid-area:1/1]">
           {fragments.map((f, i) => (
             <div
@@ -42,8 +42,9 @@ export default function GuestJourney({ lang, copy, qr }: { lang: Lang; copy: Cop
         </div>
       </div>
 
-      <div className="order-2 flex flex-col justify-between gap-10 bg-ivory px-safe py-14 lg:order-1 lg:py-20">
+      <div className="order-2 flex flex-col justify-center gap-14 bg-ivory px-safe py-14 lg:order-1 lg:py-20">
         <div>
+          <p className="eyebrow-site mb-5">{eyebrow}</p>
           <h2 id="how-title" aria-live="polite" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em] text-balance">
             {copy.clauses[stage]}
           </h2>
@@ -55,7 +56,7 @@ export default function GuestJourney({ lang, copy, qr }: { lang: Lang; copy: Cop
               placeholder={copy.defaultName}
               autoComplete="off"
               enterKeyHint="done"
-              className="mt-2 h-12 w-full bg-bone px-4 text-[1.0625rem] text-ink-deep placeholder:text-ink-soft outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-deep"
+              className="mt-2 h-12 w-full rounded-full bg-white px-5 text-[1.0625rem] text-ink-deep ring-1 ring-ink-deep/12 placeholder:text-ink-soft outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-pine"
             />
           </label>
         </div>
@@ -80,7 +81,7 @@ export default function GuestJourney({ lang, copy, qr }: { lang: Lang; copy: Cop
                   type="button"
                   onClick={() => setStage(i)}
                   aria-current={i === stage ? "step" : undefined}
-                  className={`press tap-control min-h-11 px-1 ${i === stage ? "font-medium text-ink-deep" : "text-ink-soft hover:text-ink-deep"}`}
+                  className={`press tap-control min-h-11 px-1 ${i === stage ? "font-medium text-pine" : "text-ink-soft hover:text-ink-deep"}`}
                 >
                   {s}
                 </button>

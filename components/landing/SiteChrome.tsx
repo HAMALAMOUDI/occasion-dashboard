@@ -73,7 +73,7 @@ export function FooterGroups({ L }: { L: Messages["landing"] }) {
     <div className="grid grid-cols-2 gap-8 text-[0.9375rem] leading-7 sm:flex sm:gap-16">
       {footerGroups(L).map((g) => (
         <nav key={g.title} aria-label={g.title}>
-          <h2 className="text-[0.8125rem] uppercase tracking-[0.14em] text-ivory/70 rtl:tracking-normal">{g.title}</h2>
+          <h2 className="text-[0.8125rem] uppercase tracking-[0.14em] text-champagne rtl:tracking-normal">{g.title}</h2>
           <ul className="mt-2">
             {g.links.map((l) => (
               <li key={l.href}>
@@ -96,7 +96,7 @@ export function createHref(signedIn: boolean) {
 // Wordmark, the site links, then language, sign-in and the one action.
 export function SiteHeader({ L, signedIn, current }: { L: Messages["landing"]; signedIn: boolean; current?: string }) {
   return (
-    <header className="sticky top-0 z-40 bg-ivory pt-[env(safe-area-inset-top,0px)]">
+    <header className="sticky top-0 z-40 border-b border-ink-deep/8 bg-ivory/85 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md">
       <div className="flex h-[4.5rem] items-center justify-between gap-6 px-safe">
         <Link href="/" aria-label="Hikayati · حكايتي" className="tap-control">
           <Wordmark />
@@ -114,7 +114,7 @@ export function SiteHeader({ L, signedIn, current }: { L: Messages["landing"]; s
           ))}
         </nav>
         <div className="flex items-center gap-4 whitespace-nowrap">
-          <LanguageToggle className="press tap-control min-h-10 border-transparent bg-bone text-[0.875rem] text-ink-deep active:text-ink" />
+          <LanguageToggle className="press tap-control min-h-10 rounded-full border-ink-deep/15 bg-white/70 text-[0.875rem] text-ink-deep active:text-ink" />
           <Link href={signedIn ? "/events" : "/login"} className="tap-control hidden text-[1.0625rem] text-ink-soft hover:text-ink-deep active:text-ink-deep md:inline">
             {signedIn ? L.myEvents : L.signIn}
           </Link>
@@ -138,11 +138,11 @@ export function SiteHeader({ L, signedIn, current }: { L: Messages["landing"]; s
 // A short footer for the pages beyond the landing (the landing keeps its large contact footer).
 export function SiteFooter({ L, signedIn }: { L: Messages["landing"]; signedIn: boolean }) {
   return (
-    <footer className="bg-olive px-safe pb-[max(2rem,env(safe-area-inset-bottom,0px))] pt-12 text-ivory">
+    <footer className="bg-pine-deep px-safe pb-[max(2rem,env(safe-area-inset-bottom,0px))] pt-12 text-ivory">
       <div className="flex flex-wrap items-start justify-between gap-8 text-[0.9375rem] leading-6">
         <div className="space-y-2">
-          <Wordmark className="[&_span:last-child]:text-ivory" />
-          <p className="max-w-[28rem]">{L.footerLine}</p>
+          <Wordmark className="[&_span:last-child]:text-champagne" />
+          <p className="max-w-[28rem] text-ivory/75">{L.footerLine}</p>
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2">
           {siteLinks(L).map((n) => (
@@ -161,7 +161,7 @@ export function SiteFooter({ L, signedIn }: { L: Messages["landing"]; signedIn: 
       <div className="mt-10">
         <FooterGroups L={L} />
       </div>
-      <p className="mt-10 text-[0.875rem]">{L.rights(new Date().getFullYear())}</p>
+      <p className="mt-10 text-[0.875rem] text-ivory/60">{L.rights(new Date().getFullYear())}</p>
     </footer>
   );
 }

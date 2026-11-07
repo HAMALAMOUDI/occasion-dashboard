@@ -1,20 +1,17 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import QRCode from "qrcode";
+import { ArrowRight, Check, Star } from "lucide-react";
 import GuestJourney from "@/components/landing/GuestJourney";
-import HeroClip from "@/components/landing/HeroClip";
-import OccasionShowcase from "@/components/landing/OccasionShowcase";
 import Reveal from "@/components/landing/Reveal";
-import { Invitation } from "@/components/landing/fragments";
+import { MiniArrivals, MiniChat, MiniHouseholds, MiniPage, MiniReminders, MiniReplies, MiniScanner, MiniSheet } from "@/components/landing/mockups";
+import { GuestPass } from "@/components/landing/fragments";
 import DesignFrame from "@/components/DesignFrame";
 import PhoneFrame from "@/components/PhoneFrame";
 import { FooterGroups, InviteButton, SiteHeader, Wordmark, createHref as createLink, siteLinks } from "@/components/landing/SiteChrome";
-import { Check, Star } from "lucide-react";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { CLIP_STYLES } from "@/lib/clips/themes";
-import { DESIGN_COUNT, LAYOUT_NAMES, type DesignCategory, type DesignStyle } from "@/lib/designs/catalog";
+import { CATEGORIES_FOR_OCCASION, DESIGN_COUNT, LAYOUT_NAMES, type DesignCategory, type DesignStyle } from "@/lib/designs/catalog";
 import { designSrc, galleryPath } from "@/lib/designs/urls";
 import { getLocale, getMessages } from "@/lib/i18n-server";
 import { OCCASIONS } from "@/lib/occasions";
@@ -23,21 +20,31 @@ import { CONTACT_EMAIL, PLANS } from "@/lib/pricing";
 export const dynamic = "force-dynamic";
 
 const CONTACT = { email: CONTACT_EMAIL, phone: "+966 55 123 4567", tel: "+966551234567" };
-// Found pictures of the world around the occasions (credited in the footer).
-// They show Saudi celebration and hospitality, never Hikayati's own customers.
-const CREDITS = [
-  { title: "حصاد الورد الطائفي في السعودية سنة 2026م", by: "وكالة الأنباء السعودية", licence: "CC BY-SA 4.0", page: "https://commons.wikimedia.org/w/index.php?curid=192752189" },
-  { title: "Saudi Ardha in At-Turaif district, Diriyah", by: "Ahad.F", licence: "CC BY-SA 4.0", page: "https://commons.wikimedia.org/wiki/File:Saudi_Ardha_(Najdi_Sword_Dance)_in_At-Turaif_district,_Diriyah,_Saudi_Arabia.jpg" },
-  { title: "Arabic dallah (coffee pot)", by: "Bluehillies", licence: "CC0", page: "https://commons.wikimedia.org/w/index.php?curid=57948288" },
-  { title: "رجل يحصد الورد الطائفي في السعودية سنة 2026م", by: "وكالة الأنباء السعودية", licence: "CC BY-SA 4.0", page: "https://commons.wikimedia.org/w/index.php?curid=192752187" },
-  { title: "Henna hands", by: "Izzah Zainab", licence: "CC BY 2.0", page: "https://commons.wikimedia.org/w/index.php?curid=74800224" },
-];
 
 // The live count of invitations shows only once it says something.
 const SENT_THRESHOLD = 100;
 
-// One card from each style, across occasions, for the landing's design strip.
-const FEATURED: { style: DesignStyle; category: DesignCategory; layout: number }[] = [
+type Design = { style: DesignStyle; category: DesignCategory; layout: number };
+
+// The phone in the hero.
+const HERO_DESIGN: Design = { style: "signature", category: "wedding", layout: 1 };
+
+// The moving strip: one card from across the occasions and styles.
+const STRIP: Design[] = [
+  { style: "signature", category: "wedding", layout: 4 },
+  { style: "classic", category: "engagement", layout: 2 },
+  { style: "modern", category: "birthday", layout: 6 },
+  { style: "signature", category: "ramadan", layout: 7 },
+  { style: "classic", category: "henna", layout: 5 },
+  { style: "modern", category: "graduation", layout: 3 },
+  { style: "signature", category: "eid", layout: 2 },
+  { style: "classic", category: "wedding", layout: 8 },
+  { style: "modern", category: "corporate", layout: 1 },
+  { style: "signature", category: "baby", layout: 5 },
+];
+
+// Four cards for the library section, one from each corner of it.
+const FEATURED: Design[] = [
   { style: "signature", category: "wedding", layout: 1 },
   { style: "classic", category: "engagement", layout: 3 },
   { style: "modern", category: "birthday", layout: 6 },
@@ -46,18 +53,17 @@ const FEATURED: { style: DesignStyle; category: DesignCategory; layout: number }
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getMessages();
-  return { title: `Hikayati · حكايتي — ${t.landing.heroLine1} ${t.landing.heroLine2}`, description: t.landing.heroSub };
+  return { title: `Hikayati · حكايتي — ${t.landing.heroLine1} ${t.landing.heroLine2}`, description: t.landing.heroSub, alternates: { canonical: "/" } };
 }
 
-// A captioned photograph; every picture on the page is cropped by its frame, never stretched.
-function Photo({ src, alt, ratio, sizes, className = "" }: { src: string; alt: string; ratio: string; sizes: string; className?: string }) {
+const h2 = "font-editorial text-[clamp(2.5rem,4.8vw,4.5rem)] font-medium leading-[1.04] tracking-[-0.02em] rtl:leading-[1.25] rtl:tracking-normal text-balance";
+
+// A heading in two tones: the plain half, then the half that carries the meaning.
+function TwoTone({ parts, id, className = h2 }: { parts: readonly string[]; id?: string; className?: string }) {
   return (
-    <figure className={className}>
-      <div className={`relative overflow-hidden bg-bone ${ratio}`}>
-        <Image src={src} alt="" fill sizes={sizes} className="object-cover" />
-      </div>
-      <figcaption className="mt-3 max-w-[34ch] text-[0.875rem] leading-6 text-ink-soft">{alt}</figcaption>
-    </figure>
+    <h2 id={id} className={className}>
+      {parts[0]} <span className="em-pine">{parts[1]}</span>
+    </h2>
   );
 }
 
@@ -71,250 +77,316 @@ export default async function LandingPage() {
     db.getReviews("approved").catch(() => []),
   ]);
   const L = t.landing;
+  const H = L.hero;
+  const M = L.mock;
+  const guest = L.journey.defaultName;
   const createHref = createLink(!!user);
-  // A real, scannable QR for the sample guest pass.
   const nf = new Intl.NumberFormat(locale === "ar" ? "ar-SA" : "en-US");
   const stats = [
+    ...(counters && counters.invitationsSent >= SENT_THRESHOLD ? [{ value: counters.invitationsSent, label: L.counters.sent }] : []),
     { value: DESIGN_COUNT, label: L.counters.designs },
     { value: OCCASIONS.length, label: L.counters.occasions },
     { value: 2, label: L.counters.languages },
     { value: 1, label: L.counters.payment },
-    ...(counters && counters.invitationsSent >= SENT_THRESHOLD ? [{ value: counters.invitationsSent, label: L.counters.sent }] : []),
   ];
   const plans = [
     { ...PLANS.standard, copy: L.pricing.plans[0], href: createHref, primary: true },
     { ...PLANS.custom, copy: L.pricing.plans[1], href: `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(L.pricing.plans[1].name)}`, primary: false },
   ];
-  const qr = await QRCode.toString("HIKAYATI-SAMPLE-PASS", { type: "svg", margin: 0, color: { dark: "#24241f", light: "#0000" } });
+  const featureMocks = [
+    <MiniChat key="chat" lang={locale} name={guest} />,
+    <MiniPage key="page" M={M} />,
+    <MiniHouseholds key="seats" M={M} />,
+    <MiniReplies key="replies" M={M} />,
+    <MiniReminders key="reminders" M={M} />,
+    <MiniSheet key="sheet" M={M} />,
+  ];
+  // Real, scannable QR codes for the sample pass and the door scanner.
+  const [qr, qrLight] = await Promise.all([
+    QRCode.toString("HIKAYATI-SAMPLE-PASS", { type: "svg", margin: 0, color: { dark: "#24241f", light: "#0000" } }),
+    QRCode.toString("HIKAYATI-SAMPLE-PASS", { type: "svg", margin: 0, color: { dark: "#111", light: "#fff" } }),
+  ]);
 
   return (
     <>
       <SiteHeader L={L} signedIn={!!user} />
 
       <main>
-        {/* ---------- Hero: the sentence, with the animated invitation set inside it ---------- */}
-        <section id="home" className="scroll-mt-20 px-safe pb-[clamp(3rem,5vw,5rem)] pt-[clamp(4rem,12svh,9rem)]">
-          <h1 className="hero-sentence font-editorial text-[clamp(3.25rem,10.5vw,11.5rem)] font-medium leading-[0.95] tracking-[-0.035em] rtl:leading-[1.15] rtl:tracking-normal">
-            <span className="block">
-              {L.heroLine1}
-              <span className="hero-slot shutter" aria-hidden="true">
-                <HeroClip lang={locale} label={L.heroClipLabel} />
-              </span>
-            </span>
-            <span className="block">{L.heroLine2}</span>
-          </h1>
-          <div className="mt-10 grid items-end gap-8 md:mt-12 md:grid-cols-12">
-            <p className="text-[1.25rem] leading-[1.55] text-ink-deep md:col-span-7 lg:col-span-6">{L.heroSub}</p>
-            <div className="md:col-span-5 md:justify-self-end lg:col-span-6">
-              <InviteButton href={createHref} className="flex min-h-14 w-full sm:inline-flex sm:w-auto">
-                {L.create}
-              </InviteButton>
-            </div>
-          </div>
-        </section>
-
-        {/* ---------- Counters: what Hikayati is, in numbers ---------- */}
-        <section aria-label={L.counters.label} className="border-y border-ink-deep/15 px-safe py-10">
-          <dl className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:flex lg:justify-between">
-            {stats.map((s) => (
-              <div key={s.label} className="flex flex-col-reverse">
-                <dt className="mt-1 text-[0.9375rem] text-ink-soft">{s.label}</dt>
-                <dd className="font-editorial text-[clamp(2.5rem,5vw,4rem)] font-medium leading-none tabular-nums">{nf.format(s.value)}</dd>
+        {/* ---------- Hero: the promise on one side, the invitation itself on the other ---------- */}
+        <section id="home" className="relative scroll-mt-20 overflow-hidden px-safe pb-16 pt-[clamp(2.5rem,7svh,5rem)] lg:pb-24">
+          <div className="grid items-center gap-x-10 gap-y-14 lg:grid-cols-12">
+            <div className="lg:col-span-6">
+              <p className="eyebrow-site">{H.eyebrow}</p>
+              <h1 className="mt-6 font-editorial text-[clamp(3.25rem,7.4vw,6.75rem)] font-medium leading-[0.98] tracking-[-0.03em] rtl:leading-[1.2] rtl:tracking-normal">
+                <span className="block">{L.heroLine1}</span>
+                <span className="em-pine block">{L.heroLine2}</span>
+              </h1>
+              <p
+                lang={H.otherLang}
+                dir={H.otherLang === "ar" ? "rtl" : "ltr"}
+                className={`mt-4 text-[clamp(1.5rem,2.4vw,2rem)] text-gold-ink ${H.otherLang === "ar" ? "font-[family-name:var(--font-ruqaa)] text-end lg:text-start" : "font-editorial italic text-start"}`}
+              >
+                {H.other}
+              </p>
+              <p className="mt-8 max-w-[34rem] text-[1.1875rem] leading-[1.65] text-ink-deep">{L.heroSub}</p>
+              <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
+                <InviteButton href={createHref} className="min-h-14 text-[1.0625rem]">
+                  {L.create}
+                </InviteButton>
+                <Link href="/gallery" className="tap-control text-[1.0625rem] text-pine underline decoration-champagne decoration-2 underline-offset-[7px] hover:decoration-pine">
+                  {H.secondary}
+                </Link>
               </div>
-            ))}
-          </dl>
-        </section>
-
-        {/* ---------- About: the statement holds still on the left while its world passes on the right ---------- */}
-        <section aria-labelledby="about-title" className="grid gap-x-6 gap-y-16 px-safe pb-[clamp(7rem,14vw,12rem)] pt-[clamp(4rem,8vw,7rem)] lg:grid-cols-12">
-          <div className="lg:col-span-5">
-            <div className="lg:sticky lg:top-[calc(4.5rem+12svh)]">
-              <Reveal>
-                <h2 id="about-title" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em]">
-                  {L.aboutTitle}
-                </h2>
-              </Reveal>
-              <Reveal delay={0.08}>
-                <p className="mt-8 max-w-[34rem] text-[1.25rem] leading-[1.6] text-ink-deep">{L.aboutBody}</p>
-              </Reveal>
+              <p className="mt-6 flex items-center gap-2 text-[0.9375rem] text-ink-soft">
+                <Check size={16} className="text-pine" aria-hidden="true" /> {H.price(PLANS.standard.price)}
+              </p>
             </div>
-          </div>
-          <div className="grid gap-y-[clamp(3rem,5vw,4rem)] lg:col-span-7 lg:col-start-6 lg:grid-cols-7 lg:gap-x-6">
-            <Reveal className="lg:col-span-4">
-              <Photo src="/landing/taif-rose-harvest.jpg" alt={L.photos.harvest} ratio="aspect-[4/5]" sizes="(min-width: 1024px) 30vw, 100vw" />
-            </Reveal>
-            <Reveal delay={0.08} className="w-[70%] justify-self-end lg:col-span-3 lg:w-full lg:self-end">
-              <Photo src="/landing/dallah.jpg" alt={L.photos.dallah} ratio="aspect-square" sizes="(min-width: 1024px) 22vw, 70vw" />
-            </Reveal>
-            <Reveal className="lg:col-span-7">
-              <Photo src="/landing/ardha-turaif.jpg" alt={L.photos.ardha} ratio="aspect-[16/10]" sizes="(min-width: 1024px) 55vw, 100vw" />
-            </Reveal>
-          </div>
-        </section>
 
-        {/* ---------- Showcase: the card in front of its own description ---------- */}
-        <section aria-labelledby="card-title" className="relative overflow-hidden bg-bone px-safe py-[clamp(7rem,14vw,12rem)]">
-          <div className="relative">
-            <div className="whitespace-nowrap font-editorial text-[clamp(2.875rem,9vw,9.5rem)] font-medium leading-[0.92] tracking-[-0.035em] rtl:leading-[1.2] rtl:tracking-normal">
-              <Reveal>
-                <p className="text-ink-soft">{L.showcaseLines[0]}</p>
-              </Reveal>
-              <Reveal delay={0.08}>
-                <h2 id="card-title" className="text-ink-deep">
-                  {L.showcaseLines[1]}
-                </h2>
-              </Reveal>
-              <Reveal delay={0.16}>
-                <p className="text-ink-soft">{L.showcaseLines[2]}</p>
-              </Reveal>
-            </div>
-            <div className="mt-14 grid gap-12 md:grid-cols-12 md:items-start">
-              <Reveal className="md:col-span-5 md:col-start-1">
-                <Invitation lang={locale} className="card-tilt mx-auto w-[min(100%,26rem)] text-[clamp(0.85rem,1.1vw,1rem)]" />
-              </Reveal>
-              <Reveal delay={0.12} className="space-y-6 text-[1.25rem] leading-[1.6] text-ink-deep md:col-span-5 md:col-start-8 md:pt-10">
-                <p>{L.showcaseFact}</p>
-                <p>{L.showcaseCounts(DESIGN_COUNT, CLIP_STYLES.length)}</p>
-                <Image src="/landing/taif-rose-sack.jpg" alt="" width={1920} height={1279} sizes="(min-width: 768px) 40vw, 100vw" className="mt-4 aspect-[3/2] w-full object-cover" />
-              </Reveal>
+            {/* The phone, its arch behind it, and the notes that float beside it. Decorative: every fact is also in the text. */}
+            <div className="relative mx-auto w-full max-w-[34rem] lg:col-span-6" aria-hidden="true">
+              <svg viewBox="0 0 400 480" className="absolute inset-x-[6%] top-[2%] h-[94%] w-[88%] text-bone" preserveAspectRatio="none">
+                <path d="M0 480 V200 C0 90 90 0 200 0 C310 0 400 90 400 200 V480 Z" fill="currentColor" />
+                <path d="M24 480 V204 C24 104 104 24 200 24 C296 24 376 104 376 204 V480" fill="none" stroke="var(--champagne)" strokeOpacity="0.55" strokeWidth="1.5" />
+              </svg>
+              <div className="relative mx-auto w-[min(62%,17rem)] pt-10">
+                <div className="phone-tilt">
+                  <PhoneFrame className="shadow-[0_40px_80px_-30px_rgb(20_58_46/0.55)]">
+                    <DesignFrame src={designSrc(HERO_DESIGN)} title={LAYOUT_NAMES.signature[0][locale]} />
+                  </PhoneFrame>
+                </div>
+              </div>
+
+              <div className="float absolute end-0 top-[14%] hidden w-[11.5rem] sm:block rounded-2xl bg-white/95 p-4 shadow-[0_18px_40px_-20px_rgb(36_36_31/0.45)] ring-1 ring-ink-deep/5 backdrop-blur">
+                <p className="text-[0.6875rem] uppercase tracking-[0.16em] text-pine rtl:tracking-normal">{H.chipDesign}</p>
+                <p className="mt-1 font-editorial text-[1.375rem] leading-tight">{LAYOUT_NAMES.signature[0][locale]}</p>
+                <p className="text-[0.8125rem] text-ink-soft">{H.chipDesignNote}</p>
+              </div>
+
+              <div className="float-late absolute bottom-[16%] start-0 flex max-w-[15rem] items-center gap-3 rounded-2xl bg-chat-bg p-3 shadow-[0_18px_40px_-20px_rgb(36_36_31/0.45)]">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-olive font-[family-name:var(--font-ruqaa)] text-lg text-paper-warm">ح</span>
+                <span className="rounded-xl rounded-ss-sm bg-white px-3 py-2 text-[0.875rem] leading-snug">{H.chipMessage(guest)}</span>
+              </div>
+
+              <div className="float absolute bottom-[2%] end-[4%] rounded-2xl bg-white/95 px-4 py-3 shadow-[0_18px_40px_-20px_rgb(36_36_31/0.45)] ring-1 ring-ink-deep/5">
+                <p className="flex items-center gap-2 text-[0.6875rem] uppercase tracking-[0.16em] text-pine rtl:tracking-normal">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-pine opacity-50 motion-reduce:hidden" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-pine" />
+                  </span>
+                  {H.chipLive} <span className="text-ink-soft normal-case tracking-normal">· {H.chipSample}</span>
+                </p>
+                <p className="mt-1 font-editorial text-[1.25rem] rtl:font-clean rtl:text-[1rem]">{H.chipLiveLine(64, 18)}</p>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ---------- Designs: four cards on phones, and the way into the whole library ---------- */}
-        <section id="designs" aria-labelledby="designs-title" className="scroll-mt-20 px-safe py-[clamp(7rem,14vw,12rem)]">
-          <div className="grid gap-8 md:grid-cols-12 md:items-end">
-            <Reveal className="md:col-span-6">
-              <h2 id="designs-title" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em]">
-                {L.designsTitle}
-              </h2>
-            </Reveal>
-            <Reveal delay={0.08} className="md:col-span-5 md:col-start-8">
-              <p className="text-[1.25rem] leading-[1.6] text-ink-deep">{L.designsBody(DESIGN_COUNT)}</p>
-              <InviteButton href="/gallery" className="mt-8 flex w-full sm:inline-flex sm:w-auto">
-                {L.designsCta}
-              </InviteButton>
-            </Reveal>
-          </div>
-          <ul className="mt-16 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-4 md:gap-x-6">
-            {FEATURED.map((d, i) => {
+        {/* ---------- The designs, gliding past ---------- */}
+        <section aria-label={L.marqueeLabel} className="marquee overflow-hidden py-6 [contain:paint]">
+          <ul className="marquee-track flex w-max gap-5 px-2">
+            {[...STRIP, ...STRIP].map((d, i) => {
               const name = LAYOUT_NAMES[d.style][d.layout - 1][locale];
+              const copy = i >= STRIP.length;
               return (
-                <li key={`${d.style}-${d.category}-${d.layout}`} className={i % 2 ? "md:mt-16" : ""}>
-                  <Reveal delay={i * 0.06}>
-                    <Link href={galleryPath(d.style, d.category, d.layout)} className="group block tap-control">
-                      <PhoneFrame className="transition duration-300 group-hover:-translate-y-1">
-                        <DesignFrame src={designSrc(d)} title={name} />
-                      </PhoneFrame>
-                      <span className="mt-4 block text-[1.0625rem] text-ink-deep group-hover:underline group-hover:decoration-champagne group-hover:decoration-2 group-hover:underline-offset-[6px]">
-                        {name}
-                      </span>
-                      <span className="block text-[0.875rem] text-ink-soft">{t.designs[d.style]}</span>
-                    </Link>
-                  </Reveal>
+                <li key={i} aria-hidden={copy || undefined} className="w-[9.5rem] shrink-0 sm:w-[11rem]">
+                  <Link
+                    href={galleryPath(d.style, d.category, d.layout)}
+                    tabIndex={copy ? -1 : undefined}
+                    className="group block overflow-hidden rounded-[1.25rem] shadow-[0_20px_40px_-26px_rgb(36_36_31/0.55)] ring-1 ring-ink-deep/5 transition-transform duration-300 hover:-translate-y-1.5"
+                  >
+                    <DesignFrame src={designSrc(d)} title={name} />
+                    <span className="sr-only">{name}</span>
+                  </Link>
                 </li>
               );
             })}
           </ul>
         </section>
 
+        {/* ---------- Counters ---------- */}
+        <section aria-label={L.counters.label} className="px-safe py-14">
+          <dl className={`grid grid-cols-2 gap-y-10 ${stats.length > 4 ? "sm:grid-cols-5" : "sm:grid-cols-4"}`}>
+            {stats.map((s, i) => (
+              <div key={s.label} className={`flex flex-col-reverse items-center px-4 text-center ${i > 0 ? "sm:border-s sm:border-ink-deep/12" : ""}`}>
+                <dt className="mt-2 text-[0.9375rem] text-ink-soft">{s.label}</dt>
+                <dd className="font-editorial text-[clamp(2.75rem,5vw,4rem)] font-medium leading-none tabular-nums">{nf.format(s.value)}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        {/* ---------- Features: each tile shows the piece of the product it describes ---------- */}
+        <section id="features" aria-labelledby="features-title" className="scroll-mt-20 bg-bone/60 px-safe py-[clamp(5rem,10vw,8rem)]">
+          <div className="grid gap-8 md:grid-cols-12 md:items-end">
+            <Reveal className="md:col-span-7">
+              <p className="eyebrow-site">{L.features.eyebrow}</p>
+              <TwoTone id="features-title" parts={L.features.title} className={`${h2} mt-5`} />
+            </Reveal>
+            <Reveal delay={0.08} className="md:col-span-4 md:col-start-9">
+              <p className="text-[1.125rem] leading-[1.65] text-ink-deep">{L.features.body}</p>
+            </Reveal>
+          </div>
+          <ul className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {L.features.items.map((f, i) => (
+              <li key={f.title}>
+                <Reveal delay={(i % 3) * 0.06} className="h-full">
+                  <article className="tile flex h-full flex-col overflow-hidden">
+                    <div className="grid h-[17rem] place-items-center overflow-hidden bg-ivory px-6">{featureMocks[i]}</div>
+                    <div className="p-6">
+                      <h3 className="font-editorial text-[1.625rem] font-medium leading-tight">{f.title}</h3>
+                      <p className="mt-2 text-[1rem] leading-[1.6] text-ink-soft">{f.body}</p>
+                    </div>
+                  </article>
+                </Reveal>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         {/* ---------- How it works: one invitation's journey, addressed to the name typed in ---------- */}
         <section id="how" aria-labelledby="how-title" className="scroll-mt-[4.5rem]">
-          <GuestJourney lang={locale} copy={L.journey} qr={qr} />
+          <GuestJourney lang={locale} copy={L.journey} qr={qr} eyebrow={L.howEyebrow} />
         </section>
 
-        {/* ---------- Occasions: statement, then the table pushed right ---------- */}
-        <section id="occasions" aria-labelledby="occasions-title" className="scroll-mt-20 px-safe py-[clamp(7rem,14vw,12rem)]">
-          <Reveal>
-            <h2 id="occasions-title" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em] md:ps-[3vw]">
-              {L.occasionsTitle}
-            </h2>
-          </Reveal>
-          <OccasionShowcase
-            rows={OCCASIONS.map((o) => ({ id: o.id, label: o.label[locale], line: o.cardLine[locale] }))}
-            tableNote={L.occasionsTable}
-            photo={
-              <Reveal>
-                <Photo src="/landing/henna-hands.jpg" alt={L.photos.henna} ratio="aspect-[4/5]" sizes="(min-width: 768px) 30vw, 70vw" className="ms-auto w-[70%] md:ms-0 md:w-full" />
-              </Reveal>
-            }
-          />
+        {/* ---------- On the day: the pass, the scanner, the arrivals ---------- */}
+        <section aria-labelledby="day-title" className="relative overflow-hidden bg-pine-deep [contain:paint] px-safe py-[clamp(5rem,10vw,8rem)] text-ivory">
+          <div aria-hidden="true" className="pointer-events-none absolute -top-40 end-[-10%] h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgb(201_182_139/0.16),transparent_65%)]" />
+          <div className="relative grid gap-8 md:grid-cols-12 md:items-end">
+            <Reveal className="md:col-span-7">
+              <p className="eyebrow-site text-ivory/70">{L.day.eyebrow}</p>
+              <h2 id="day-title" className={`${h2} mt-5`}>
+                {L.day.title[0]} <span className="italic text-champagne rtl:not-italic">{L.day.title[1]}</span>
+              </h2>
+            </Reveal>
+            <Reveal delay={0.08} className="md:col-span-4 md:col-start-9">
+              <p className="text-[1.125rem] leading-[1.65] text-ivory/80">{L.day.body}</p>
+            </Reveal>
+          </div>
+          <ul className="relative mt-14 grid gap-5 md:grid-cols-3">
+            {[
+              <div key="pass" className="w-full max-w-[17rem] text-ink-deep [&_article]:max-w-none [&_article]:px-5 [&_article]:pb-5 [&_article]:pt-6 [&_h3]:text-[1.5rem] [&_p]:text-[0.8125rem]">
+                <GuestPass lang={locale} name={guest} qr={qr} />
+              </div>,
+              <MiniScanner key="scan" M={M} name={guest} qr={qrLight} />,
+              <MiniArrivals key="arrivals" M={M} />,
+            ].map((mock, i) => (
+              <li key={i}>
+                <Reveal delay={i * 0.06} className="h-full">
+                  <article className="flex h-full flex-col overflow-hidden rounded-[1.5rem] bg-white/[0.04] ring-1 ring-white/10">
+                    <div className="grid min-h-[24rem] place-items-center px-6 py-8">{mock}</div>
+                    <div className="border-t border-white/10 p-6">
+                      <h3 className="font-editorial text-[1.625rem] font-medium leading-tight">{L.day.items[i].title}</h3>
+                      <p className="mt-2 text-[1rem] leading-[1.6] text-ivory/70">{L.day.items[i].body}</p>
+                    </div>
+                  </article>
+                </Reveal>
+              </li>
+            ))}
+          </ul>
         </section>
 
-        {/* ---------- Pricing: one payment per occasion ---------- */}
-        <section id="pricing" aria-labelledby="pricing-title" className="scroll-mt-20 bg-bone px-safe py-[clamp(7rem,14vw,12rem)]">
+        {/* ---------- Designs: a few cards, and the way into the whole library ---------- */}
+        <section id="designs" aria-labelledby="designs-title" className="scroll-mt-20 px-safe py-[clamp(5rem,10vw,8rem)]">
           <div className="grid gap-8 md:grid-cols-12 md:items-end">
             <Reveal className="md:col-span-6">
-              <h2 id="pricing-title" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em]">
-                {L.pricing.title}
+              <p className="eyebrow-site">{L.designsEyebrow}</p>
+              <h2 id="designs-title" className={`${h2} mt-5`}>
+                {L.designsTitle}
               </h2>
             </Reveal>
             <Reveal delay={0.08} className="md:col-span-5 md:col-start-8">
-              <p className="text-[1.25rem] leading-[1.6] text-ink-deep">{L.pricing.body}</p>
+              <p className="text-[1.125rem] leading-[1.65] text-ink-deep">{L.designsBody(DESIGN_COUNT)}</p>
             </Reveal>
           </div>
-          <div className="mt-16 grid gap-6 md:grid-cols-2">
-            {plans.map((p, i) => (
-              <Reveal key={p.id} delay={i * 0.08} className="h-full">
-                <article className={`flex h-full flex-col p-8 sm:p-10 ${p.primary ? "bg-ink-deep text-ivory" : "bg-ivory text-ink-deep ring-1 ring-ink-deep/15"}`}>
-                  <h3 className="font-editorial text-[2rem] font-medium leading-none">{p.copy.name}</h3>
-                  <p className={`mt-3 text-[1.0625rem] ${p.primary ? "text-ivory/80" : "text-ink-soft"}`}>{p.copy.line}</p>
-                  <p className="mt-8 flex items-baseline gap-2">
-                    <span className="font-editorial text-[clamp(3.5rem,7vw,5rem)] font-medium leading-none tabular-nums">{nf.format(p.price)}</span>
-                    <span className="text-[1.125rem]">{L.pricing.currency}</span>
-                  </p>
-                  <p className={`mt-1 text-[0.9375rem] ${p.primary ? "text-ivory/80" : "text-ink-soft"}`}>{L.pricing.once}</p>
-                  <ul className="mt-8 space-y-3 text-[1.0625rem]">
-                    {p.copy.features.map((f) => (
-                      <li key={f} className="flex gap-3">
-                        <Check size={20} aria-hidden="true" className={`mt-0.5 shrink-0 ${p.primary ? "text-champagne" : "text-gold-ink"}`} />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-auto pt-10">
-                    {p.primary ? (
-                      <InviteButton href={p.href} className="flex w-full">
-                        {p.copy.cta}
-                      </InviteButton>
-                    ) : (
-                      <a href={p.href} className="press tap-control flex min-h-12 items-center justify-center border border-ink-deep px-6 text-[1.0625rem] hover:bg-ink-deep hover:text-ivory">
-                        {p.copy.cta}
-                      </a>
-                    )}
-                  </div>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-          <p className="mt-8 text-[0.9375rem] text-ink-soft">
-            {L.pricing.note}{" "}
-            <Link href="/refund" className="tap-control underline underline-offset-4 hover:no-underline">
-              {L.pricing.refundLink}
+          <ul className="mt-14 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
+            {FEATURED.map((d, i) => {
+              const name = LAYOUT_NAMES[d.style][d.layout - 1][locale];
+              return (
+                <li key={`${d.style}-${d.category}-${d.layout}`}>
+                  <Reveal delay={i * 0.06} className="h-full">
+                    <Link href={galleryPath(d.style, d.category, d.layout)} className="tile group flex h-full flex-col p-2.5 tap-control">
+                      <div className="rounded-[1.1rem] bg-bone px-[12%] pb-6 pt-7">
+                        <PhoneFrame className="transition duration-300 group-hover:-translate-y-1.5">
+                          <DesignFrame src={designSrc(d)} title={name} />
+                        </PhoneFrame>
+                      </div>
+                      <div className="px-2 pb-2 pt-4">
+                        <p className="font-editorial text-[1.375rem] leading-tight">{name}</p>
+                        <p className="mt-0.5 text-[0.75rem] uppercase tracking-[0.14em] text-pine rtl:tracking-normal">{t.designs[d.style]}</p>
+                        <p className="mt-3 inline-flex items-center gap-1.5 text-[0.9375rem] text-ink-deep underline decoration-champagne underline-offset-4 group-hover:decoration-pine">
+                          {L.seeDesign} <ArrowRight size={14} className="rtl:rotate-180" />
+                        </p>
+                      </div>
+                    </Link>
+                  </Reveal>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="mt-12 flex justify-center">
+            <Link href="/gallery" className="btn-ghost press tap-control">
+              {L.designsCta} <ArrowRight size={16} className="rtl:rotate-180" />
             </Link>
-          </p>
+          </div>
+        </section>
+
+        {/* ---------- Occasions: every one, with the line its card opens on ---------- */}
+        <section id="occasions" aria-labelledby="occasions-title" className="scroll-mt-20 bg-bone/60 px-safe py-[clamp(5rem,10vw,8rem)]">
+          <Reveal>
+            <p className="eyebrow-site">{L.occasionsEyebrow}</p>
+            <h2 id="occasions-title" className={`${h2} mt-5`}>
+              {L.occasionsTitle}
+            </h2>
+          </Reveal>
+          <ul className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {OCCASIONS.map((o) => (
+              <li key={o.id}>
+                <Link
+                  href={`/gallery?category=${CATEGORIES_FOR_OCCASION[o.id][0]}`}
+                  className="tile group flex h-full items-center justify-between gap-4 px-5 py-4 tap-control transition-shadow hover:shadow-[0_0_0_1px_var(--pine),0_24px_48px_-32px_rgb(36_36_31/0.35)]"
+                >
+                  <span>
+                    <span className="block text-[1.0625rem] font-medium text-ink-deep">{o.label[locale]}</span>
+                    <span className="mt-0.5 block font-editorial text-[1.0625rem] italic text-ink-soft rtl:not-italic">{o.cardLine[locale]}</span>
+                  </span>
+                  <ArrowRight size={16} className="shrink-0 text-ink-soft transition-transform group-hover:translate-x-1 group-hover:text-pine rtl:rotate-180 rtl:group-hover:-translate-x-1" />
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link href="/gallery" className="group flex h-full min-h-[5.5rem] items-center justify-between gap-4 rounded-[1.5rem] bg-pine px-5 py-4 text-ivory tap-control hover:bg-pine-deep">
+                <span className="text-[1.0625rem] font-medium">{L.designsCta}</span>
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-champagne text-pine-deep">
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5 rtl:rotate-180" />
+                </span>
+              </Link>
+            </li>
+          </ul>
         </section>
 
         {/* ---------- Reviews: only what families wrote, and only once approved ---------- */}
         {reviews.length > 0 && (
-          <section aria-labelledby="reviews-title" className="px-safe py-[clamp(7rem,14vw,12rem)]">
+          <section aria-labelledby="reviews-title" className="px-safe py-[clamp(5rem,10vw,8rem)]">
             <Reveal>
-              <h2 id="reviews-title" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em]">
+              <h2 id="reviews-title" className={h2}>
                 {L.reviewsTitle}
               </h2>
             </Reveal>
-            <ul className="mt-16 grid gap-x-6 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
+            <ul className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {reviews.slice(0, 6).map((r, i) => (
                 <li key={r.id}>
-                  <Reveal delay={(i % 3) * 0.06}>
-                    <figure className="border-t border-ink-deep/15 pt-6">
+                  <Reveal delay={(i % 3) * 0.06} className="h-full">
+                    <figure className="tile flex h-full flex-col p-7">
                       <p className="flex gap-0.5 text-gold-ink" role="img" aria-label={t.review.stars(r.rating)}>
                         {Array.from({ length: 5 }, (_, k) => (
                           <Star key={k} size={16} aria-hidden="true" fill={k < r.rating ? "currentColor" : "none"} />
                         ))}
                       </p>
-                      <blockquote className="mt-4 whitespace-pre-line text-[1.1875rem] leading-[1.6] text-ink-deep">{r.body}</blockquote>
-                      <figcaption className="mt-4 text-[0.9375rem] text-ink-soft">{r.author}</figcaption>
+                      <blockquote className="mt-4 flex-1 whitespace-pre-line font-editorial text-[1.375rem] italic leading-[1.45] text-ink-deep rtl:not-italic">{r.body}</blockquote>
+                      <figcaption className="mt-6 flex items-center gap-3 text-[0.9375rem] text-ink-soft">
+                        <span className="grid h-9 w-9 place-items-center rounded-full bg-pine-soft font-medium text-pine">{r.author.charAt(0)}</span>
+                        {r.author}
+                      </figcaption>
                     </figure>
                   </Reveal>
                 </li>
@@ -323,20 +395,76 @@ export default async function LandingPage() {
           </section>
         )}
 
+        {/* ---------- Pricing: one payment per occasion ---------- */}
+        <section id="pricing" aria-labelledby="pricing-title" className="scroll-mt-20 px-safe py-[clamp(5rem,10vw,8rem)]">
+          <Reveal className="mx-auto max-w-[44rem] text-center">
+            <p className="eyebrow-site">{L.pricingEyebrow}</p>
+            <h2 id="pricing-title" className={`${h2} mt-5`}>
+              {L.pricing.title}
+            </h2>
+            <p className="mt-5 text-[1.125rem] leading-[1.65] text-ink-deep">{L.pricing.body}</p>
+          </Reveal>
+          <div className="mx-auto mt-14 grid max-w-[60rem] gap-5 md:grid-cols-2">
+            {plans.map((p, i) => (
+              <Reveal key={p.id} delay={i * 0.08} className="h-full">
+                <article className={`flex h-full flex-col rounded-[1.75rem] p-8 sm:p-10 ${p.primary ? "bg-pine-deep text-ivory shadow-[0_40px_80px_-40px_rgb(20_58_46/0.8)]" : "tile text-ink-deep"}`}>
+                  <h3 className="font-editorial text-[2rem] font-medium leading-none">{p.copy.name}</h3>
+                  <p className={`mt-3 text-[1.0625rem] ${p.primary ? "text-ivory/75" : "text-ink-soft"}`}>{p.copy.line}</p>
+                  <p className="mt-8 flex items-baseline gap-2">
+                    <span className="font-editorial text-[clamp(3.5rem,7vw,4.75rem)] font-medium leading-none tabular-nums">{nf.format(p.price)}</span>
+                    <span className="text-[1.125rem]">{L.pricing.currency}</span>
+                  </p>
+                  <p className={`mt-1 text-[0.9375rem] ${p.primary ? "text-ivory/75" : "text-ink-soft"}`}>{L.pricing.once}</p>
+                  <ul className={`mt-8 space-y-3 border-t pt-8 text-[1.0625rem] ${p.primary ? "border-white/15" : "border-ink-deep/10"}`}>
+                    {p.copy.features.map((f) => (
+                      <li key={f} className="flex gap-3">
+                        <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full ${p.primary ? "bg-champagne text-pine-deep" : "bg-pine-soft text-pine"}`}>
+                          <Check size={12} strokeWidth={3} aria-hidden="true" />
+                        </span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-auto pt-10">
+                    {p.primary ? (
+                      <InviteButton href={p.href} className="flex w-full min-h-14 bg-ivory! text-pine-deep! hover:bg-white!">
+                        {p.copy.cta}
+                      </InviteButton>
+                    ) : (
+                      <a href={p.href} className="btn-ghost press tap-control w-full min-h-14">
+                        {p.copy.cta}
+                      </a>
+                    )}
+                  </div>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+          <p className="mt-8 text-center text-[0.9375rem] text-ink-soft">
+            {L.pricing.note}{" "}
+            <Link href="/refund" className="tap-control underline underline-offset-4 hover:no-underline">
+              {L.pricing.refundLink}
+            </Link>
+          </p>
+        </section>
+
         {/* ---------- Questions: the ones people ask before they begin ---------- */}
-        <section id="faq" aria-labelledby="faq-title" className="scroll-mt-20 px-safe py-[clamp(7rem,14vw,12rem)]">
+        <section id="faq" aria-labelledby="faq-title" className="scroll-mt-20 bg-bone/60 px-safe py-[clamp(5rem,10vw,8rem)]">
           <div className="grid gap-12 lg:grid-cols-12">
             <Reveal className="lg:col-span-4">
-              <h2 id="faq-title" className="font-editorial text-[clamp(2.5rem,4.6vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.02em] lg:sticky lg:top-28">
-                {L.faqTitle}
-              </h2>
+              <div className="lg:sticky lg:top-28">
+                <p className="eyebrow-site">{L.faqEyebrow}</p>
+                <h2 id="faq-title" className={`${h2} mt-5`}>
+                  {L.faqTitle}
+                </h2>
+              </div>
             </Reveal>
-            <div className="border-t border-ink-deep/15 lg:col-span-7 lg:col-start-6">
+            <div className="space-y-3 lg:col-span-7 lg:col-start-6">
               {L.faq.map((f) => (
-                <details key={f.q} className="group border-b border-ink-deep/15">
-                  <summary className="tap-control flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-[1.1875rem] text-ink-deep [&::-webkit-details-marker]:hidden">
+                <details key={f.q} className="tile group px-6">
+                  <summary className="tap-control flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-[1.125rem] text-ink-deep [&::-webkit-details-marker]:hidden">
                     {f.q}
-                    <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-bone text-[1.25rem] leading-none transition-transform group-open:rotate-45">
+                    <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-pine-soft text-[1.25rem] leading-none text-pine transition-transform group-open:rotate-45">
                       +
                     </span>
                   </summary>
@@ -348,36 +476,40 @@ export default async function LandingPage() {
         </section>
 
         {/* ---------- Closing: the sentence has a blank, and the blank is the form ---------- */}
-        <section aria-labelledby="begin-title" className="bg-bone px-safe py-[clamp(7rem,14vw,12rem)]">
-          <form action="/events/new" method="get" className="font-editorial text-[clamp(2.5rem,6vw,6.25rem)] font-medium leading-[1.15] tracking-[-0.02em] rtl:tracking-normal">
-            <h2 id="begin-title" className="flex flex-wrap items-baseline gap-x-[0.3em] gap-y-[0.15em]">
-              <label htmlFor="occasion-name">{L.closingLead}</label>
-              <input
-                id="occasion-name"
-                name="name"
-                maxLength={120}
-                autoComplete="off"
-                enterKeyHint="go"
-                placeholder={L.closingPlaceholder}
-                className="h-[1.15em] w-full min-w-0 bg-ivory px-[0.25em] text-[1em] tracking-[inherit] text-ink-deep outline-none placeholder:text-ink-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-deep sm:w-[7.5em]"
-              />
-              <span>{L.closingAnd}</span>
-              <button type="submit" className="press tap-control bg-ink-deep px-[0.25em] leading-[1.15] text-ivory hover:bg-olive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-deep">
-                {L.closingButton}
-              </button>
-            </h2>
-          </form>
-          <p className="mt-8 max-w-[40rem] text-[1.0625rem] leading-[1.6] text-ink-soft">{L.closingNote}</p>
+        <section aria-labelledby="begin-title" className="px-safe py-[clamp(4rem,8vw,6rem)]">
+          <div className="relative overflow-hidden rounded-[2rem] bg-pine-deep px-[clamp(1.5rem,5vw,4rem)] py-[clamp(3.5rem,8vw,6rem)] text-ivory">
+            <div aria-hidden="true" className="pointer-events-none absolute -bottom-48 start-[-10%] h-[32rem] w-[32rem] rounded-full bg-[radial-gradient(circle,rgb(201_182_139/0.18),transparent_65%)]" />
+            <p className="eyebrow-site relative text-ivory/70">{L.closingEyebrow}</p>
+            <form action="/events/new" method="get" className="relative mt-6 font-editorial text-[clamp(2.25rem,5.4vw,5rem)] font-medium leading-[1.15] tracking-[-0.02em] rtl:tracking-normal">
+              <h2 id="begin-title" className="flex flex-wrap items-baseline gap-x-[0.3em] gap-y-[0.2em]">
+                <label htmlFor="occasion-name">{L.closingLead}</label>
+                <input
+                  id="occasion-name"
+                  name="name"
+                  maxLength={120}
+                  autoComplete="off"
+                  enterKeyHint="go"
+                  placeholder={L.closingPlaceholder}
+                  className="h-[1.2em] w-full min-w-0 rounded-full bg-white/10 px-[0.45em] text-[1em] tracking-[inherit] text-ivory outline-none ring-1 ring-white/20 placeholder:italic placeholder:text-ivory/45 focus-visible:ring-2 focus-visible:ring-champagne sm:w-[7.5em]"
+                />
+                <span>{L.closingAnd}</span>
+                <button type="submit" className="press tap-control rounded-full bg-champagne px-[0.45em] leading-[1.2] text-pine-deep hover:bg-ivory focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne">
+                  {L.closingButton}
+                </button>
+              </h2>
+            </form>
+            <p className="relative mt-8 max-w-[40rem] text-[1.0625rem] leading-[1.6] text-ivory/75">{L.closingNote}</p>
+          </div>
         </section>
       </main>
 
       {/* ---------- Footer: the way to get in touch is the headline ---------- */}
-      <footer id="contact" className="flex min-h-[90svh] scroll-mt-[4.5rem] flex-col justify-between gap-16 bg-olive px-safe pb-[max(2rem,env(safe-area-inset-bottom,0px))] pt-10 text-ivory">
-        <div className="flex flex-wrap items-start justify-between gap-8 text-[0.875rem] leading-6">
-          <div className="grid gap-x-12 gap-y-2 sm:grid-cols-[auto_auto]">
-            <Wordmark className="[&_span:last-child]:text-ivory" />
-            <p className="max-w-[28rem]">{L.footerLine}</p>
-            <p className="sm:col-start-2">{L.locationValue}</p>
+      <footer id="contact" className="flex scroll-mt-[4.5rem] flex-col gap-16 bg-pine-deep px-safe pb-[max(2rem,env(safe-area-inset-bottom,0px))] pt-14 text-ivory">
+        <div className="flex flex-wrap items-start justify-between gap-8 text-[0.9375rem] leading-6">
+          <div className="space-y-2">
+            <Wordmark className="[&_span:last-child]:text-champagne" />
+            <p className="max-w-[28rem] text-ivory/75">{L.footerLine}</p>
+            <p className="text-ivory/75">{L.locationValue}</p>
           </div>
           <a href="#home" className="tap-control underline underline-offset-4 hover:no-underline">
             {L.backToTop}
@@ -389,19 +521,18 @@ export default async function LandingPage() {
           <a
             href={`mailto:${CONTACT.email}`}
             dir="ltr"
-            className="block font-editorial text-[13vw] font-medium rtl:text-right leading-[0.95] tracking-[-0.03em] hover:text-bone md:text-[11.5vw]"
+            className="block font-editorial text-[clamp(2.75rem,10vw,9rem)] font-medium italic leading-[0.95] tracking-[-0.03em] text-ivory hover:text-champagne rtl:text-right"
           >
             hikayati<wbr />@gmail.com
           </a>
-          <a href={`tel:${CONTACT.tel}`} dir="ltr" className="mt-6 inline-block text-[1.25rem] underline underline-offset-4 hover:no-underline">
+          <a href={`tel:${CONTACT.tel}`} dir="ltr" className="mt-6 inline-block text-[1.25rem] underline decoration-champagne underline-offset-4 hover:no-underline">
             {CONTACT.phone}
           </a>
         </div>
 
-        <FooterGroups L={L} />
-
-        <div className="grid gap-6 text-[0.875rem] leading-6 md:grid-cols-[auto_1fr_auto] md:items-end md:gap-12">
-          <nav className="flex flex-wrap gap-x-6 gap-y-2">
+        <div className="grid gap-10 border-t border-white/12 pt-10 md:grid-cols-[1fr_auto]">
+          <FooterGroups L={L} />
+          <nav aria-label={L.nav.contact} className="flex flex-wrap content-start gap-x-6 gap-y-2 text-[0.9375rem]">
             {siteLinks(L).map((n) => (
               <Link key={n.href} href={n.href} className="tap-control underline-offset-4 hover:underline">
                 {n.label}
@@ -411,20 +542,8 @@ export default async function LandingPage() {
               {user ? L.myEvents : L.signIn}
             </Link>
           </nav>
-          <p className="max-w-[60rem]">
-            {L.picturesCredit}:{" "}
-            {CREDITS.map((c, i) => (
-              <span key={c.page}>
-                <a href={c.page} className="underline underline-offset-2 hover:no-underline">
-                  <bdi>{c.title}</bdi>
-                </a>{" "}
-                <bdi>{c.by}</bdi>, {c.licence}
-                {i < CREDITS.length - 1 ? "; " : "."}
-              </span>
-            ))}
-          </p>
-          <p>{L.rights(new Date().getFullYear())}</p>
         </div>
+        <p className="text-[0.875rem] text-ivory/60">{L.rights(new Date().getFullYear())}</p>
       </footer>
     </>
   );
